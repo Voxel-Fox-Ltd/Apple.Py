@@ -1,0 +1,10 @@
+imgurpython
+praw
+steamodd
+wolframalpha
+cleverbot
+discord.py
+xmltodict
+pyowm
+googleserch
+esix
