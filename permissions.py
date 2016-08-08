@@ -61,8 +61,14 @@ class Permissions():
             except KeyError:
                 toWrite['Commands'][comToChange] = {'CanUse':[]}
 
-        for i in ctx.message.role_mentions:
-            curAllowed.append(i.id)
+        try:
+            for i in ctx.message.role_mentions:
+                curAllowed.append(i.id)
+        except:
+            for i in ctx.message.server.roles:
+                if i.name.lower() == ctx.message.content.split(' ',4)[4]:
+                    curAllowed.append(i.id)
+                    break
         toWrite['Commands'][comToChange]['CanUse'] = curAllowed
 
         with open(serverConfigs+ctx.message.server.id+'.json', 'w') as a:
