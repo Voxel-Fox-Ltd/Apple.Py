@@ -57,7 +57,7 @@ class CustomCommands():
         await self.bot.say("Command added.")
 
 
-    @cc.command(name='delete',pass_context=True,description='Removes a custom command from the server.')
+    @cc.command(name='delete',aliases=['del','rem','remove'],pass_context=True,description='Removes a custom command from the server.')
     async def ccdel(self, ctx):
         toWrite = None 
         try:
