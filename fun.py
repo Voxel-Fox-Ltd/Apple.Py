@@ -69,7 +69,8 @@ class Fun():
         acRet += '```'
 
         if len(acRet) > 2000:
-            return("Please shorten your input string.")
+            await self.bot.say("Please shorten your input string.")
+            return
 
         print('Aes command :: %s' %a)
 
@@ -194,7 +195,7 @@ class Fun():
             await self.bot.say(notallowed)
             return
     
-    @binary.command(pass_context=True,name='binary')
+    @binary.command(pass_context=True,name='tobinary')
     async def toBinary(self, ctx):
         text = ctx.message.content
         text = text[len(text.split(' ')[0])+len(text.split(' ')[1])+2:]
@@ -208,7 +209,7 @@ class Fun():
         out = out[:-1] + '```'
         await self.bot.say(out)
 
-    @binary.command(pass_context=True,name='text')
+    @binary.command(pass_context=True,name='totext')
     async def toAscii(self, ctx):
         text = ctx.message.content
         text = text[len(text.split(' ')[0])+len(text.split(' ')[1])+2:]
