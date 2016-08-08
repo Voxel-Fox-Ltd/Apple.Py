@@ -94,3 +94,6 @@ def writeAllow(ctx, jsonToWrite):
             
     with open(serverConfigs+serId+'.json','w') as a:
         a.write(json.dumps(jsonToWrite,indent=4))
+
+def givePerms(ctx):
+    return ctx.message.channel.permissions_for(ctx.message.author)

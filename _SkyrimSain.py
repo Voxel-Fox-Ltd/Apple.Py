@@ -104,9 +104,9 @@ async def echochannel(ctx):
 async def invite(ctx):
     if isAllowed(ctx, sys._getframe().f_code.co_name):
         print("Told someone the invite link.")
-        q = "https://discordapp.com/oauth2/authorize?scope=bot&client_id=%s&permissions=0x00000008" \
+        q = "https://discordapp.com/oauth2/authorize?scope=bot&client_id=%s&permissions=0x1c016c10" \
                % BOT_CLIENT_ID
-        await bot.send_message(ctx.message.channel, q)
+        await bot.say(q)
     else:
         await bot.say(notallowed)
     return
@@ -114,7 +114,8 @@ async def invite(ctx):
 
 @bot.command(pass_context=True,description='Removes x amount of messages from chat.')
 async def purge(ctx):
-    if isAllowed(ctx):
+    # if isAllowed(ctx, sys._getframe().f_code.co_name):
+    if givePerms(ctx).manage_messages or givePerms(ctx).administrator:
         try:
             a = int(ctx.message.content.split(" ")[1])
         except ValueError:
@@ -129,7 +130,8 @@ async def purge(ctx):
 
 @bot.command(pass_context=True,description='Changes the nickname of the bot.')
 async def rename(ctx):
-    if isAllowed(ctx, sys._getframe().f_code.co_name):
+    # if isAllowed(ctx, sys._getframe().f_code.co_name):
+    if ( givePerms(ctx).manage_nicknames or givePerms(ctx).administrator ):
         ser = ctx.message.server.get_member_named(bot.user.name)
         try:
             await bot.change_nickname(ser, ctx.message.content.split(' ',1)[1])
@@ -193,26 +195,49 @@ async def ccolour(ctx):
             await bot.say("Please provide a **hex** colour value.")
             return
 
-        for role in ctx.message.server.roles:
-            if str(role.name) == str(ctx.message.author):
-                await bot.edit_role(ctx.message.server, role, colour=discord.Colour(int(hexc, 16)))
-                rrr = role
-                print("Editing role :: %s" % str(role.name))
-                flag = True
-        if flag == False:
-            print("Creating role :: %s" % str(ctx.message.author))
-            rrr = await bot.create_role(ctx.message.server, name=str(ctx.message.author), colour=discord.Colour(int(hexc, 16)))
-            for i in range(0,500,1):
-                try:
-                    await bot.move_role(ctx.message.server, rrr, i)
-                except discord.errors.InvalidArgument:
-                    pass
-        print("Adding role to user.")
-        await bot.add_roles(ctx.message.author, rrr)
-        await bot.say("Changed user role colour.")
+        try:
+            for role in ctx.message.server.roles:
+                if str(role.name) == str(ctx.message.author):
+                    await bot.edit_role(ctx.message.server, role, colour=discord.Colour(int(hexc, 16)))
+                    rrr = role
+                    print("Editing role :: %s" % str(role.name))
+                    flag = True
+            if flag == False:
+                print("Creating role :: %s" % str(ctx.message.author))
+                rrr = await bot.create_role(ctx.message.server, name=str(ctx.message.author), colour=discord.Colour(int(hexc, 16)))
+                for i in range(0,500,1):
+                    try:
+                        await bot.move_role(ctx.message.server, rrr, i)
+                        break
+                    except discord.errors.HTTPException:
+                        pass
+            print("Adding role to user.")
+            await bot.add_roles(ctx.message.author, rrr)
+            await bot.say("Changed user role colour.")
+        except discord.errors.Forbidden:
+            await bot.say("This bot does not have permissions to manage roles.")
         return
     else:
         await bot.say(notallowed)
+
+
+@bot.command(pass_context=True,description='Restarts the bot.')
+async def ex(ctx):
+    if isAllowed(ctx, sys._getframe().f_code.co_name):
+        toEx = ctx.message.content.split(' ',1)[1]
+        await bot.say(execute(ctx, toEx))
+    else:
+        await bot.say(notallowed)
+    return
+
+
+def execute(ctx, toEx):
+    ret = None 
+    print(toEx)
+    print(ret)
+    exec(toEx)
+    print(ret)
+    return ret
 
 
 @bot.command(pass_context=True,description='Restarts the bot.')
@@ -271,7 +296,7 @@ async def on_ready():
     print("Logged in as:")
     print("    "+str(bot.user.name))
     print("    "+str(bot.user.id))
-    gameThingy = "ApplePy v0.2"
+    gameThingy = ".help [ApplePy v0.3]"
     await bot.change_status(discord.Game(name=gameThingy))
     print("Game changed to '%s'." % gameThingy)
     print("----------")
