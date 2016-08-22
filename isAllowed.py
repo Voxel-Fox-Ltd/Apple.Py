@@ -10,27 +10,30 @@ with open('%sdiscordTokens.json' %workingDirectory) as data_file:
     tokens = json.load(data_file)
 
 
+helpText = {}
+
+
 defSerCon = \
 {
     "Commands":{},
     "Channels":{
         "Bans":{
-            "Enabled":"True",
+            "Enabled":"False",
             "Channel":""
         }, 
         "RSS":{}, 
         "Joins":{
-            "Enabled":"True",
+            "Enabled":"False",
             "Channel":""
         }, 
         "Leaves":{
-            "Enabled":"True",
+            "Enabled":"False",
             "Channel":""
         }
     }, 
     "CustomCommands":{},
     "ImgurAlbum" : {
-        "Enabled" : "True"
+        "Enabled" : "False"
     }
 }
 
