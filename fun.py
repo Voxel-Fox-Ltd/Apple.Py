@@ -117,7 +117,7 @@ class Fun():
         await self.bot.say(p)
              
 
-    @commands.command(pass_context=True,description='Gives a random pin from punoftheday.com.')
+    @commands.command(pass_context=True,aliases=['joke'],description='Gives a random pin from punoftheday.com.')
     async def pun(self, ctx):
         if not isAllowed(ctx, sys._getframe().f_code.co_name):
             await self.bot.say(notallowed)
