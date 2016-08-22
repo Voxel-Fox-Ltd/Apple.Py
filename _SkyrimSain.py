@@ -80,20 +80,15 @@ async def printToDiscord(channel, text):
 
 @bot.command(pass_context=True,description='Echos what the user says.')
 async def echo(ctx):
+    """Simply says back what the person says."""
     if isAllowed(ctx, sys._getframe().f_code.co_name):
         print("Echoing :: %s" % ctx.message.content.split(' ',1)[1])
-        a = ctx.message.content.split(' ',1)[1]
-        await bot.say(a)
-        return 
-    else:
-        await bot.say(notallowed)
-
-
-@bot.command(pass_context=True,description='Echos what the user says.')
-async def echochannel(ctx):
-    if isAllowed(ctx, sys._getframe().f_code.co_name):
-        a = ctx.message.content.split(' ',2)[2]
-        chan = discord.Object(ctx.message.raw_channel_mentions[0])
+        try:
+            chan = discord.Object(ctx.message.raw_channel_mentions[0])
+            a = ctx.message.content.split(' ',2)[2]
+        except:
+            chan = ctx.message.channel
+            a = ctx.message.content.split(' ',1)[1]
         await bot.send_message(chan, a)
         return 
     else:
@@ -102,6 +97,7 @@ async def echochannel(ctx):
 
 @bot.command(pass_context=True,description='Gives you an invte link for the bot.')
 async def invite(ctx):
+    """Gives the invite link for the bot."""
     if isAllowed(ctx, sys._getframe().f_code.co_name):
         print("Told someone the invite link.")
         q = "https://discordapp.com/oauth2/authorize?scope=bot&client_id=%s&permissions=0x1c016c10" \
@@ -114,6 +110,7 @@ async def invite(ctx):
 
 @bot.command(pass_context=True,description='Removes x amount of messages from chat.')
 async def purge(ctx):
+    """Purges x messages from the channel."""
     # if isAllowed(ctx, sys._getframe().f_code.co_name):
     if givePerms(ctx).manage_messages or givePerms(ctx).administrator:
         try:
@@ -130,6 +127,7 @@ async def purge(ctx):
 
 @bot.command(pass_context=True,description='Changes the nickname of the bot.')
 async def rename(ctx):
+    """Renames the bot."""
     # if isAllowed(ctx, sys._getframe().f_code.co_name):
     if ( givePerms(ctx).manage_nicknames or givePerms(ctx).administrator ):
         ser = ctx.message.server.get_member_named(bot.user.name)
@@ -148,6 +146,7 @@ async def rename(ctx):
 
 @bot.command(pass_context=True,description='Checks the uptime of the server.')
 async def uptime(ctx):
+    """Shows the uptime of the bot."""
     now = datetime.datetime.now()
     up = now - startTime
 
@@ -181,6 +180,7 @@ Serving %s unique users```''' %(len(bot.servers),len(userCount))
 
 @bot.command(pass_context=True,description='Changes the colour of the submitter to a hex code.')
 async def ccolour(ctx):
+    """Changes the users colour to the mentioned hex code."""
     if isAllowed(ctx, sys._getframe().f_code.co_name):
         flag = False
         try:
@@ -209,7 +209,9 @@ async def ccolour(ctx):
                     try:
                         await bot.move_role(ctx.message.server, rrr, i)
                         break
-                    except discord.errors.HTTPException:
+                    except discord.errors.InvalidArgument:
+                        pass
+                    except discord.ext.commands.errors.CommandInvokeError:
                         pass
             print("Adding role to user.")
             await bot.add_roles(ctx.message.author, rrr)
@@ -221,16 +223,6 @@ async def ccolour(ctx):
         await bot.say(notallowed)
 
 
-@bot.command(pass_context=True,description='Restarts the bot.')
-async def ex(ctx):
-    if isAllowed(ctx, sys._getframe().f_code.co_name):
-        toEx = ctx.message.content.split(' ',1)[1]
-        await bot.say(execute(ctx, toEx))
-    else:
-        await bot.say(notallowed)
-    return
-
-
 def execute(ctx, toEx):
     ret = None 
     print(toEx)
@@ -240,7 +232,7 @@ def execute(ctx, toEx):
     return ret
 
 
-@bot.command(pass_context=True,description='Restarts the bot.')
+@bot.command(pass_context=True,description='Restarts the bot.',hidden=True)
 async def restart(ctx):
     if ctx.message.author.id == '141231597155385344':
 
@@ -254,7 +246,7 @@ async def restart(ctx):
     return
 
 
-@bot.command(pass_context=True,description='Kills the bot.')
+@bot.command(pass_context=True,description='Kills the bot.',hidden=True)
 async def kill(ctx):
     if ctx.message.author.id == '141231597155385344':
         await bot.say("Killing.")
