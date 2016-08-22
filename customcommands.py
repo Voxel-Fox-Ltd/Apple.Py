@@ -36,7 +36,11 @@ class CustomCommands():
                 toWrite = {"Commands":{},"Channels":{"Bans":"", "RSS":{}}, "CustomCommands":{}}
                 a.write(json.dumps(toWrite,indent=4))
 
-        commThread = toWrite['CustomCommands']
+
+        try:
+            commThread = toWrite['CustomCommands']
+        except KeyError:
+            commThread = toWrite['CustomCommands'] = {}
 
         z = ctx.message.content
         commandToAdd = z.split(' ',3)[2].lower()
