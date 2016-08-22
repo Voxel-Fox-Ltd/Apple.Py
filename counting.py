@@ -13,14 +13,12 @@ class Counting():
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(pass_context=True)
-    async def count(self, ctx):
+
+    @commands.command(pass_context=True)
+    async def usrcount(self, ctx):
         if not isAllowed(ctx, sys._getframe().f_code.co_name):
             await self.bot.say(notallowed)
             return
-
-    @count.command(name='users',pass_context=True)
-    async def userCount(self, ctx):
         toCount = ctx.message.content.split(' ',2)[2].lower()
         count = 0
         usersOnServer = 0
@@ -39,8 +37,12 @@ class Counting():
                 break
         await self.bot.say("There are **%s** users with '%s' in their display name on this server. That makes up %s percent of users on the server." %(str(count),toCount, percentUsers) )
 
-    @count.command(name='games',pass_context=True)
-    async def gameCount(self, ctx):
+
+    @commands.command(pass_context=True)
+    async def gamecount(self, ctx):
+        if not isAllowed(ctx, sys._getframe().f_code.co_name):
+            await self.bot.say(notallowed)
+            return
         toCount = ctx.message.content.split(' ',2)[2].lower()
         count = 0
         usersOnServer = 0
