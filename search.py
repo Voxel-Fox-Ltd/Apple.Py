@@ -187,7 +187,15 @@ Username :: %s
                 i = '\n        '
             print(i, end="")
         
-        await self.bot.edit_message(edit, a)
+        q = 0
+        z = ''
+        for pod in res.pods:
+            # await self.bot.say(pod.main)
+            z = z + pod.img + '\n'
+            q += 1
+            # if q == 4: break
+
+        await self.bot.edit_message(edit, z)
         return 
 
     @commands.command(pass_context=True,description='Searches Wikipedia for a given string.')
