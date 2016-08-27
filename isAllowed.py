@@ -10,6 +10,8 @@ with open('%sdiscordTokens.json' %workingDirectory) as data_file:
     tokens = json.load(data_file)
 
 
+## This may be empty here, but it's being used by every other
+## module as their help text location, for now.
 helpText = {}
 
 
@@ -38,6 +40,9 @@ defSerCon = \
 }
 
 
+## Checks some config files to see if certain commands are available for use.
+## I've never actually used this properly so I'll phase it out for native permission
+## checking inside of discord.
 def isAllowed(ctx, calledFunction):
     serverConStuff = None 
     try:
@@ -86,6 +91,9 @@ def giveAllowances(ctx):
             a.write(json.dumps(serverConStuff,indent=4))
     return serverConStuff
 
+
+## Meant for use with the config commands, soon to be removed
+## Writes the configuration changes to file.
 def writeAllow(ctx, jsonToWrite):
     if type(ctx) == str:
         serId = ctx
@@ -98,5 +106,7 @@ def writeAllow(ctx, jsonToWrite):
     with open(serverConfigs+serId+'.json','w') as a:
         a.write(json.dumps(jsonToWrite,indent=4))
 
+
+## Returns the permissions of a given user.
 def givePerms(ctx):
     return ctx.message.channel.permissions_for(ctx.message.author)
