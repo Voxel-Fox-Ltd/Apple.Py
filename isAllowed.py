@@ -110,3 +110,35 @@ def writeAllow(ctx, jsonToWrite):
 ## Returns the permissions of a given user.
 def givePerms(ctx):
     return ctx.message.channel.permissions_for(ctx.message.author)
+
+
+## Input a ctx and a list of permissions that the user will need..
+## This will return true if a user has a certain permission, as asked for by
+## the command call.
+def allowUse(ctx,listOfNeeds,needsAll=True):
+    allowLst = []
+    permLst = ctx.message.channel.permissions_for(ctx.message.author)
+    convertDict = {
+        'manage_messages':permList.manage_messages,
+        'admin':permList.administrator,
+        'kick_members':permList.kick_members,
+        'kick':permList.kick_members,
+        'ban_members':permList.ban_members,
+        'ban':permList.ban_members,
+        'manage_nicknames':permList.manage_nicknames
+    }
+    for i in listOfNeeds:
+        allowLst.append(convertDict[i])
+
+    if convertDict['admin']:
+        return True 
+    if needsAll:
+        if False in allowLst:
+            return False
+        else:
+            return True
+    else:
+        if True in allowLst:
+            return True 
+        else:
+            return False

@@ -85,18 +85,15 @@ Usage :: echo Hello World
 @bot.command(pass_context=True,description='Echos what the user says.',help=helpText['echo'])
 async def echo(ctx):
     """Simply says back what the person says."""
-    if isAllowed(ctx, sys._getframe().f_code.co_name):
-        print("Echoing :: %s" % ctx.message.content.split(' ',1)[1])
-        try:
-            chan = discord.Object(ctx.message.raw_channel_mentions[0])
-            a = ctx.message.content.split(' ',2)[2]
-        except:
-            chan = ctx.message.channel
-            a = ctx.message.content.split(' ',1)[1]
-        await bot.send_message(chan, a)
-        return 
-    else:
-        await bot.say(notallowed)
+    print("Echoing :: %s" % ctx.message.content.split(' ',1)[1])
+    try:
+        chan = discord.Object(ctx.message.raw_channel_mentions[0])
+        a = ctx.message.content.split(' ',2)[2]
+    except:
+        chan = ctx.message.channel
+        a = ctx.message.content.split(' ',1)[1]
+    await bot.send_message(chan, a)
+
 
 
 helpText['invite'] = \
@@ -107,14 +104,10 @@ Usage :: invite"""
 @bot.command(pass_context=True,description='Gives you an invte link for the bot.',help=helpText['invite'])
 async def invite(ctx):
     """Gives the invite link for the bot."""
-    if isAllowed(ctx, sys._getframe().f_code.co_name):
-        print("Told someone the invite link.")
-        q = "https://discordapp.com/oauth2/authorize?scope=bot&client_id=%s&permissions=0x1c016c10" \
-               % BOT_CLIENT_ID
-        await bot.say(q)
-    else:
-        await bot.say(notallowed)
-    return
+    print("Told someone the invite link.")
+    q = "https://discordapp.com/oauth2/authorize?scope=bot&client_id=%s&permissions=0x1c016c10" \
+           % BOT_CLIENT_ID
+    await bot.say(q)
 
 
 helpText['purge'] = \
@@ -126,18 +119,17 @@ Usage :: purge 50"""
 @bot.command(pass_context=True,description='Removes x amount of messages from chat.',help=helpText['purge'])
 async def purge(ctx):
     """Purges x messages from the channel."""
-    # if isAllowed(ctx, sys._getframe().f_code.co_name):
-    if givePerms(ctx).manage_messages or givePerms(ctx).administrator:
+    # if givePerms(ctx).manage_messages or givePerms(ctx).administrator:
+    if allowUse(ctx,['manage_messages']):
         try:
             a = int(ctx.message.content.split(" ")[1])
         except ValueError:
             await bot.say("Please provide a value.")
+            return
         print("Deleting %s messages." %a)
         await bot.purge_from(ctx.message.channel, limit=a)
-        print("Comleted deleting.")
     else:
         await bot.say(notallowed)
-    return
 
 
 helpText['rename'] = \
@@ -150,8 +142,7 @@ Usage :: rename Apple.py
 @bot.command(pass_context=True,description='Changes the nickname of the bot.',help=helpText['rename'])
 async def rename(ctx):
     """Renames the bot."""
-    # if isAllowed(ctx, sys._getframe().f_code.co_name):
-    if ( givePerms(ctx).manage_nicknames or givePerms(ctx).administrator ):
+    if allowUse(ctx,['manage_nicknames']):
         ser = ctx.message.server.get_member_named(bot.user.name)
         try:
             await bot.change_nickname(ser, ctx.message.content.split(' ',1)[1])
@@ -160,10 +151,8 @@ async def rename(ctx):
             await bot.change_nickname(ser, '')
             x = "Removed nickname."
         await bot.say(x)
-        # print("Changed nickname :: %s" % ctx.message.content.split(' ',1)[1])
     else:
         await bot.say(notallowed)
-    return
 
 
 helpText['uptime'] = \
@@ -197,12 +186,7 @@ async def uptime(ctx):
 Serving %s unique users```''' %(len(bot.servers),len(userCount))
 
     superOut = outplut + '\n' + out
-
-    if isAllowed(ctx, sys._getframe().f_code.co_name):
-        await bot.say(superOut)
-    else:
-        await bot.say(notallowed)
-    return
+    await bot.say(superOut)
 
 
 helpText['ccolour'] = \
@@ -216,52 +200,47 @@ Usage :: ccolour #FFFFFF
 @bot.command(pass_context=True,description='Changes the colour of the submitter to a hex code.',aliases=['ccolor'],help=helpText['ccolour'])
 async def ccolour(ctx):
     """Changes the users colour to the mentioned hex code."""
-    if isAllowed(ctx, sys._getframe().f_code.co_name):
-        flag = False
-        try:
-            hexc = ctx.message.content.split(' ')[1]
-        except IndexError:
-            await bot.say("Please provide a hex colour value.")
-            return
-
-        if hexc[0] == '#':
-            hexc = hexc[1:]
-        if len(hexc) != 6:
-            await bot.say("Please provide a **hex** colour value.")
-            return
-
-        try:
-            for role in ctx.message.server.roles:
-                if str(role.name) == str(ctx.message.author):
-                    await bot.edit_role(ctx.message.server, role, colour=discord.Colour(int(hexc, 16)))
-                    rrr = role
-                    print("Editing role :: %s" % str(role.name))
-                    flag = True
-            if flag == False:
-                print("Creating role :: %s" % str(ctx.message.author))
-                rrr = await bot.create_role(ctx.message.server, name=str(ctx.message.author), colour=discord.Colour(int(hexc, 16)))
-                for i in range(0,500,1):
-                    try:
-                        await bot.move_role(ctx.message.server, rrr, i)
-                        break
-                    except discord.errors.InvalidArgument:
-                        pass
-                    except discord.ext.commands.errors.CommandInvokeError:
-                        pass
-            print("Adding role to user.")
-            await bot.add_roles(ctx.message.author, rrr)
-            await bot.say("Changed user role colour.")
-        except discord.errors.Forbidden:
-            await bot.say("This bot does not have permissions to manage roles.")
+    flag = False
+    try:
+        hexc = ctx.message.content.split(' ')[1]
+    except IndexError:
+        await bot.say("Please provide a hex colour value.")
         return
-    else:
-        await bot.say(notallowed)
+
+    if hexc[0] == '#':
+        hexc = hexc[1:]
+    if len(hexc) != 6:
+        await bot.say("Please provide a **hex** colour value.")
+        return
+
+    try:
+        for role in ctx.message.server.roles:
+            if str(role.name) == str(ctx.message.author):
+                await bot.edit_role(ctx.message.server, role, colour=discord.Colour(int(hexc, 16)))
+                rrr = role
+                print("Editing role :: %s" % str(role.name))
+                flag = True
+        if flag == False:
+            print("Creating role :: %s" % str(ctx.message.author))
+            rrr = await bot.create_role(ctx.message.server, name=str(ctx.message.author), colour=discord.Colour(int(hexc, 16)))
+            for i in range(0,500,1):
+                try:
+                    await bot.move_role(ctx.message.server, rrr, i)
+                    break
+                except discord.errors.InvalidArgument:
+                    pass
+                except discord.ext.commands.errors.CommandInvokeError:
+                    pass
+        print("Adding role to user.")
+        await bot.add_roles(ctx.message.author, rrr)
+        await bot.say("Changed user role colour.")
+    except discord.errors.Forbidden:
+        await bot.say("This bot does not have permissions to manage roles.")
 
 
 @bot.command(pass_context=True,description='Restarts the bot.',hidden=True)
 async def restart(ctx):
     if ctx.message.author.id == '141231597155385344':
-
         with open(workingDirectory+'restartFile.txt','w') as a:
             a.write(str(ctx.message.channel.id))
         await bot.say("Restarting...")
@@ -287,6 +266,8 @@ async def on_member_join(member):
     server = member.server
     fmt = '**{0.mention}** hi welcome i love you.'
     i = giveAllowances(server)
+    if i['Channels']['Joins']['Channel'] != '':
+        server == i['Channels']['Joins']['Channel']
     if i['Channels']['Joins']['Enabled'] == 'True':
         if i['Channels']['Joins']['Channel'] == '':
             await bot.send_message(server, fmt.format(member))
@@ -300,6 +281,8 @@ async def on_member_ban(member):
     server = member.server
     fmt = '**{0.mention}** was banned!'
     i = giveAllowances(server)
+    if i['Channels']['Bans']['Channel'] != '':
+        server == i['Channels']['Bans']['Channel']
     if i['Channels']['Bans']['Enabled'] == 'True':
         if i['Channels']['Bans']['Channel'] == '':
             await bot.send_message(server, fmt.format(member))
@@ -313,6 +296,8 @@ async def on_member_remove(member):
     server = member.server
     fmt = '**{0.mention}** lol rip'
     i = giveAllowances(server)
+    if i['Channels']['Leaves']['Channel'] != '':
+        server == i['Channels']['Leaves']['Channel']
     if i['Channels']['Leaves']['Enabled'] == 'True':
         if i['Channels']['Leaves']['Channel'] == '':
             await bot.send_message(server, fmt.format(member))
