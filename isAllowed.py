@@ -117,7 +117,7 @@ def givePerms(ctx):
 ## the command call.
 def allowUse(ctx,listOfNeeds,needsAll=True):
     allowLst = []
-    permLst = ctx.message.channel.permissions_for(ctx.message.author)
+    permList = ctx.message.channel.permissions_for(ctx.message.author)
     convertDict = {
         'manage_messages':permList.manage_messages,
         'admin':permList.administrator,
