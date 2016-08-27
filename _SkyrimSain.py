@@ -1,23 +1,28 @@
+## Discordpy essentials
 import discord
 import asyncio
-import requests
-import os
-import random
-import json
-import datetime
-import praw
-import sys
-import xmltodict
 from discord.ext import commands
+## Exclusively for use with the restart command
+import os
+## Use of custom commands
+import json
+## Use of uptime and restart
+import datetime
+## Use of permissions within isAllowed
+import sys
+## Logging, obviously
 import logging
+## Use of client specific variables and functions
 from isAllowed import *
+## Converting album images into lists of regular images
 from imgurpython import ImgurClient
 
 
-
+## Set up the start time for the restart command
 startTime = datetime.datetime.now()
 
 
+## Start up some logging for debugging
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='%sbot.log' %workingDirectory, encoding='utf-8', mode='w')
@@ -25,37 +30,30 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 
+## Create the bot
 description = '''This is my bot I like to make it do things.'''
 bot = commands.Bot(command_prefix='.', description=description, pm_help=True)
 
 
-def randFromList(listThing):
-    return listThing[random.randint(0, len(listThing)-1)]
-
-
-def txtFileToList(nameOfFile):
-    nameOfFile = workingDirectory + nameOfFile + '.txt'
-    file = open(nameOfFile, 'r', encoding="utf-8")
-    fileContent = file.read()
-    file.close()
-    fileContent = fileContent.split("\n")
-    return fileContent
-
-
+## Create all of the tokens and keys
 discordToken = tokens['Skybot']
-
 mashapeKey = {"X-Mashape-Key":
               tokens['Mashape']}
 htmlHead = {'Accept-Endoding': 'identity'}
 BOT_CLIENT_ID = tokens['SkybotID']
 imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
+
+
+## Make the bot more unicode-friendly
 non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 
 
+## Because they're referenced so much, they're variables
 notallowed = "You are not allowed to use that command."
 waitmessage = "Please wait..."
 
 
+## This uses the imgur API to convert an album into a list of links
 def imgurAlbumToItems(albumLink):
     if type(albumLink) == str:
         imgObj = imgurUsr.get_album_images(albumLink)
@@ -72,10 +70,6 @@ def imgurAlbumToItems(albumLink):
     else:
         ret = albumLink.link
     return ret
-
-
-async def printToDiscord(channel, text):
-    return await bot.send_message(channel, text)
 
 
 helpText['echo'] = \
@@ -369,9 +363,6 @@ async def on_message(message):
 
             try:
                 await bot.send_message(message.channel, eval(customCommands[message.content.lower()]).translate(non_bmp_map) )
-                # toOutput = None
-                # exec(customCommands[message.content.lower()])
-                # await bot.send_message(message.channel, toOutput)
             except KeyError:
                 pass
         except KeyError:
