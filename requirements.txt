@@ -8,3 +8,5 @@ xmltodict
 pyowm
 googleserch
 esix
+strawpoll.py
+microsofttranslator
