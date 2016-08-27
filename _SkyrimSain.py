@@ -270,9 +270,22 @@ async def on_member_join(member):
 
 
 @bot.event
+async def on_member_ban(member):
+    server = member.server
+    fmt = '**{0.mention}** was banned!'
+    i = giveAllowances(server)
+    if i['Channels']['Bans']['Enabled'] == 'True':
+        if i['Channels']['Bans']['Channel'] == '':
+            await bot.send_message(server, fmt.format(member))
+        else:
+            server = i['Channels']['Bans']['Channel']
+            await bot.send_message(server, fmt.format(member))
+
+
+@bot.event
 async def on_member_remove(member):
     server = member.server
-    fmt = '**{0.name}** lol rip'
+    fmt = '**{0.mention}** lol rip'
     i = giveAllowances(server)
     if i['Channels']['Leaves']['Enabled'] == 'True':
         if i['Channels']['Leaves']['Channel'] == '':
@@ -301,7 +314,7 @@ async def on_ready():
     except FileNotFoundError:
         pass
 
-    startup_extensions = ['fun', 'search', 'permissions', 'counting','customcommands']
+    startup_extensions = ['fun', 'search', 'permissions', 'counting','customcommands','strawpolling']
     for extension in startup_extensions:
         try:
             bot.load_extension(extension)
@@ -339,8 +352,11 @@ async def on_message(message):
                 imLink = message.content.split('imgur.com/a/')[1][:5]
             elif 'imgur.com/gallery/' in message.content:
                 imLink = message.content.split('imgur.com/gallery/')[1][:5]
-            imLink = imgurAlbumToItems(imLink)
-            await bot.send_message(message.channel, '%s\n%s' %(message.author.mention, imLink))
+            try:
+                imLink = imgurAlbumToItems(imLink)
+                await bot.send_message(message.channel, '%s\n%s' %(message.author.mention, imLink))
+            except UnboundLocalError:
+                pass
 
     if continueWithComms:
         await bot.process_commands(message)
