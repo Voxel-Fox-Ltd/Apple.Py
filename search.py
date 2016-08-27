@@ -13,6 +13,7 @@ import steam
 import datetime
 import sys
 import random
+from microsofttranslator import *
 from isAllowed import *
 
 
@@ -21,6 +22,7 @@ wolfClient = wolframalpha.Client(tokens['Wolfram'])
 furryPorn = 'https://e621.net/post/index.json?'
 r_e = praw.Reddit(user_agent="A post searcher for a Discord user.")
 imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
+translator = Translator(tokens['MSTransID'], tokens['MSTransSecret'])
 
 
 notallowed = "You are not allowed to use that command."
@@ -109,6 +111,18 @@ class Search():
         v = v[:-1] + '```'
         print("    Done.")
         await self.bot.edit_message(edit, v)
+
+
+    @commands.command(pass_context=True)
+    async def trans(self, ctx):
+        toChange = ctx.message.content.split(' ',2)[2]
+        langTo = ctx.message.content.split(' ',2)[1]
+        if langTo not in translator.get_languages():
+            await self.bot.say("The language provided is not supported.")
+            return
+
+        translatedText = translator.translate(toChange, langTo)
+        await self.bot.say(translatedText)
         
 
     @commands.command(pass_context=True,description='Returns the result of a Google search.')
