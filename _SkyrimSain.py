@@ -78,7 +78,17 @@ async def printToDiscord(channel, text):
     return await bot.send_message(channel, text)
 
 
-@bot.command(pass_context=True,description='Echos what the user says.')
+helpText['echo'] = \
+"""The bot will echo back whatever the user says to.
+
+If a channel is mentioned inside of what the bot is told to echo, it will attempt to post the message there, instead of in the same channel that the command was called from. 
+If a channel mention is detected, the bot will cut off the first word of the echo string.
+This is to make it so you can have the first word as the place to be posted to, but keep in mind that *ALL* channel mentions are detected.
+
+Usage :: echo Hello World
+      :: echo #general Hello World
+      :: echo #general Check out #bot-testing"""
+@bot.command(pass_context=True,description='Echos what the user says.',help=helpText['echo'])
 async def echo(ctx):
     """Simply says back what the person says."""
     if isAllowed(ctx, sys._getframe().f_code.co_name):
@@ -95,7 +105,12 @@ async def echo(ctx):
         await bot.say(notallowed)
 
 
-@bot.command(pass_context=True,description='Gives you an invte link for the bot.')
+helpText['invite'] = \
+"""Calling this will make the bot print out the invite command, so you can add it to your own server.
+All of the permissions needed for the bot are included in the invite link.
+
+Usage :: invite"""
+@bot.command(pass_context=True,description='Gives you an invte link for the bot.',help=helpText['invite'])
 async def invite(ctx):
     """Gives the invite link for the bot."""
     if isAllowed(ctx, sys._getframe().f_code.co_name):
@@ -108,7 +123,13 @@ async def invite(ctx):
     return
 
 
-@bot.command(pass_context=True,description='Removes x amount of messages from chat.')
+helpText['purge'] = \
+"""This will remove the last x messages from the channel, with x being the number you input. 
+The number has no limit, so be careful with how much you delete.
+This command will only run if the user calling it has manage messages, or administrator.
+
+Usage :: purge 50"""
+@bot.command(pass_context=True,description='Removes x amount of messages from chat.',help=helpText['purge'])
 async def purge(ctx):
     """Purges x messages from the channel."""
     # if isAllowed(ctx, sys._getframe().f_code.co_name):
@@ -125,7 +146,14 @@ async def purge(ctx):
     return
 
 
-@bot.command(pass_context=True,description='Changes the nickname of the bot.')
+helpText['rename'] = \
+"""This will change the name of the bot to whatever is put after the command call.
+If no name is given, then the bot will remove any nickname that it has.
+This command will only run is the user calling it has manage nicknames, or administrator.
+
+Usage :: rename Apple.py
+      :: rename"""
+@bot.command(pass_context=True,description='Changes the nickname of the bot.',help=helpText['rename'])
 async def rename(ctx):
     """Renames the bot."""
     # if isAllowed(ctx, sys._getframe().f_code.co_name):
@@ -144,7 +172,12 @@ async def rename(ctx):
     return
 
 
-@bot.command(pass_context=True,description='Checks the uptime of the server.')
+helpText['uptime'] = \
+"""This will show the current uptime of the bot, along with some other stats about its running.
+'Uptime' references the time since the bot's last restart, so if the bot was recently restarted, despite no lapse in bot activity, the timer will count from its last time coming online.
+
+Usage :: uptime"""
+@bot.command(pass_context=True,description='Checks the uptime of the server.',help=helpText['uptime'])
 async def uptime(ctx):
     """Shows the uptime of the bot."""
     now = datetime.datetime.now()
@@ -178,7 +211,15 @@ Serving %s unique users```''' %(len(bot.servers),len(userCount))
     return
 
 
-@bot.command(pass_context=True,description='Changes the colour of the submitter to a hex code.')
+helpText['ccolour'] = \
+"""This will change the colour of the calling user.
+The colour changed to is given by the user in the form of a hex code, and is done via roles.
+In short, the bot checks if there is a role with the user's name and discriminator. If there is, the bot changes the colour of that role.
+If there isn't, the bot creates one, assigns it to the user, tries to move it as far up as it can, and changes its colour.
+
+Usage :: ccolour #FFFFFF
+      :: ccolor FFFFFF"""
+@bot.command(pass_context=True,description='Changes the colour of the submitter to a hex code.',aliases=['ccolor'],help=helpText['ccolour'])
 async def ccolour(ctx):
     """Changes the users colour to the mentioned hex code."""
     if isAllowed(ctx, sys._getframe().f_code.co_name):
@@ -221,15 +262,6 @@ async def ccolour(ctx):
         return
     else:
         await bot.say(notallowed)
-
-
-def execute(ctx, toEx):
-    ret = None 
-    print(toEx)
-    print(ret)
-    exec(toEx)
-    print(ret)
-    return ret
 
 
 @bot.command(pass_context=True,description='Restarts the bot.',hidden=True)
