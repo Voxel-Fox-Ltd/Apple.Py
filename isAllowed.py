@@ -122,7 +122,8 @@ def allowUse(ctx,listOfNeeds=['admin'],needsAll=True):
         'kick':permList.kick_members,
         'ban_members':permList.ban_members,
         'ban':permList.ban_members,
-        'manage_nicknames':permList.manage_nicknames
+        'manage_nicknames':permList.manage_nicknames,
+        'manage_channels':permList.manage_channels
     }
     for i in listOfNeeds:
         allowLst.append(convertDict[i])

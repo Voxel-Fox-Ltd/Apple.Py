@@ -21,7 +21,7 @@ def normalize(toNormal):
 
     return toNormal
 
-class Permissions():
+class Configuration():
     def __init__(self, bot):
         self.bot = bot
 
@@ -30,23 +30,9 @@ class Permissions():
     async def config(self, ctx):
         if allowUse(ctx) == False:
             await self.bot.say("You have to be an admin to use this command.")
+            return
         elif ctx.invoked_subcommand is None:
             await self.bot.say("Please use `config help` to see how to use this command properly.")
-
-
-    @config.command(name='byname',pass_context=True)
-    async def configSelf(self, ctx):
-        toConfig = ctx.message.content.split(' ',2)[2].split(' ')
-        i = giveAllowances(ctx)
-        if len(toConfig) == 4:
-            i[toConfig[0]][toConfig[1]][toConfig[2]] = toConfig[3]
-        elif len(toConfig) == 3:
-            i[toConfig[0]][toConfig[1]] = toConfig[2]
-        else:
-            await self.bot.say("Someone fucked up somewhere.")
-            return
-        writeAllow(ctx,i)
-        await self.bot.say("Configs updated.")
 
 
     @config.command(name='enable',pass_context=True)
@@ -97,5 +83,27 @@ class Permissions():
         await self.bot.say("Configs updated.")
 
 
+    @commands.group(pass_context=True)
+    async def channel(self, ctx):
+        if allowUse(ctx, ['manage_channels']) == False:
+            await self.bot.say("You have to be an admin to use this command.")
+            return
+        elif ctx.invoked_subcommand is None:
+            await self.bot.say("Please use `config help` to see how to use this command properly.")
+
+
+    @channel.command(name='create',aliases=['add','make'],pass_context=True)
+    async def channelCreate(self, ctx):
+        serverObj = ctx.message.server 
+        channelName = ctx.message.content.split(' ',2)[2]
+        try:
+            await self.bot.create_channel(serverObj, channelName)
+            await self.bot.say("Channel created.")
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+
+
+
 def setup(bot):
-    bot.add_cog(Permissions(bot))
+    bot.add_cog(Configuration(bot))
