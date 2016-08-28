@@ -80,9 +80,6 @@ class Search():
 
     @commands.command(pass_context=True,description='Compares the games that you and any number of given Steam users have.')
     async def sc(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         edit = await self.bot.say(waitmessage)
         print("Comparing Steam users.")
         users = ctx.message.content.split(' ',1)[1].split(" ")
@@ -127,9 +124,6 @@ class Search():
 
     @commands.command(pass_context=True,description='Returns the result of a Google search.')
     async def sg(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         edit = await self.bot.say(waitmessage)
         query = ctx.message.content.split(' ',1)[1]
         print("Searching Google :: %s" %query)
@@ -140,9 +134,6 @@ class Search():
 
     @commands.command(pass_context=True,description='Gives info on the mentioned user.')
     async def info(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         mea = ctx.message
         try:
             x = mea.mentions[0]
@@ -175,9 +166,6 @@ Username :: %s
 
     @commands.command(pass_context=True,description='Searches Wolfram Alpha.')
     async def w(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         edit = await self.bot.say(waitmessage)
         message = ctx.message
         print("Getting query to Wolfram :: %s" % message.content.split(' ',1)[1])
@@ -214,9 +202,6 @@ Username :: %s
 
     @commands.command(pass_context=True,description='Searches Wikipedia for a given string.')
     async def wp(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         edit = await self.bot.say(waitmessage)
         searchTerm = ctx.message.content.split(' ',1)[1]
         try:
@@ -235,9 +220,6 @@ Username :: %s
 
     @commands.command(pass_context=True,description='Searches a subreddit for a query.')
     async def sr(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         edit = await self.bot.say(waitmessage)
         mes = ctx.message.content
         sub = mes.split(" ")[1]
@@ -267,9 +249,6 @@ Username :: %s
 
     @commands.command(pass_context=True,description='Returns the result of a Imgur search.')
     async def si(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         edit = await self.bot.say(waitmessage)
         query = ctx.message.content.split(' ',1)[1]
         if query == '':
@@ -283,9 +262,6 @@ Username :: %s
 
     @commands.command(pass_context=True,description='Searches E621 for some furry shit.')
     async def furry(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         edit = await self.bot.say(waitmessage)
         try:
             query = ctx.message.content.split(' ',1)[1]

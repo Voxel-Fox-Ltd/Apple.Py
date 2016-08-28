@@ -16,9 +16,7 @@ class Permissions():
 
     @commands.group(pass_context=True)
     async def config(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
+        pass
 
     @config.group(name='commands',pass_context=True)
     async def configCommands(self, ctx):

@@ -38,9 +38,6 @@ class Fun():
 
     @commands.command(pass_context=True,description='Makes your string into a coolio thingmie.')
     async def aes(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         a = ctx.message.content[len(ctx.message.content.split(' ')[0])+1:].upper() ## knock off the ".as "
         for i in a:
             if i == '\n':
@@ -76,37 +73,29 @@ class Fun():
 
         await self.bot.say(acRet)
 
+
     @commands.command(pass_context=True,description='Gives you a random picture of a cat.')
     async def cat(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         edit = await self.bot.say(waitmessage)
         page = requests.get('http://thecatapi.com/api/images/get?format=src')
         print("Got a cat picture :: %s" % page.url)
         await self.bot.edit_message(edit, page.url) 
 
+
     @commands.command(pass_context=True,description='Prints out some Skyrim guard text.')
     async def guard(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         msg = randFromList(txtFileToList("skyrimText"))
         print("Spat out guard dialogue :: %s" % msg)
         await self.bot.say(msg)
 
+
     @commands.command(pass_context=True,description='Gives the lenny face.')
     async def lenny(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         await self.bot.say("( ͡° ͜ʖ ͡°)")
+
 
     @commands.command(pass_context=True,description='Gives you love, gives you life.')
     async def love(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         a = ctx.message.content[len(ctx.message.content.split(' ')[0])+1:]
         if a == "":
             p = "What do you love?"
@@ -119,9 +108,6 @@ class Fun():
 
     @commands.command(pass_context=True,aliases=['joke'],description='Gives a random pin from punoftheday.com.')
     async def pun(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         edit = await self.bot.say(waitmessage)
         page = requests.get('http://www.punoftheday.com/cgi-bin/randompun.pl',
                             headers=htmlHead)
@@ -129,11 +115,9 @@ class Fun():
         print("Said a pun :: %s" % out)
         await self.bot.edit_message(edit, out)
 
+
     @commands.command(pass_context=True,description='')
     async def weather(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         placeName = ctx.message.content[len(ctx.message.content.split(' ')[0])+1:]
         if placeName == '':
             await self.bot.say("Please provide a location to check the weather of.")
@@ -159,27 +143,20 @@ class Fun():
 
     @commands.command(pass_context=True,description='Gives the look of disapproval.')
     async def disapprove(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         await self.bot.say("ಠ_ಠ")
+
 
     @commands.command(pass_context=True,description='Lets you talk to Cleverbot.')
     async def c(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         query = ctx.message.content[len(ctx.message.content.split(' ')[0])+1:]
         edit = await self.bot.say(waitmessage)
         x = cb.ask(query)
         print("Taling to Cleverbot :: \n    %s\n    %s" % (query, x))
         await self.bot.edit_message(edit, x)
 
+
     @commands.command(pass_context=True,description='Evaluates the given codeset.')
     async def ev(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         toEx = ctx.message.content
         toEx = toEx[len(toEx.split(' ')[0])+1:]
         try:
@@ -189,11 +166,10 @@ class Fun():
 
         await self.bot.say(out)
 
+
     @commands.group(pass_context=True,description='Turns binary into ascii and vice versa')
     async def binary(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
+        pass
     
     @binary.command(pass_context=True,name='tobinary')
     async def toBinary(self, ctx):

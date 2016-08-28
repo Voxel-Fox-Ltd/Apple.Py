@@ -16,9 +16,6 @@ class Counting():
 
     @commands.command(pass_context=True)
     async def usrcount(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         toCount = ctx.message.content.split(' ',2)[2].lower()
         count = 0
         usersOnServer = 0
@@ -40,9 +37,6 @@ class Counting():
 
     @commands.command(pass_context=True)
     async def gamecount(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
         toCount = ctx.message.content.split(' ',2)[2].lower()
         count = 0
         usersOnServer = 0

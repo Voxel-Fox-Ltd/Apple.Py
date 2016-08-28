@@ -21,9 +21,7 @@ class CustomCommands():
 
     @commands.group(pass_context=True)
     async def cc(self, ctx):
-        if not isAllowed(ctx, sys._getframe().f_code.co_name):
-            await self.bot.say(notallowed)
-            return
+        pass
 
     @cc.command(name='add',pass_context=True,description='Adds a custom command to the server.')
     async def ccadd(self, ctx):
