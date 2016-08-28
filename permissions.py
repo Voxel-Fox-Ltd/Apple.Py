@@ -11,7 +11,7 @@ waitmessage = "Please wait..."
 
 
 def normalize(toNormal):
-    toNormal = toNormal.message.content.split(' ',3)[3].lower()
+    toNormal = toNormal.message.content.split(' ')[3].lower()
     if toNormal in ['bans','ban']: toNormal = 'Bans'
     elif toNormal in ['joins','enter','entry','join']: toNormal = 'Joins'
     elif toNormal in ['leaves','leave','disconnect']: toNormal = 'Leaves'
@@ -54,9 +54,10 @@ class Permissions():
             exc = '{}: {}'.format(type(e).__name__, e)
             await self.bot.say("Something went wrong :: {}".format(exc))
         currentAllow = giveAllowances(ctx)
-        currentAllow[toEnable] = 'True'
+        currentAllow[toEnable]['Enabled'] = 'True'
         writeAllow(ctx,currentAllow)
         await self.bot.say("Configs updated.")
+
 
     @config.command(name='disable',pass_context=True)
     async def configDisable(self, ctx):
@@ -66,10 +67,31 @@ class Permissions():
             exc = '{}: {}'.format(type(e).__name__, e)
             await self.bot.say("Something went wrong :: {}".format(exc))
         currentAllow = giveAllowances(ctx)
-        currentAllow['toEnable'] = 'False'
+        currentAllow[toEnable]['Enabled'] = 'False'
         writeAllow(ctx,currentAllow)
         await self.bot.say("Configs updated.")
 
+
+    @config.command(name='set',pass_context=True)
+    async def configSet(self, ctx):
+        try:
+            toEnable = normalize(ctx)
+            if toEnable == 'ImgurAlbum':
+                raise IOError("The input from the user was not found in the configuration JSON.")
+        except IOError as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+
+        try:
+            toSet = ctx.message.raw_channel_mentions[0]
+        except IndexError as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+
+        currentAllow = giveAllowances(ctx)
+        currentAllow[toEnable]['Channel'] = str(toSet)
+        writeAllow(ctx,currentAllow)
+        await self.bot.say("Configs updated.")
 
 
 def setup(bot):
