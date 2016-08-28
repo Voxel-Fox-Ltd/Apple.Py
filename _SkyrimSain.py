@@ -126,6 +126,15 @@ async def rename(ctx):
         await bot.say(notallowed)
 
 
+def is_bot(m):
+    return m.author == bot.user
+@bot.command(pass_context=True,description='Cleans the bot\'s messages from the channel.')
+async def clean(ctx):
+    """Deletes the bot's messages from the last 50 posted to the channel."""
+    q = await bot.purge_from(ctx.message.channel, limit=50, check=is_bot)
+    await bot.say("Cleaned up **{}** messages".format(len(q)))
+
+
 @bot.command(pass_context=True,description='Checks the uptime of the server.',help=helpText['uptime'])
 async def uptime(ctx):
     """Shows the uptime of the bot."""
