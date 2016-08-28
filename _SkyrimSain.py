@@ -224,14 +224,13 @@ async def on_member_join(member):
     server = member.server
     fmt = '**{0.mention}** hi welcome i love you.'
     i = giveAllowances(server)
-    if i['Channels']['Joins']['Channel'] != '':
-        server == i['Channels']['Joins']['Channel']
-    if i['Channels']['Joins']['Enabled'] == 'True':
-        if i['Channels']['Joins']['Channel'] == '':
+    if i['Joins']['Channel'] != '':
+        server = discord.Object(i['Joins']['Channel'])
+    if i['Joins']['Enabled'] == 'True':
+        try:
             await bot.send_message(server, fmt.format(member))
-        else:
-            server = i['Channels']['Joins']['Channel']
-            await bot.send_message(server, fmt.format(member))
+        except:
+            await bot.send_message(member.server, fmt.format(member))
 
 
 @bot.event
@@ -239,14 +238,13 @@ async def on_member_ban(member):
     server = member.server
     fmt = '**{0.mention}** was banned!'
     i = giveAllowances(server)
-    if i['Channels']['Bans']['Channel'] != '':
-        server == i['Channels']['Bans']['Channel']
-    if i['Channels']['Bans']['Enabled'] == 'True':
-        if i['Channels']['Bans']['Channel'] == '':
+    if i['Bans']['Channel'] != '':
+        server = discord.Object(i['Bans']['Channel'])
+    if i['Bans']['Enabled'] == 'True':
+        try:
             await bot.send_message(server, fmt.format(member))
-        else:
-            server = i['Channels']['Bans']['Channel']
-            await bot.send_message(server, fmt.format(member))
+        except:
+            await bot.send_message(member.server, fmt.format(member))
 
 
 @bot.event
@@ -254,14 +252,13 @@ async def on_member_remove(member):
     server = member.server
     fmt = '**{0.mention}** lol rip'
     i = giveAllowances(server)
-    if i['Channels']['Leaves']['Channel'] != '':
-        server == i['Channels']['Leaves']['Channel']
-    if i['Channels']['Leaves']['Enabled'] == 'True':
-        if i['Channels']['Leaves']['Channel'] == '':
+    if i['Leaves']['Channel'] != '':
+        server = discord.Object(i['Leaves']['Channel'])
+    if i['Leaves']['Enabled'] == 'True':
+        try:
             await bot.send_message(server, fmt.format(member))
-        else:
-            server = i['Channels']['Leaves']['Channel']
-            await bot.send_message(server, fmt.format(member))
+        except:
+            await bot.send_message(member.server, fmt.format(member))
 
 
 @bot.event

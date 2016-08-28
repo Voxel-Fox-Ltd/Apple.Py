@@ -11,7 +11,7 @@ waitmessage = "Please wait..."
 
 
 def normalize(toNormal):
-    toNormal = toNormal.message.content.split(' ')[3].lower()
+    toNormal = toNormal.message.content.split(' ')[2].lower()
     if toNormal in ['bans','ban']: toNormal = 'Bans'
     elif toNormal in ['joins','enter','entry','join']: toNormal = 'Joins'
     elif toNormal in ['leaves','leave','disconnect']: toNormal = 'Leaves'
