@@ -169,7 +169,8 @@ class Fun():
 
     @commands.group(pass_context=True,description='Turns binary into ascii and vice versa')
     async def binary(self, ctx):
-        pass
+        if ctx.invoked_subcommand is None:
+            await self.bot.say("Please use `help binary` to see how to use this command properly.")
     
     @binary.command(pass_context=True,name='tobinary')
     async def toBinary(self, ctx):

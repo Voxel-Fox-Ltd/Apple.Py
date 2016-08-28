@@ -28,7 +28,10 @@ class Permissions():
 
     @commands.group(pass_context=True)
     async def config(self, ctx):
-        pass
+        if allowUse(ctx) == False:
+            await self.bot.say("You have to be an admin to use this command.")
+        else ctx.invoked_subcommand is None:
+            await self.bot.say("Please use `config help` to see how to use this command properly.")
 
 
     @config.command(name='byname',pass_context=True)

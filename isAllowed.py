@@ -112,7 +112,7 @@ def givePerms(ctx):
 ## Input a ctx and a list of permissions that the user will need..
 ## This will return true if a user has a certain permission, as asked for by
 ## the command call.
-def allowUse(ctx,listOfNeeds,needsAll=True):
+def allowUse(ctx,listOfNeeds=['admin'],needsAll=True):
     allowLst = []
     permList = ctx.message.channel.permissions_for(ctx.message.author)
     convertDict = {
