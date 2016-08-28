@@ -37,6 +37,7 @@ class Configuration():
 
     @config.command(name='enable',pass_context=True)
     async def configEnable(self, ctx):
+        if allowUse(ctx) == False: return
         try:
             toEnable = normalize(ctx)
         except IOError as e:
@@ -50,6 +51,7 @@ class Configuration():
 
     @config.command(name='disable',pass_context=True)
     async def configDisable(self, ctx):
+        if allowUse(ctx) == False: return
         try:
             toEnable = normalize(ctx)
         except IOError as e:
@@ -63,6 +65,7 @@ class Configuration():
 
     @config.command(name='set',pass_context=True)
     async def configSet(self, ctx):
+        if allowUse(ctx) == False: return
         try:
             toEnable = normalize(ctx)
             if toEnable == 'ImgurAlbum':
@@ -85,15 +88,16 @@ class Configuration():
 
     @commands.group(pass_context=True)
     async def channel(self, ctx):
-        if allowUse(ctx, ['manage_channels']) == False:
+        if allowUse(ctx, ['manage_channels']) == False: 
             await self.bot.say("You have to be an admin to use this command.")
             return
         elif ctx.invoked_subcommand is None:
             await self.bot.say("Please use `config help` to see how to use this command properly.")
 
 
-    @channel.command(name='create',aliases=['add','make'],pass_context=True)
+    @channel.command(name='create',aliases=['add','make'],pass_context=True)    
     async def channelCreate(self, ctx):
+        if allowUse(ctx, ['manage_channels']) == False: return
         serverObj = ctx.message.server 
         channelName = ctx.message.content.split(' ',2)[2]
         try:
