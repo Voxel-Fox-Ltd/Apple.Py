@@ -10,29 +10,26 @@ with open('%sdiscordTokens.json' %workingDirectory) as data_file:
     tokens = json.load(data_file)
 
 
-## This may be empty here, but it's being used by every other
-## module as their help text location, for now.
-helpText = {}
+## Load up all the help text for every command.
+with open('%shelpText.json' %workingDirectory) as data_file:    
+    helpText = json.load(data_file)
 
 
 defSerCon = \
 {
-    "Commands":{},
-    "Channels":{
-        "Bans":{
-            "Enabled":"False",
-            "Channel":""
-        }, 
-        "RSS":{}, 
-        "Joins":{
-            "Enabled":"False",
-            "Channel":""
-        }, 
-        "Leaves":{
-            "Enabled":"False",
-            "Channel":""
-        }
+    "Bans":{
+        "Enabled":"False",
+        "Channel":""
     }, 
+    "RSS":{}, 
+    "Joins":{
+        "Enabled":"False",
+        "Channel":""
+    }, 
+    "Leaves":{
+        "Enabled":"False",
+        "Channel":""
+    },
     "CustomCommands":{},
     "ImgurAlbum" : {
         "Enabled" : "False"
