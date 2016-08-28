@@ -30,7 +30,7 @@ class Permissions():
     async def config(self, ctx):
         if allowUse(ctx) == False:
             await self.bot.say("You have to be an admin to use this command.")
-        else ctx.invoked_subcommand is None:
+        elif ctx.invoked_subcommand is None:
             await self.bot.say("Please use `config help` to see how to use this command properly.")
 
 

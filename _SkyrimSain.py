@@ -2,7 +2,7 @@
 import discord
 import asyncio
 from discord.ext import commands
-## Exclusively for use with the restart command
+## Use of file handling commands
 import os
 ## Use of custom commands
 import json
@@ -280,7 +280,10 @@ async def on_ready():
     except FileNotFoundError:
         pass
 
-    startup_extensions = ['fun', 'search', 'permissions', 'counting','customcommands','strawpolling']
+    startup_extensions = [] #['fun', 'search', 'permissions', 'counting','customcommands','strawpolling']
+    for i in os.listdir(os.path.dirname(os.path.realpath(__file__))):
+        if i.startswith('addon_'):
+            startup_extensions.append(i[:-3])
     for extension in startup_extensions:
         try:
             bot.load_extension(extension)
