@@ -10,17 +10,26 @@ notallowed = "You are not allowed to use that command."
 waitmessage = "Please wait..."
 
 
+def normalize(toNormal):
+    toNormal = toNormal.message.content.split(' ',3)[3].lower()
+    if toNormal in ['bans','ban']: toNormal = 'Bans'
+    elif toNormal in ['joins','enter','entry','join']: toNormal = 'Joins'
+    elif toNormal in ['leaves','leave','disconnect']: toNormal = 'Leaves'
+    elif toNormal in ['imgur','album','imgur album']: toNormal = 'ImgurAlbum'
+    else:
+        raise IOError("The input from the user was not found in the configuration JSON.")
+
+    return toNormal
+
 class Permissions():
     def __init__(self, bot):
         self.bot = bot
+
 
     @commands.group(pass_context=True)
     async def config(self, ctx):
         pass
 
-    @config.group(name='commands',pass_context=True)
-    async def configCommands(self, ctx):
-        pass
 
     @config.command(name='byname',pass_context=True)
     async def configSelf(self, ctx):
@@ -37,80 +46,31 @@ class Permissions():
         await self.bot.say("Configs updated.")
 
 
-    @configCommands.command(name='add',pass_context=True)
-    async def configCommandsAdd(self, ctx):
-        toWrite = None 
+    @config.command(name='enable',pass_context=True)
+    async def configEnable(self, ctx):
         try:
-            with open(serverConfigs+ctx.message.server.id+'.json') as a:
-                toWrite = json.load(a)
-        except FileNotFoundError:
-            with open(serverConfigs+ctx.message.server.id+'.json', 'w') as a:
-                toWrite = {"Commands":{},"Channels":{"Bans":""}}
-                a.write(json.dumps(toWrite,indent=4))
+            toEnable = normalize(ctx)
+        except IOError as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+        currentAllow = giveAllowances(ctx)
+        currentAllow[toEnable] = 'True'
+        writeAllow(ctx,currentAllow)
+        await self.bot.say("Configs updated.")
 
-        comToChange = ctx.message.content.split(' ')[3]
-
+    @config.command(name='disable',pass_context=True)
+    async def configDisable(self, ctx):
         try:
-            curAllowed = toWrite['Commands'][comToChange]['CanUse']
-        except KeyError:
-            curAllowed = []
-            try:
-                toWrite['Commands'][comToChange]['CanUse'] = []
-            except KeyError:
-                toWrite['Commands'][comToChange] = {'CanUse':[]}
+            toEnable = normalize(ctx)
+        except IOError as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+        currentAllow = giveAllowances(ctx)
+        currentAllow['toEnable'] = 'False'
+        writeAllow(ctx,currentAllow)
+        await self.bot.say("Configs updated.")
 
-        try:
-            for i in ctx.message.role_mentions:
-                curAllowed.append(i.id)
-        except:
-            for i in ctx.message.server.roles:
-                if i.name.lower() == ctx.message.content.split(' ',4)[4]:
-                    curAllowed.append(i.id)
-                    break
-        toWrite['Commands'][comToChange]['CanUse'] = curAllowed
 
-        with open(serverConfigs+ctx.message.server.id+'.json', 'w') as a:
-            a.write(json.dumps(toWrite,indent=4))
-
-        await self.bot.say("Roles added to approved userlist.")
-
-    @configCommands.command(name='remove',pass_context=True)
-    async def configCommandsRemove(self, ctx):
-        toWrite = None 
-        try:
-            with open(serverConfigs+ctx.message.server.id+'.json') as a:
-                toWrite = json.load(a)
-        except FileNotFoundError:
-            with open(serverConfigs+ctx.message.server.id+'.json', 'w') as a:
-                toWrite = {"Commands":{},"Channels":{"Bans":""}}
-                a.write(json.dumps(toWrite,indent=4))
-
-        comToChange = ctx.message.content.split(' ')[3]
-
-        try:
-            curAllowed = toWrite['Commands'][comToChange]['CanUse']
-        except KeyError:
-            curAllowed = []
-            try:
-                toWrite['Commands'][comToChange]['CanUse'] = []
-            except KeyError:
-                toWrite['Commands'][comToChange] = {'CanUse':[]}
-
-            with open(serverConfigs+ctx.message.server.id+'.json', 'w') as a:
-                a.write(json.dumps(toWrite,indent=4))
-
-            await self.bot.say("Roles removed from approved userlist.")
-            return
-
-        for i in ctx.message.role_mentions:
-            while i.id in curAllowed:
-                curAllowed.remove(i.id)
-        toWrite['Commands'][comToChange]['CanUse'] = curAllowed
-
-        with open(serverConfigs+ctx.message.server.id+'.json', 'w') as a:
-            a.write(json.dumps(toWrite,indent=4))
-
-        await self.bot.say("Roles removed from approved userlist.")
 
 def setup(bot):
     bot.add_cog(Permissions(bot))
