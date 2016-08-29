@@ -108,6 +108,25 @@ class Configuration():
             await self.bot.say("Something went wrong :: {}".format(exc))
 
 
+    @channel.command(name='delete',aliases=['del','remove','rem','rm'],pass_context=True)
+    async def channelDelete(self, ctx):
+        if allowUse(ctx, ['manage_channels']) == False: return
+        try:
+            toSet = ctx.message.raw_channel_mentions[0]
+        except IndexError as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+            return
+
+        try:
+            await self.bot.delete_channel(discord.Object(toSet))
+            await self.bot.say("Channel deleted.")
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+            return
+
+
     @commands.command(pass_context=True)
     async def pin(self, ctx):
         # if allowUse(ctx, ['manage_messages']) == False:
@@ -118,7 +137,9 @@ class Configuration():
                 message = i 
         else:
             message = self.bot.get_message(ctx.message.channel, ctx.message.content.split(' ')[1])
-            # await self.bot.say(type(message))
+            # message = discord.Object(ctx.message.content.split(' ')[1])
+            await self.bot.say(ctx.message.content.split(' ')[1])
+            await self.bot.say(type(message))
         try:
             await self.bot.pin_message(message)
         except discord.HTTPException as e:
