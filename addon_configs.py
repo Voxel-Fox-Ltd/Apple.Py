@@ -29,7 +29,7 @@ class Configuration():
     @commands.group(pass_context=True)
     async def config(self, ctx):
         if allowUse(ctx) == False:
-            await self.bot.say("You have to be an admin to use this command.")
+            await self.bot.say(notallowed)
             return
         elif ctx.invoked_subcommand is None:
             await self.bot.say("Please use `config help` to see how to use this command properly.")
@@ -89,7 +89,7 @@ class Configuration():
     @commands.group(pass_context=True)
     async def channel(self, ctx):
         if allowUse(ctx, ['manage_channels']) == False: 
-            await self.bot.say("You have to be an admin to use this command.")
+            await self.bot.say(notallowed)
             return
         elif ctx.invoked_subcommand is None:
             await self.bot.say("Please use `config help` to see how to use this command properly.")
@@ -103,6 +103,27 @@ class Configuration():
         try:
             await self.bot.create_channel(serverObj, channelName)
             await self.bot.say("Channel created.")
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+
+
+    @commands.command(pass_context=True)
+    async def pin(self, ctx):
+        # if allowUse(ctx, ['manage_messages']) == False:
+        #     await self.bot.say(notallowed)
+        #     return
+        if len(ctx.message.content.split(' ')) == 1:
+            async for i in self.bot.logs_from(ctx.message.channel, limit=2):
+                message = i 
+        else:
+            message = self.bot.get_message(ctx.message.channel, ctx.message.content.split(' ')[1])
+            # await self.bot.say(type(message))
+        try:
+            await self.bot.pin_message(message)
+        except discord.HTTPException as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}\nIt's likely that there are 50 pins in this channel already - that's the limit for Discord.".format(exc))
         except Exception as e:
             exc = '{}: {}'.format(type(e).__name__, e)
             await self.bot.say("Something went wrong :: {}".format(exc))
