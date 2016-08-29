@@ -127,7 +127,11 @@ async def rename(ctx):
 
 
 def is_bot(m):
-    return m.author == bot.user
+    if m.author == bot.user:
+        if m.content.startswith('Cleaned up'):
+            return False 
+        else:
+            return True
 @bot.command(pass_context=True,description='Cleans the bot\'s messages from the channel.')
 async def clean(ctx):
     """Deletes the bot's messages from the last 50 posted to the channel."""
