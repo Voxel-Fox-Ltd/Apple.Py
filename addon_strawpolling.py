@@ -19,9 +19,14 @@ class Strawpoll():
         self.bot = bot
 
 
-    @commands.group()
+    @commands.group(help=helpText['strawpoll'])
     async def strawpoll(self):
-        pass 
+        """Strawpoll parent command."""
+        if False:
+            await self.bot.say(notallowed)
+            return
+        elif ctx.invoked_subcommand is None:
+            await self.bot.say("Please use `strawpoll help` to see how to use this command properly.")
 
 
     @strawpoll.command(pass_context=True,aliases=['push','make'])
