@@ -211,7 +211,7 @@ async def ccolour(ctx):
 
 @bot.command(pass_context=True,description='Restarts the bot.',hidden=True)
 async def restart(ctx):
-    if ctx.message.author.id == '141231597155385344':
+    if allowUse(ctx,['is_caleb']):
         with open(workingDirectory+'restartFile.txt','w') as a:
             a.write(str(ctx.message.channel.id))
         await bot.say("Restarting...")
@@ -224,7 +224,7 @@ async def restart(ctx):
 
 @bot.command(pass_context=True,description='Kills the bot.',hidden=True)
 async def kill(ctx):
-    if ctx.message.author.id == '141231597155385344':
+    if allowUse(ctx,['is_caleb']):
         await bot.say("Killing.")
         sys.exit()
     else:
