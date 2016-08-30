@@ -1,13 +1,46 @@
 {
-    "echo" : "The bot will echo back whatever the user says to.\n\nIf a channel is mentioned inside of what the bot is told to echo, it will attempt to post the message there, instead of in the same channel that the command was called from. \nIf a channel mention is detected, the bot will cut off the first word of the echo string.\nThis is to make it so you can have the first word as the place to be posted to, but keep in mind that *ALL* channel mentions are detected.\n\nUsage :: echo Hello World\n      :: echo #general Hello World\n      :: echo #general Check out #bot-testing",
-    "invite" : "Calling this will make the bot print out the invite command, so you can add it to your own server.\nAll of the permissions needed for the bot are included in the invite link.\n\nUsage :: invite",
-    "purge" : "This will remove the last x messages from the channel, with x being the number you input. \nThe number has no limit, so be careful with how much you delete.\nThis command will only run if the user calling it has manage messages, or administrator.\n\nUsage :: purge 50",
-    "rename" : "This will change the name of the bot to whatever is put after the command call.\nIf no name is given, then the bot will remove any nickname that it has.\nThis command will only run is the user calling it has manage nicknames, or administrator.\n\nUsage :: rename Apple.py\n      :: rename",
-    "uptime" : "This will show the current uptime of the bot, along with some other stats about its running.\n'Uptime' references the time since the bot's last restart, so if the bot was recently restarted, despite no lapse in bot activity, the timer will count from its last time coming online.\n\nUsage :: uptime",
-    "ccolour" : "This will change the colour of the calling user.\nThe colour changed to is given by the user in the form of a hex code, and is done via roles.\nIn short, the bot checks if there is a role with the user's name and discriminator. If there is, the bot changes the colour of that role.\nIf there isn't, the bot creates one, assigns it to the user, tries to move it as far up as it can, and changes its colour.\n\nUsage :: ccolour #FFFFFF\n      :: ccolor FFFFFF",
-    "strawpoll" : "You can use this command to create and check Strawpoll posts.\n\nYou can create them by calling 'post', your title, and each option on a new line.\nUsage :: 'strawpoll post title\n          option1\n          option2'\n         'strawpoll post title\n          option1\n          option2\n          multi'",
-    "config" : "This is the parent command for config. It is compised of three parts: enable, disable, and set.\n\nTo work these things, you can enable and disable a join message, when people join; a leave message, when people leave; a ban message, when people are banned; and the conversion of an imgur album to a list of images.\n\nThe first three are settable, as to where the message is posted.\n\nUsage :: config enable joins\n         config disable leaves\n         config enable imgur\n         config set joins #general\n         config set leaves #general",
-    "channel" : "This is the command to add or remove a channel from the server.\n\nUsage :: channel create name\n         channel delete #name",
-    "pin" : "Pins the last said message to the channel.\nWARNING: will pin system messages, which aren't able to be unpinned.\n\nUsage :: pin",
-    "clean" : "Cleans the bots messages from the channel.\n\nUsage :: clean"
+    "echo" : [
+    	"Simply says back what the person says.",
+    	"The bot will echo back whatever the user says to.\n\nIf a channel is mentioned inside of what the bot is told to echo, it will attempt to post the message there, instead of in the same channel that the command was called from. \nIf a channel mention is detected, the bot will cut off the first word of the echo string.\nThis is to make it so you can have the first word as the place to be posted to, but keep in mind that *ALL* channel mentions are detected.\n\nUsage :: echo Hello World\n      :: echo #general Hello World\n      :: echo #general Check out #bot-testing"
+    ],
+    "invite" : [
+    	"Gives the invite link for the bot.",
+    	"Calling this will make the bot print out the invite command, so you can add it to your own server.\nAll of the permissions needed for the bot are included in the invite link.\n\nUsage :: invite"
+    ],
+    "purge" : [
+    	"Purges x messages from the channel.",
+    	"This will remove the last x messages from the channel, with x being the number you input. \nThe number has no limit, so be careful with how much you delete.\nThis command will only run if the user calling it has manage messages, or administrator.\n\nUsage :: purge 50"
+    ],
+    "rename" : [
+    	"Renames the bot.",
+    	"This will change the name of the bot to whatever is put after the command call.\nIf no name is given, then the bot will remove any nickname that it has.\nThis command will only run is the user calling it has manage nicknames, or administrator.\n\nUsage :: rename Apple.py\n      :: rename"
+    ],
+    "uptime" : [
+    	"Shows the uptime of the bot.",
+    	"This will show the current uptime of the bot, along with some other stats about its running.\n'Uptime' references the time since the bot's last restart, so if the bot was recently restarted, despite no lapse in bot activity, the timer will count from its last time coming online.\n\nUsage :: uptime"
+    ],
+    "ccolour" : [
+    	"Changes the users colour to the mentioned hex code.",
+    	"This will change the colour of the calling user.\nThe colour changed to is given by the user in the form of a hex code, and is done via roles.\nIn short, the bot checks if there is a role with the user's name and discriminator. If there is, the bot changes the colour of that role.\nIf there isn't, the bot creates one, assigns it to the user, tries to move it as far up as it can, and changes its colour.\n\nUsage :: ccolour #FFFFFF\n      :: ccolor FFFFFF"
+    ],
+    "strawpoll" : [
+    	"Strawpoll parent command.",
+    	"You can use this command to create and check Strawpoll posts.\n\nYou can create them by calling 'post', your title, and each option on a new line.\nUsage :: 'strawpoll post title\n          option1\n          option2'\n         'strawpoll post title\n          option1\n          option2\n          multi'"
+    ],
+    "config" : [
+    	"Simply says back what the person says.",
+    	"This is the parent command for config. It is compised of three parts: enable, disable, and set.\n\nTo work these things, you can enable and disable a join message, when people join; a leave message, when people leave; a ban message, when people are banned; and the conversion of an imgur album to a list of images.\n\nThe first three are settable, as to where the message is posted.\n\nUsage :: config enable joins\n         config disable leaves\n         config enable imgur\n         config set joins #general\n         config set leaves #general"
+    ],
+    "channel" : [
+    	"Parent command for channel.",
+    	"This is the command to add or remove a channel from the server.\n\nUsage :: channel create name\n         channel delete #name"
+    ],
+    "pin" : [
+    	"Pins the last message to the channel.",
+    	"Pins the last said message to the channel.\nWARNING: will pin system messages, which aren't able to be unpinned.\n\nUsage :: pin"
+    ],
+    "clean" : [
+    	"Deletes the bot's messages from the last 50 posted to the channel.",
+    	"Cleans the bots messages from the channel.\n\nUsage :: clean"
+    ]
 }

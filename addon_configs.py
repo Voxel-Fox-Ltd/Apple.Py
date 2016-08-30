@@ -26,7 +26,7 @@ class Configuration():
         self.bot = bot
 
 
-    @commands.group(pass_context=True,help=helpText['config'],brief='Simply says back what the person says.')
+    @commands.group(pass_context=True,help=helpText['config'][1],brief=helpText['config'][0])
     async def config(self, ctx):
         """Parent command for config."""
         if allowUse(ctx) == False:
@@ -87,7 +87,7 @@ class Configuration():
         await self.bot.say("Configs updated.")
 
 
-    @commands.group(pass_context=True,help=helpText['channel'],brief='Parent command for channel.')
+    @commands.group(pass_context=True,help=helpText['channel'][1],brief=helpText['channel'][0])
     async def channel(self, ctx):
         """Parent command for channel."""
         if allowUse(ctx, ['manage_channels']) == False: 
@@ -129,7 +129,7 @@ class Configuration():
             return
 
 
-    @commands.command(pass_context=True,help=helpText['pin'],brief='Pins the last message to the channel.')
+    @commands.command(pass_context=True,help=helpText['pin'][1],brief=helpText['pin'][0])
     async def pin(self, ctx):
         """Pins the last message to the channel."""
         if allowUse(ctx, ['manage_messages']) == False:

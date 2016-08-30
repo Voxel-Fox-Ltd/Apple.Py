@@ -72,7 +72,7 @@ def imgurAlbumToItems(albumLink):
     return ret
 
 
-@bot.command(pass_context=True,help=helpText['echo'],brief='Simply says back what the person says.')
+@bot.command(pass_context=True,help=helpText['echo'][1],brief=helpText['echo'][0])
 async def echo(ctx):
     """Simply says back what the person says."""
     print("Echoing :: %s" % ctx.message.content.split(' ',1)[1])
@@ -85,7 +85,7 @@ async def echo(ctx):
     await bot.send_message(chan, a)
 
 
-@bot.command(pass_context=True,help=helpText['invite'],brief='Gives the invite link for the bot.')
+@bot.command(pass_context=True,help=helpText['invite'][1],brief=helpText['invite'][0])
 async def invite(ctx):
     """Gives the invite link for the bot."""
     print("Told someone the invite link.")
@@ -94,7 +94,7 @@ async def invite(ctx):
     await bot.say(q)
 
 
-@bot.command(pass_context=True,help=helpText['purge'],brief='Purges x messages from the channel.')
+@bot.command(pass_context=True,help=helpText['purge'][1],brief=helpText['purge'][0])
 async def purge(ctx):
     """Purges x messages from the channel."""
     if allowUse(ctx,['manage_messages']):
@@ -109,7 +109,7 @@ async def purge(ctx):
         await bot.say(notallowed)
 
 
-@bot.command(pass_context=True,help=helpText['rename'],brief='Renames the bot.')
+@bot.command(pass_context=True,help=helpText['rename'][1],brief=helpText['rename'][0])
 async def rename(ctx):
     """Renames the bot."""
     if allowUse(ctx,['manage_nicknames']):
@@ -131,14 +131,14 @@ def is_bot(m):
             return False 
         else:
             return True
-@bot.command(pass_context=True,help=helpText['clean'],brief="Deletes the bot's messages from the last 50 posted to the channel.")
+@bot.command(pass_context=True,help=helpText['clean'][1],brief=helpText['clean'][0])
 async def clean(ctx):
     """Deletes the bot's messages from the last 50 posted to the channel."""
     q = await bot.purge_from(ctx.message.channel, limit=50, check=is_bot)
     await bot.say("Cleaned up **{}** messages".format(len(q)))
 
 
-@bot.command(pass_context=True,help=helpText['uptime'],brief='Shows the uptime of the bot.')
+@bot.command(pass_context=True,help=helpText['uptime'][1],brief=helpText['uptime'][0])
 async def uptime(ctx):
     """Shows the uptime of the bot."""
     now = datetime.datetime.now()
@@ -167,7 +167,7 @@ Serving %s unique users```''' %(len(bot.servers),len(userCount))
     await bot.say(superOut)
 
 
-@bot.command(pass_context=True,aliases=['ccolor'],help=helpText['ccolour'],brief='Changes the users colour to the mentioned hex code.')
+@bot.command(pass_context=True,aliases=['ccolor'],help=helpText['ccolour'][1],brief=helpText['ccolour'][0])
 async def ccolour(ctx):
     """Changes the users colour to the mentioned hex code."""
     flag = False

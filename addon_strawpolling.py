@@ -19,7 +19,7 @@ class Strawpoll():
         self.bot = bot
 
 
-    @commands.group(help=helpText['strawpoll'])
+    @commands.group(help=helpText['strawpoll'][1],brief=helpText['strawpoll'][0])
     async def strawpoll(self):
         """Strawpoll parent command."""
         if False:
