@@ -26,8 +26,9 @@ class Configuration():
         self.bot = bot
 
 
-    @commands.group(pass_context=True)
+    @commands.group(pass_context=True,help=helpText['config'])
     async def config(self, ctx):
+        """Parent command for config."""
         if allowUse(ctx) == False:
             await self.bot.say(notallowed)
             return
@@ -86,13 +87,14 @@ class Configuration():
         await self.bot.say("Configs updated.")
 
 
-    @commands.group(pass_context=True)
+    @commands.group(pass_context=True,help=helpText['channel'])
     async def channel(self, ctx):
+        """Parent command for channel."""
         if allowUse(ctx, ['manage_channels']) == False: 
             await self.bot.say(notallowed)
             return
         elif ctx.invoked_subcommand is None:
-            await self.bot.say("Please use `config help` to see how to use this command properly.")
+            await self.bot.say("Please use `channel help` to see how to use this command properly.")
 
 
     @channel.command(name='create',aliases=['add','make'],pass_context=True)    
@@ -129,9 +131,10 @@ class Configuration():
 
     @commands.command(pass_context=True)
     async def pin(self, ctx):
-        # if allowUse(ctx, ['manage_messages']) == False:
-        #     await self.bot.say(notallowed)
-        #     return
+        """Pins the last message to the channel."""
+        if allowUse(ctx, ['manage_messages']) == False:
+            await self.bot.say(notallowed)
+            return
         if len(ctx.message.content.split(' ')) == 1:
             async for i in self.bot.logs_from(ctx.message.channel, limit=2):
                 message = i 
