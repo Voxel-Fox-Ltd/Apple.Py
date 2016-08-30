@@ -72,7 +72,7 @@ def imgurAlbumToItems(albumLink):
     return ret
 
 
-@bot.command(pass_context=True,description='Echos what the user says.',help=helpText['echo'])
+@bot.command(pass_context=True,help=helpText['echo'])
 async def echo(ctx):
     """Simply says back what the person says."""
     print("Echoing :: %s" % ctx.message.content.split(' ',1)[1])
@@ -85,7 +85,7 @@ async def echo(ctx):
     await bot.send_message(chan, a)
 
 
-@bot.command(pass_context=True,description='Gives you an invte link for the bot.',help=helpText['invite'])
+@bot.command(pass_context=True,help=helpText['invite'])
 async def invite(ctx):
     """Gives the invite link for the bot."""
     print("Told someone the invite link.")
@@ -94,10 +94,9 @@ async def invite(ctx):
     await bot.say(q)
 
 
-@bot.command(pass_context=True,description='Removes x amount of messages from chat.',help=helpText['purge'])
+@bot.command(pass_context=True,help=helpText['purge'])
 async def purge(ctx):
     """Purges x messages from the channel."""
-    # if givePerms(ctx).manage_messages or givePerms(ctx).administrator:
     if allowUse(ctx,['manage_messages']):
         try:
             a = int(ctx.message.content.split(" ")[1])
@@ -110,7 +109,7 @@ async def purge(ctx):
         await bot.say(notallowed)
 
 
-@bot.command(pass_context=True,description='Changes the nickname of the bot.',help=helpText['rename'])
+@bot.command(pass_context=True,help=helpText['rename'])
 async def rename(ctx):
     """Renames the bot."""
     if allowUse(ctx,['manage_nicknames']):
@@ -132,14 +131,14 @@ def is_bot(m):
             return False 
         else:
             return True
-@bot.command(pass_context=True,description='Cleans the bot\'s messages from the channel.')
+@bot.command(pass_context=True)
 async def clean(ctx):
     """Deletes the bot's messages from the last 50 posted to the channel."""
     q = await bot.purge_from(ctx.message.channel, limit=50, check=is_bot)
     await bot.say("Cleaned up **{}** messages".format(len(q)))
 
 
-@bot.command(pass_context=True,description='Checks the uptime of the server.',help=helpText['uptime'])
+@bot.command(pass_context=True,help=helpText['uptime'])
 async def uptime(ctx):
     """Shows the uptime of the bot."""
     now = datetime.datetime.now()
@@ -168,7 +167,7 @@ Serving %s unique users```''' %(len(bot.servers),len(userCount))
     await bot.say(superOut)
 
 
-@bot.command(pass_context=True,description='Changes the colour of the submitter to a hex code.',aliases=['ccolor'],help=helpText['ccolour'])
+@bot.command(pass_context=True,aliases=['ccolor'],help=helpText['ccolour'])
 async def ccolour(ctx):
     """Changes the users colour to the mentioned hex code."""
     flag = False
@@ -209,7 +208,7 @@ async def ccolour(ctx):
         await bot.say("This bot does not have permissions to manage roles.")
 
 
-@bot.command(pass_context=True,description='Restarts the bot.',hidden=True)
+@bot.command(pass_context=True,hidden=True)
 async def restart(ctx):
     if allowUse(ctx,['is_caleb']):
         with open(workingDirectory+'restartFile.txt','w') as a:
@@ -222,7 +221,7 @@ async def restart(ctx):
     return
 
 
-@bot.command(pass_context=True,description='Kills the bot.',hidden=True)
+@bot.command(pass_context=True,hidden=True)
 async def kill(ctx):
     if allowUse(ctx,['is_caleb']):
         await bot.say("Killing.")
