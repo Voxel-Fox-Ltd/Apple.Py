@@ -214,7 +214,27 @@ class Fun():
         returnString = "https://mcapi.ca/skin/2d/%s/85/false" %character
         await self.bot.say(returnString)
 
-            
+    @commands.command(pass_context=True)
+    async def meme(self, ctx):
+        spl = ctx.message.content.split('\n')
+
+        url = spl[0].split(' ',1)[1]
+        try: topText = spl[1].replace(' ','-').replace('?','~q')
+        except IndexError: topText = ''
+        try: botText = spl[2].replace(' ','-').replace('?','~q')
+        except IndexError: botText = ''
+
+        cont = False
+        for i in ['.png','.jpg','.jpeg']:
+            if url.endswith(i): cont = True 
+        if not cont:
+            await self.bot.say("The URL provided for the meme was not retrieved successfully.")
+            return 
+
+        await self.bot.say("http://memegen.link/custom/{}/{}.jpg?alt={}".format(
+            topText,
+            botText,
+            url))
 
 
 def setup(bot):
