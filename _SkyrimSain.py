@@ -101,7 +101,7 @@ async def invite(ctx):
 async def insult():
     e = await bot.say("Please wait...")
     page = requests.get('http://www.insultgenerator.org/')
-    con = page.content 
+    con = page.content
     insult = con[431:-742]
     await bot.edit_message(e, str(insult)[2:-1])
 
@@ -157,7 +157,7 @@ async def rename(ctx):
 def is_bot(m):
     if m.author == bot.user:
         if m.content.startswith('Cleaned up'):
-            return False 
+            return False
         else:
             return True
 @bot.command(pass_context=True,help=helpText['clean'][1],brief=helpText['clean'][0])
@@ -342,7 +342,7 @@ async def on_message(message):
     if message.author.id != bot.user.id:
 
         try:
-            with open(serverConfigs+message.server.id+'.json','r',encoding='utf-8') as data_file:    
+            with open(serverConfigs+message.server.id+'.json','r',encoding='utf-8') as data_file:
                 customCommands = json.load(data_file)['CustomCommands']
 
             try:
