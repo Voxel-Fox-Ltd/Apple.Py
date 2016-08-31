@@ -230,7 +230,7 @@ class Fun():
 
         cont = False
         for i in ['.png','.jpg','.jpeg']:
-            if url.endswith(i): cont = True 
+            if url.lower().endswith(i): cont = True 
         if not cont:
             await self.bot.say("The URL provided for the meme was not retrieved successfully.")
             return 
