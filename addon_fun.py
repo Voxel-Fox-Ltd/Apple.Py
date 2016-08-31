@@ -231,6 +231,7 @@ class Fun():
             await self.bot.say("The URL provided for the meme was not retrieved successfully.")
             return 
 
+        await self.bot.delete_message(ctx.message)
         await self.bot.say("http://memegen.link/custom/{}/{}.jpg?alt={}".format(
             topText,
             botText,
