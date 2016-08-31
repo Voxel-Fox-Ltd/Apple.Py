@@ -16,7 +16,14 @@ class Counting():
 
     @commands.command(pass_context=True)
     async def usrcount(self, ctx):
-        toCount = ctx.message.content.split(' ',2)[2].lower()
+        try:
+            toCount = ctx.message.content.split(' ',1)[1].lower()
+        except IndexError:
+            count = 0
+            for i in ctx.message.server.members:
+                count += 1
+            await self.bot.say("There are **{}** users on this server.".format(count))
+            return
         count = 0
         usersOnServer = 0
         for i in ctx.message.server.members:
@@ -32,12 +39,12 @@ class Counting():
                 break
             if dp >=10:
                 break
-        await self.bot.say("There are **%s** users with '%s' in their display name on this server. That makes up %s percent of users on the server." %(str(count),toCount, percentUsers) )
+        await self.bot.say("There are **%s** users with '%s' in their display name on this server. That makes up **%s** percent of users on the server." %(str(count),toCount, percentUsers) )
 
 
     @commands.command(pass_context=True)
     async def gamecount(self, ctx):
-        toCount = ctx.message.content.split(' ',2)[2].lower()
+        toCount = ctx.message.content.split(' ',1)[1].lower()
         count = 0
         usersOnServer = 0
         for i in ctx.message.server.members:
