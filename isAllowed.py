@@ -129,7 +129,7 @@ def allowUse(ctx,listOfNeeds=['admin'],needsAll=True):
     for i in listOfNeeds:
         allowLst.append(convertDict[i])
 
-    if convertDict['admin'] and ctx.message.content.startswith('.kill')==False:
+    if convertDict['admin'] and ctx.message.content.startswith('.kill')==False and ctx.message.content.startswith('.restart')==False:
         return True 
     if needsAll:
         if False in allowLst:
