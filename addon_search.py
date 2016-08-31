@@ -260,7 +260,7 @@ Username :: %s
             await self.bot.edit_message(edit, '**%s**\n%s' %(i.title, imgurAlbumToItems(i)))
             return 
 
-    @commands.command(pass_context=True,description='Searches E621 for some furry shit.')
+    @commands.command(pass_context=True,description='Searches E621 for some furry shit.',enabled=False)
     async def furry(self, ctx):
         edit = await self.bot.say(waitmessage)
         try:
