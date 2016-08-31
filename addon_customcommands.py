@@ -39,6 +39,7 @@ class CustomCommands():
             commThread = toWrite['CustomCommands']
             if len(commThread) >= 20:
                 await self.bot.say("Hey, you already have 20 commands. You don't need any more  <3")
+                return
         except KeyError:
             commThread = toWrite['CustomCommands'] = {}
 
