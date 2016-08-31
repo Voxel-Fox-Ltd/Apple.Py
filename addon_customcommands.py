@@ -37,6 +37,8 @@ class CustomCommands():
 
         try:
             commThread = toWrite['CustomCommands']
+            if len(commThread) >= 20:
+                await self.bot.say("Hey, you already have 20 commands. You don't need any more  <3")
         except KeyError:
             commThread = toWrite['CustomCommands'] = {}
 
@@ -110,7 +112,7 @@ class CustomCommands():
         for i in comms:
             x = x + '* ' + i + '\n'
 
-        await self.bot.say("These are the commands for this server:\n```%s```" %x)
+        await self.bot.send_message(ctx.message.author, "These are the commands for that server:\n```%s```" %x)
 
 def setup(bot):
     bot.add_cog(CustomCommands(bot))
