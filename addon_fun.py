@@ -8,6 +8,7 @@ import random
 from pyowm import OWM
 import sys
 from isAllowed import *
+# from urllib.request import urlretrieve
 
 cb = Cleverbot()
 mashapeKey = {"X-Mashape-Key":
@@ -236,6 +237,13 @@ class Fun():
             return 
 
         await self.bot.delete_message(ctx.message)
+        # await self.bot.say(ctx.message.author.mention)
+        # await self.bot.send_file(ctx.message.channel,
+        #     requests.get("http://memegen.link/custom/{}/{}.jpg?alt={}".format(
+        #     topText,
+        #     botText,
+        #     url)).content
+        # )
         await self.bot.say("{} http://memegen.link/custom/{}/{}.jpg?alt={}".format(
             ctx.message.author.mention,
             topText,
