@@ -17,6 +17,9 @@ from isAllowed import *
 ## Converting album images into lists of regular images
 from imgurpython import ImgurClient
 
+import requests
+import random
+
 
 ## Set up the start time for the restart command
 startTime = datetime.datetime.now()
@@ -92,6 +95,15 @@ async def invite(ctx):
     q = "https://discordapp.com/oauth2/authorize?scope=bot&client_id=%s&permissions=0x1c016c10" \
            % BOT_CLIENT_ID
     await bot.say(q)
+
+
+@bot.command()
+async def insult():
+    e = await bot.say("Please wait...")
+    page = requests.get('http://www.insultgenerator.org/')
+    con = page.content 
+    insult = con[431:-742]
+    await bot.edit_message(e, str(insult)[2:-1])
 
 
 @bot.command(pass_context=True,help=helpText['purge'][1],brief=helpText['purge'][0])
