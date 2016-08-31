@@ -106,6 +106,12 @@ async def insult():
     await bot.edit_message(e, str(insult)[2:-1])
 
 
+@bot.command()
+async def git():
+    """Plonks the link to my Github in chat."""
+    await bot.say("Feel free to fork me!\n<https://github.com/4Kaylum/SkyBot>")
+
+
 @bot.command(pass_context=True,help=helpText['purge'][1],brief=helpText['purge'][0])
 async def purge(ctx):
     """Purges x messages from the channel."""
@@ -125,14 +131,25 @@ async def purge(ctx):
 async def rename(ctx):
     """Renames the bot."""
     if allowUse(ctx,['manage_nicknames']):
-        ser = ctx.message.server.get_member_named(bot.user.name)
         try:
-            await bot.change_nickname(ser, ctx.message.content.split(' ',1)[1])
-            x = "Changed name to '%s'." % ctx.message.content.split(' ',1)[1]
+            ser = ctx.message.mentions[0]
+            z = ctx.message.content.split(' ')
+            del z[0]
+            del z[-1]
+            toRn = ' '.join(z)
         except IndexError:
-            await bot.change_nickname(ser, '')
-            x = "Removed nickname."
-        await bot.say(x)
+            ser = ctx.message.server.get_member_named(bot.user.name)
+            toRn = ctx.message.content.split(' ',1)[1]
+        try:
+            try:
+                await bot.change_nickname(ser, toRn)
+                x = "Changed nickname to '%s'." % toRn
+            except IndexError:
+                await bot.change_nickname(ser, '')
+                x = "Removed nickname."
+            await bot.say(x)
+        except discord.errors.Forbidden:
+            await bot.say("The bot is not allowed to change nickname [of that user].")
     else:
         await bot.say(notallowed)
 
@@ -217,7 +234,7 @@ async def ccolour(ctx):
         await bot.add_roles(ctx.message.author, rrr)
         await bot.say("Changed user role colour.")
     except discord.errors.Forbidden:
-        await bot.say("This bot does not have permissions to manage roles.")
+        await bot.say("This bot does not have permissions to manage roles [for that user].")
 
 
 @bot.command(pass_context=True,hidden=True)
