@@ -218,11 +218,15 @@ class Fun():
     async def meme(self, ctx):
         spl = ctx.message.content.split('\n')
 
-        url = spl[0].split(' ',1)[1]
-        try: topText = spl[1].replace(' ','-').replace('?','~q')
-        except IndexError: topText = ''
-        try: botText = spl[2].replace(' ','-').replace('?','~q')
-        except IndexError: botText = ''
+        url = spl[0].split(' ',1)[1].replace(' ','')
+        try: topText = spl[1].replace('-','--').replace('_','__').replace(' ','-').replace('?','~q')
+        except IndexError: 
+            await self.bot.say("You can't leave the top or bottom blank.")
+            return
+        try: botText = spl[2].replace('-','--').replace('_','__').replace(' ','-').replace('?','~q')
+        except IndexError: 
+            await self.bot.say("You can't leave the top or bottom blank.")
+            return
 
         cont = False
         for i in ['.png','.jpg','.jpeg']:
@@ -232,7 +236,8 @@ class Fun():
             return 
 
         await self.bot.delete_message(ctx.message)
-        await self.bot.say("http://memegen.link/custom/{}/{}.jpg?alt={}".format(
+        await self.bot.say("{} http://memegen.link/custom/{}/{}.jpg?alt={}".format(
+            ctx.message.author.mention,
             topText,
             botText,
             url))
