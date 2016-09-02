@@ -124,6 +124,7 @@ def allowUse(ctx,listOfNeeds=['admin'],needsAll=True):
         'ban':permList.ban_members,
         'manage_nicknames':permList.manage_nicknames,
         'manage_channels':permList.manage_channels,
+        'manage_roles':permList.manage_roles,
         'is_caleb':ctx.message.author.id=='141231597155385344'
     }
     for i in listOfNeeds:

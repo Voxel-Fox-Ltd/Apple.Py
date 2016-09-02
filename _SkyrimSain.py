@@ -167,6 +167,20 @@ async def clean(ctx):
     await bot.say("Cleaned up **{}** messages".format(len(q)))
 
 
+@bot.command(pass_context=True,hidden=True)
+async def av(ctx):
+    if allowUse(ctx,['is_caleb']):
+        try:
+            a = requests.get(ctx.message.content.split(' ',1)[1]).content
+            await bot.edit_profile(avatar=a)
+            await bot.say("Changed profile image.")
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+    else:
+        await bot.say(notallowed)
+
+
 @bot.command(pass_context=True,help=helpText['uptime'][1],brief=helpText['uptime'][0])
 async def uptime(ctx):
     """Shows the uptime of the bot."""
@@ -199,42 +213,50 @@ Serving %s unique users```''' %(len(bot.servers),len(userCount))
 @bot.command(pass_context=True,aliases=['ccolor'],help=helpText['ccolour'][1],brief=helpText['ccolour'][0])
 async def ccolour(ctx):
     """Changes the users colour to the mentioned hex code."""
-    flag = False
-    try:
-        hexc = ctx.message.content.split(' ')[1]
-    except IndexError:
-        await bot.say("Please provide a hex colour value.")
-        return
+    if allowUse(ctx, ['manage_roles']):
+        flag = False
+        try:
+            hexc = ctx.message.content.split(' ')[1]
+        except IndexError:
+            await bot.say("Please provide a hex colour value.")
+            return
 
-    if hexc[0] == '#':
-        hexc = hexc[1:]
-    if len(hexc) != 6:
-        await bot.say("Please provide a **hex** colour value.")
-        return
+        if hexc[0] == '#':
+            hexc = hexc[1:]
+        if len(hexc) != 6:
+            await bot.say("Please provide a **hex** colour value.")
+            return
 
-    try:
-        for role in ctx.message.server.roles:
-            if str(role.name) == str(ctx.message.author):
-                await bot.edit_role(ctx.message.server, role, colour=discord.Colour(int(hexc, 16)))
-                rrr = role
-                print("Editing role :: %s" % str(role.name))
-                flag = True
-        if flag == False:
-            print("Creating role :: %s" % str(ctx.message.author))
-            rrr = await bot.create_role(ctx.message.server, name=str(ctx.message.author), colour=discord.Colour(int(hexc, 16)))
-            for i in range(0,500,1):
-                try:
-                    await bot.move_role(ctx.message.server, rrr, i)
-                    break
-                except discord.errors.InvalidArgument:
-                    pass
-                except discord.ext.commands.errors.CommandInvokeError:
-                    pass
-        print("Adding role to user.")
-        await bot.add_roles(ctx.message.author, rrr)
-        await bot.say("Changed user role colour.")
-    except discord.errors.Forbidden:
-        await bot.say("This bot does not have permissions to manage roles [for that user].")
+        try:
+            usrQ = ctx.message.mentions[0]
+        except IndexError:
+            usrQ = ctx.message.author
+
+        try:
+            for role in ctx.message.server.roles:
+                if str(role.name) == str(usrQ):
+                    await bot.edit_role(ctx.message.server, role, colour=discord.Colour(int(hexc, 16)))
+                    rrr = role
+                    print("Editing role :: %s" % str(role.name))
+                    flag = True
+            if flag == False:
+                print("Creating role :: %s" % str(usrQ))
+                rrr = await bot.create_role(ctx.message.server, name=str(usrQ), colour=discord.Colour(int(hexc, 16)))
+                for i in range(0,500,1):
+                    try:
+                        await bot.move_role(ctx.message.server, rrr, i)
+                        break
+                    except discord.errors.InvalidArgument:
+                        pass
+                    except discord.ext.commands.errors.CommandInvokeError:
+                        pass
+            print("Adding role to user.")
+            await bot.add_roles(usrQ, rrr)
+            await bot.say("Changed user role colour.")
+        except discord.errors.Forbidden:
+            await bot.say("This bot does not have permissions to manage roles [for that user].")
+    else:
+        await bot.say(notallowed)
 
 
 @bot.command(pass_context=True,hidden=True)
