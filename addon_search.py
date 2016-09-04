@@ -56,6 +56,7 @@ def steamUserComparison(listOfUserGames):
         a -= 1
     return t
 
+
 def imgurAlbumToItems(albumLink):
     if type(albumLink) == str:
         imgObj = imgurUsr.get_album_images(albumLink)
@@ -75,14 +76,15 @@ def imgurAlbumToItems(albumLink):
 
 
 class Search():
+
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True,description='Compares the games that you and any number of given Steam users have.')
+    @commands.command(pass_context=True, description='Compares the games that you and any number of given Steam users have.')
     async def sc(self, ctx):
         edit = await self.bot.say(waitmessage)
         print("Comparing Steam users.")
-        users = ctx.message.content.split(' ',1)[1].split(" ")
+        users = ctx.message.content.split(' ', 1)[1].split(" ")
         users2 = []
         for i in users:
             aye = i.split("/")
@@ -109,30 +111,27 @@ class Search():
         print("    Done.")
         await self.bot.edit_message(edit, v)
 
-
     @commands.command(pass_context=True)
     async def trans(self, ctx):
-        toChange = ctx.message.content.split(' ',2)[2]
-        langTo = ctx.message.content.split(' ',2)[1]
+        toChange = ctx.message.content.split(' ', 2)[2]
+        langTo = ctx.message.content.split(' ', 2)[1]
         if langTo not in translator.get_languages():
             await self.bot.say("The language provided is not supported.")
             return
 
         translatedText = translator.translate(toChange, langTo)
         await self.bot.say(translatedText)
-        
 
-    @commands.command(pass_context=True,description='Returns the result of a Google search.')
+    @commands.command(pass_context=True, description='Returns the result of a Google search.', enabled=False)
     async def sg(self, ctx):
         edit = await self.bot.say(waitmessage)
-        query = ctx.message.content.split(' ',1)[1]
-        print("Searching Google :: %s" %query)
+        query = ctx.message.content.split(' ', 1)[1]
+        print("Searching Google :: %s" % query)
         for i in search(query):
             await self.bot.edit_message(edit, i)
             return
-                
 
-    @commands.command(pass_context=True,description='Gives info on the mentioned user.')
+    @commands.command(pass_context=True, description='Gives info on the mentioned user.')
     async def info(self, ctx):
         mea = ctx.message
         try:
@@ -146,7 +145,7 @@ class Search():
             age = str(datetime.datetime.now() - x.joined_at).split(",")[0]
             roles = ""
             for i in x.roles:
-                roles += str(i)+', '  # str(x.roles)
+                roles += str(i) + ', '  # str(x.roles)
             z = """%s
 ```
 Username :: %s
@@ -160,16 +159,17 @@ Username :: %s
         except IndexError:
             z = "You need to mention a user in your message."
 
-        print("Giving info on user :: %s" %mea.content.split(' ',1)[1])
+        print("Giving info on user :: %s" % mea.content.split(' ', 1)[1])
         await self.bot.say(z)
-        return 
+        return
 
-    @commands.command(pass_context=True,description='Searches Wolfram Alpha.')
+    @commands.command(pass_context=True, description='Searches Wolfram Alpha.')
     async def w(self, ctx):
         edit = await self.bot.say(waitmessage)
         message = ctx.message
-        print("Getting query to Wolfram :: %s" % message.content.split(' ',1)[1])
-        res = wolfClient.query(message.content.split(' ',1)[1])
+        print("Getting query to Wolfram :: %s" %
+              message.content.split(' ', 1)[1])
+        res = wolfClient.query(message.content.split(' ', 1)[1])
         print("    Sent and recieved.")
         # try:
         a = "```\n"
@@ -188,7 +188,7 @@ Username :: %s
             if i == "\n":
                 i = '\n        '
             print(i, end="")
-        
+
         q = 0
         z = ''
         for pod in res.pods:
@@ -198,48 +198,48 @@ Username :: %s
             # if q == 4: break
 
         await self.bot.edit_message(edit, z)
-        return 
+        return
 
-    @commands.command(pass_context=True,description='Searches Wikipedia for a given string.')
+    @commands.command(pass_context=True, description='Searches Wikipedia for a given string.')
     async def wp(self, ctx):
         edit = await self.bot.say(waitmessage)
-        searchTerm = ctx.message.content.split(' ',1)[1]
+        searchTerm = ctx.message.content.split(' ', 1)[1]
         try:
             page = wikipedia.page(searchTerm)
-            await bot.edit_message(edit, "**%s**\n```%s```\n'%s'" %(page.title, wikipedia.summary(searchTerm,sentences=10), page.url))
+            await bot.edit_message(edit, "**%s**\n```%s```\n'%s'" % (page.title, wikipedia.summary(searchTerm, sentences=10), page.url))
         except wikipedia.exceptions.DisambiguationError:
             page = wikipedia.search(searchTerm)
             toPost = ''
             for i in page:
-                toPost = toPost + '* %s\n' %i
-            toPost = '```%s```' %toPost[:-1]
-            await self.bot.edit_message(edit, "Please specify ::\n%s" %toPost)
+                toPost = toPost + '* %s\n' % i
+            toPost = '```%s```' % toPost[:-1]
+            await self.bot.edit_message(edit, "Please specify ::\n%s" % toPost)
         except Exception as e:
             await self.bot.edit_message(exit, "Unknown error. Please alert {}.\n\n```\n{}```".format(discord.Object("141231597155385344").mention, str(repr(e))))
         return
 
-    @commands.command(pass_context=True,description='Searches a subreddit for a query.')
+    @commands.command(pass_context=True, description='Searches a subreddit for a query.')
     async def sr(self, ctx):
         edit = await self.bot.say(waitmessage)
         mes = ctx.message.content
         sub = mes.split(" ")[1]
         try:
-            que = mes.split(' ',2)[2]
+            que = mes.split(' ', 2)[2]
         except IndexError:
             await self.bot.edit_message(edit, "Please provide a subreddit/query.")
             return
 
         try:
-            search = r_e.search(que,subreddit=r_e.get_subreddit(sub))
+            search = r_e.search(que, subreddit=r_e.get_subreddit(sub))
             ret = []
             for i in search:
                 ret.append(i)
                 break
             ret = ret[0]
-            rUrl = ret.url 
+            rUrl = ret.url
             if 'imgur' in rUrl.lower():
                 rUrl = imgurAlbumToItems(rUrl)
-            await self.bot.edit_message(edit, '**%s**\n%s' %(ret.title,rUrl))
+            await self.bot.edit_message(edit, '**%s**\n%s' % (ret.title, rUrl))
 
         except praw.errors.InvalidSubreddit:
             await bot.edit_message(edit, "That subreddit does not exist.")
@@ -247,26 +247,26 @@ Username :: %s
             await self.bot.edit_message(edit, "There are no results for this search term.")
         return
 
-    @commands.command(pass_context=True,description='Returns the result of a Imgur search.')
+    @commands.command(pass_context=True, description='Returns the result of a Imgur search.')
     async def si(self, ctx):
         edit = await self.bot.say(waitmessage)
-        query = ctx.message.content.split(' ',1)[1]
+        query = ctx.message.content.split(' ', 1)[1]
         if query == '':
             await self.bot.edit_message(edit, "Please provide a search term.")
             return
 
-        print("Searching Imgur :: %s" %query)
+        print("Searching Imgur :: %s" % query)
         for i in imgurUsr.gallery_search(query, sort='viral'):
-            await self.bot.edit_message(edit, '**%s**\n%s' %(i.title, imgurAlbumToItems(i)))
-            return 
+            await self.bot.edit_message(edit, '**%s**\n%s' % (i.title, imgurAlbumToItems(i)))
+            return
 
-    @commands.command(pass_context=True,description='Searches E621 for some furry shit.',enabled=False)
+    @commands.command(pass_context=True, description='Searches E621 for some furry shit.', enabled=False)
     async def furry(self, ctx):
         edit = await self.bot.say(waitmessage)
         try:
-            query = ctx.message.content.split(' ',1)[1]
+            query = ctx.message.content.split(' ', 1)[1]
         except IndexError:
-            with open(workingDirectory+"furrySearches.txt") as a:
+            with open(workingDirectory + "furrySearches.txt") as a:
                 query = random.choice(a.read().split('\n'))
         query += ' -type:swf -type:webm'
         print("Submitting query to E621 :: %s" % query)
@@ -279,7 +279,8 @@ Username :: %s
             z = "Couldn't find anything for that query."
 
         await self.bot.edit_message(edit, z)
-        return 
+        return
+
 
 def setup(bot):
     bot.add_cog(Search(bot))
