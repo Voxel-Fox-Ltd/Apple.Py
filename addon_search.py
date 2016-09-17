@@ -122,7 +122,7 @@ class Search():
         translatedText = translator.translate(toChange, langTo)
         await self.bot.say(translatedText)
 
-    @commands.command(pass_context=True, description='Returns the result of a Google search.', enabled=False)
+    @commands.command(pass_context=True, description='Returns the result of a Google search.', enabled=True)
     async def sg(self, ctx):
         edit = await self.bot.say(waitmessage)
         query = ctx.message.content.split(' ', 1)[1]
