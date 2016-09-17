@@ -334,7 +334,7 @@ async def on_ready():
     print("Logged in as:")
     print("    " + str(bot.user.name))
     print("    " + str(bot.user.id))
-    gameThingy = ".help [ApplePy v0.3]"
+    gameThingy = ".help [ApplePy v0.5]"
     await bot.change_status(discord.Game(name=gameThingy))
     print("Game changed to '%s'." % gameThingy)
     print("----------")
@@ -362,6 +362,9 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
+
+    if message.author.bot:
+        return
 
     continueWithComms = True
     aq = giveAllowances(message.server.id)
