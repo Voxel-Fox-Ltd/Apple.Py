@@ -8,7 +8,6 @@ import random
 from pyowm import OWM
 import sys
 from isAllowed import *
-import complements
 # from urllib.request import urlretrieve
 
 cb = Cleverbot()
@@ -101,9 +100,12 @@ class Fun():
         await self.bot.say(msg)
 
 
-    @commands.command(pass_context=True, description='Prints out some Skyrim guard text.')
-    async def complement(self, ctx):
-        msg = randFromList(complements.q)
+    @commands.command(pass_context=True,aliases=['complement','complements','compliments'], description='Prints out some Skyrim guard text.')
+    async def compliment(self, ctx):
+        with open(workingDirectory+"complements.txt") as a:
+            es = a.read()
+        es = es.split('\n')
+        msg = randFromList(es)
         print("Spat out complement :: %s" % msg)
         await self.bot.say(msg)
 
