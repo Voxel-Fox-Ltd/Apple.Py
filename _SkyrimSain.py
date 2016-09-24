@@ -275,7 +275,7 @@ async def restart(ctx):
 
         os.execl(sys.executable, *([sys.executable] + sys.argv))
     else:
-        await bot.say('You have to be the bot\'s creator to use this command.')
+        await bot.say(notallowed)
     return
 
 
@@ -285,8 +285,34 @@ async def kill(ctx):
         await bot.say("Killing.")
         sys.exit()
     else:
-        await bot.say('You have to be the bot\'s creator to use this command.')
+        await bot.say(notallowed)
     return
+
+
+@commands.command(aliases = ["rldext"])
+async def reloadextension(self, *, ext : str = None):
+    """Reload bot extension"""
+    if allowUse(ctx, ['is_caleb']):
+        if (ext == None):
+            await bot.say("Please choose an extension, currently available to be reloaded are:\n```" + "\n".join(bot.cogs) + "```")
+            return
+        
+        await bot.say("Reloading extension...")
+        
+        try:
+            bot.unload_extension(ext)
+        except:
+            pass
+
+        try:
+            bot.load_extension(ext)
+        except:
+            await bot.say("That extention does not exist.")
+            return
+        
+        await bot.say("Done!")
+    else:
+        await bot.say(notallowed)
 
 
 @bot.event
