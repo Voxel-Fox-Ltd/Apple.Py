@@ -47,6 +47,30 @@ class Admin():
         await self.bot.kick(ctx.message.mentions[0])
 
 
+    @commands.command(aliases = ["rldext"])
+    async def reloadextension(self, *, ext : str = None):
+        """Reload bot extension"""
+        
+        if (ext == None):
+            await self.bot.say("Please choose an extension, currently available to be reloaded are:\n```" + "\n".join(self.bot.cogs) + "```")
+            return
+        
+        await self.bot.say("Reloading extension...")
+        
+        try:
+            self.bot.unload_extension(ext)
+        except:
+            pass
+
+        try:
+            self.bot.load_extension(ext)
+        except:
+            await self.bot.say("That extention does not exist.")
+            return
+        
+        await self.bot.say("Done!")
+
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
