@@ -120,6 +120,9 @@ async def purge(ctx):
     if allowUse(ctx, ['manage_messages']):
         try:
             a = int(ctx.message.content.split(" ")[1])
+            if a > 200:
+                await bot.say("No, fuck you.")
+                return
         except ValueError:
             await bot.say("Please provide a value.")
             return
@@ -245,7 +248,7 @@ async def ccolour(ctx):
                     flag = True
             if flag == False:
                 print("Creating role :: %s" % str(usrQ))
-                rrr = await bot.create_role(ctx.message.server, name=str(usrQ), colour=discord.Colour(int(hexc, 16)))
+                rrr = await bot.create_role(ctx.message.server, name=str(usrQ), colour=discord.Colour(int(hexc, 16)), permissions=discord.Permissions(permissions=0))
                 for i in range(0, 500, 1):
                     try:
                         await bot.move_role(ctx.message.server, rrr, i)
