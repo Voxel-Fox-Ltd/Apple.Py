@@ -289,16 +289,16 @@ async def kill(ctx):
     return
 
 
-@commands.command(aliases = ["rldext"])
-async def reloadextension(self, *, ext : str = None):
+@commands.command(aliases=["rldext"])
+async def reloadextension(self, *, ext: str=None):
     """Reload bot extension"""
     if allowUse(ctx, ['is_caleb']):
         if (ext == None):
             await bot.say("Please choose an extension, currently available to be reloaded are:\n```" + "\n".join(bot.cogs) + "```")
             return
-        
+
         await bot.say("Reloading extension...")
-        
+
         try:
             bot.unload_extension(ext)
         except:
@@ -309,7 +309,7 @@ async def reloadextension(self, *, ext : str = None):
         except:
             await bot.say("That extention does not exist.")
             return
-        
+
         await bot.say("Done!")
     else:
         await bot.say(notallowed)

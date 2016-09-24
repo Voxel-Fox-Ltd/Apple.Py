@@ -32,7 +32,6 @@ class Admin():
             await self.bot.send_message(server, "**{}** has been banned.".format(ctx.message.mentions[0]))
         await self.bot.ban(ctx.message.mentions[0])
 
-
     @commands.group(pass_context=True)
     async def kick(self, ctx):
         """Ban command."""
