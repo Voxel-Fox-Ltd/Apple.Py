@@ -109,6 +109,9 @@ class Search():
             v += "* %s\n" % i
         v = v[:-1] + '```'
         print("    Done.")
+        if len(v) > 2000:
+            await self.bot.edit_message(edit, "This message would be over 2000 characters.")
+            return
         await self.bot.edit_message(edit, v)
 
     @commands.command(pass_context=True)
