@@ -9,6 +9,7 @@ from pyowm import OWM
 import sys
 from isAllowed import *
 import re
+import humanize
 # from urllib.request import urlretrieve
 
 cb = Cleverbot()
@@ -18,6 +19,7 @@ htmlHead = {'Accept-Endoding': 'identity'}
 owm = OWM(tokens['OwmKey'])
 owm = OWM(API_key=tokens['OwmKey'], version='2.5')
 owm_en = OWM()
+non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 
 notallowed = "You are not allowed to use that command."
 waitmessage = "Please wait..."
@@ -185,7 +187,7 @@ class Fun():
         edit = await self.bot.say(waitmessage)
         x = cb.ask(query)
         print("Taling to Cleverbot :: \n    %s\n    %s" % (query, x))
-        await self.bot.edit_message(edit, x)
+        await self.bot.edit_message(edit, x.translate(non_bmp_map))
 
     @commands.command(pass_context=True, description='Evaluates the given codeset.')
     async def ev(self, ctx):
@@ -236,7 +238,7 @@ class Fun():
     @commands.command(pass_context=True)
     async def mc(self, ctx):
         try:
-            character = ctx.message.content.split(' ', 1)[1]
+            character = ctx.message.content.split(' ', 1)[1].replace(' ','_')
         except IndexError:
             await self.bot.say("Please provide a Minecraft username.")
             return
@@ -299,6 +301,8 @@ class Fun():
                 o = ":regional_indicator_{}: ".format(o)
             if o == ' ':
                 o = " ▫ "
+            if o in '01236456789':
+                o = ':' + humanize.apnumber(int(o)) + ': '
             qw = qw + o
         await self.bot.say(qw)
 
