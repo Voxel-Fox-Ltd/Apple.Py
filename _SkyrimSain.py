@@ -266,7 +266,7 @@ async def ccolour(ctx):
         await bot.say(notallowed)
 
 
-@bot.command(pass_context=True, hidden=True)
+@bot.command(pass_context=True, hidden=True, aliases=['rs'])
 async def restart(ctx):
     if allowUse(ctx, ['is_caleb']):
         with open(workingDirectory + 'restartFile.txt', 'w') as a:
@@ -280,6 +280,19 @@ async def restart(ctx):
 
 
 @bot.command(pass_context=True, hidden=True)
+async def ping(ctx):
+    channelName = ctx.message.content.split(' ',1)[1]
+    channel = discord.utils.get(ctx.message.server.channels, name=channelName, type=discord.ChannelType.voice)
+    if channel == None:
+        await bot.say("I could not find a VC under that name.")
+        return
+    x = []
+    for i in channel.voice_members:
+        x.append(i.mention)
+    await bot.say(' '.join(x))
+
+
+@bot.command(pass_context=True, hidden=True, aliases=['k'])
 async def kill(ctx):
     if allowUse(ctx, ['is_caleb']):
         await bot.say("Killing.")
