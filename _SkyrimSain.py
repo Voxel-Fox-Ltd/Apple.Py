@@ -290,6 +290,12 @@ async def kill(ctx):
 
 
 @bot.command(pass_context=True, hidden=True)
+async def time(ctx):
+    time = str(datetime.datetime.now()).split(' ',1)[1][:-7]
+    await bot.say('The current time, in GMT, is `{}`'.format(time))
+
+
+@bot.command(pass_context=True, hidden=True)
 async def ex(ctx):
     if allowUse(ctx, ['is_caleb']):
         exec(ctx.message.content.split(' ',1)[1])
