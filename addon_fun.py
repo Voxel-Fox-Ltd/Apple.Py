@@ -8,6 +8,7 @@ import random
 from pyowm import OWM
 import sys
 from isAllowed import *
+import re
 # from urllib.request import urlretrieve
 
 cb = Cleverbot()
@@ -180,8 +181,7 @@ class Fun():
 
     @commands.command(pass_context=True, description='Lets you talk to Cleverbot.')
     async def c(self, ctx):
-        query = ctx.message.content[
-            len(ctx.message.content.split(' ')[0]) + 1:]
+        query = ctx.message.content.split(' ',1)[1]
         edit = await self.bot.say(waitmessage)
         x = cb.ask(query)
         print("Taling to Cleverbot :: \n    %s\n    %s" % (query, x))
@@ -286,6 +286,21 @@ class Fun():
             topText,
             botText,
             url))
+
+    @commands.command(pass_context=True)
+    async def big(self, ctx):
+        toReplace = ctx.message.content.split(' ',1)[1].lower()
+        # qw = toReplace.replace(" ", )
+        qw = ''
+        # for i in 'abcdefghijklmnopqrstuvwxyz':
+        #     qw = qw.replace(i, ":regional_indicator_{}: ".format(i))
+        for o in toReplace:
+            if o in 'abcdefghijklmnopqrstuvwxyz':
+                o = ":regional_indicator_{}: ".format(o)
+            if o == ' ':
+                o = " ▫ "
+            qw = qw + o
+        await self.bot.say(qw)
 
 
 def setup(bot):
