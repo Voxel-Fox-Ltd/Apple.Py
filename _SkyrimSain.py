@@ -37,7 +37,7 @@ logger.addHandler(handler)
 
 # Create the bot
 description = '''This is my bot I like to make it do things.'''
-bot = commands.Bot(command_prefix='.', description=description, pm_help=True)
+bot = commands.Bot(command_prefix=['.','<@199136310416375808> '], description=description, pm_help=True)
 
 
 # Create all of the tokens and keys
@@ -289,7 +289,16 @@ async def kill(ctx):
     return
 
 
-@commands.command(aliases=["rldext"])
+@bot.command(pass_context=True, hidden=True)
+async def ex(ctx):
+    if allowUse(ctx, ['is_caleb']):
+        exec(ctx.message.content.split(' ',1)[1])
+    else:
+        await bot.say(notallowed)
+    return
+
+
+@bot.command(aliases=["rldext"])
 async def reloadextension(self, *, ext: str=None):
     """Reload bot extension"""
     if allowUse(ctx, ['is_caleb']):
@@ -394,6 +403,9 @@ async def on_message(message):
 
     if message.author.bot:
         return
+
+    # if message.content.lower() == "momma":
+    #     await bot.delete_message(message)
 
     continueWithComms = True
     aq = giveAllowances(message.server.id)
