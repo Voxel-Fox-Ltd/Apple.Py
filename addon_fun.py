@@ -193,6 +193,9 @@ class Fun():
     async def ev(self, ctx):
         toEx = ctx.message.content
         toEx = toEx[len(toEx.split(' ')[0]) + 1:]
+        if 'sys' in toEx.lower() and 'exit' in toEx.lower():
+            await self.bot.say("Nice try, asshole.")
+            return
         try:
             out = eval(toEx)
         except Exception as e:
