@@ -1,6 +1,7 @@
 import os
 import json
 import discord
+import datetime
 
 
 notallowed = "You are not allowed to use that command."
@@ -13,6 +14,10 @@ serverConfigs = os.path.dirname(os.path.realpath(__file__)) + \
     "\\botTxtFiles\\serverConfigs\\"
 with open('%sdiscordTokens.json' % workingDirectory) as data_file:
     tokens = json.load(data_file)
+
+
+# Set up the start time for the restart command
+startTime = datetime.datetime.now()
 
 
 # Load up all the help text for every command.
