@@ -164,20 +164,6 @@ async def clean(ctx):
     await bot.say("Cleaned up **{}** messages".format(len(q)))
 
 
-@bot.command(pass_context=True, hidden=True)
-async def av(ctx):
-    if allowUse(ctx, ['is_caleb']):
-        try:
-            a = requests.get(ctx.message.content.split(' ', 1)[1]).content
-            await bot.edit_profile(avatar=a)
-            await bot.say("Changed profile image.")
-        except Exception as e:
-            exc = '{}: {}'.format(type(e).__name__, e)
-            await self.bot.say("Something went wrong :: {}".format(exc))
-    else:
-        await bot.say(notallowed)
-
-
 @bot.command(pass_context=True, help=helpText['uptime'][1], brief=helpText['uptime'][0])
 async def uptime(ctx):
     """Shows the uptime of the bot."""
@@ -256,19 +242,6 @@ async def ccolour(ctx):
         await bot.say(notallowed)
 
 
-@bot.command(pass_context=True, hidden=True, aliases=['rs'])
-async def restart(ctx):
-    if allowUse(ctx, ['is_caleb']):
-        with open(workingDirectory + 'restartFile.txt', 'w') as a:
-            a.write(str(ctx.message.channel.id))
-        await bot.say("Restarting...")
-
-        os.execl(sys.executable, *([sys.executable] + sys.argv))
-    else:
-        await bot.say(notallowed)
-    return
-
-
 @bot.command(pass_context=True)
 async def ping(ctx):
     channelName = ctx.message.content.split(' ',1)[1]
@@ -282,55 +255,10 @@ async def ping(ctx):
     await bot.say(' '.join(x))
 
 
-@bot.command(pass_context=True, hidden=True, aliases=['k'])
-async def kill(ctx):
-    if allowUse(ctx, ['is_caleb']):
-        await bot.say("Killing.")
-        sys.exit()
-    else:
-        await bot.say(notallowed)
-    return
-
-
 @bot.command(pass_context=True)
 async def time(ctx):
     time = str(datetime.datetime.now()).split(' ',1)[1][:-7]
     await bot.say('The current time, in GMT, is `{}`'.format(time))
-
-
-@bot.command(pass_context=True, hidden=True)
-async def ex(ctx):
-    if allowUse(ctx, ['is_caleb']):
-        exec(ctx.message.content.split(' ',1)[1])
-    else:
-        await bot.say(notallowed)
-    return
-
-
-@bot.command(aliases=["rldext"],pass_context=True)
-async def reloadextension(ctx, *, ext: str=None):
-    """Reload bot extension"""
-    if allowUse(ctx, ['is_caleb']):
-        if (ext == None):
-            await bot.say("Please choose an extension, currently available to be reloaded are:\n```" + "\n".join(bot.cogs) + "```")
-            return
-
-        await bot.say("Reloading extension...")
-
-        try:
-            bot.unload_extension(ext)
-        except:
-            pass
-
-        try:
-            bot.load_extension(ext)
-        except:
-            await bot.say("That extention does not exist.")
-            return
-
-        await bot.say("Done!")
-    else:
-        await bot.say(notallowed)
 
 
 @bot.event
