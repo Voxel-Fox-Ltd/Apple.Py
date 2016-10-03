@@ -3,67 +3,69 @@ import json
 import discord
 
 workingDirectory = os.path.dirname(os.path.realpath(__file__)) + \
-                   "\\botTxtFiles\\"
+    "\\botTxtFiles\\"
 serverConfigs = os.path.dirname(os.path.realpath(__file__)) + \
-                "\\botTxtFiles\\serverConfigs\\"
-with open('%sdiscordTokens.json' %workingDirectory) as data_file:    
+    "\\botTxtFiles\\serverConfigs\\"
+with open('%sdiscordTokens.json' % workingDirectory) as data_file:
     tokens = json.load(data_file)
 
 
-## Load up all the help text for every command.
-with open('%shelpText.json' %workingDirectory) as data_file:    
+# Load up all the help text for every command.
+with open('%shelpText.json' % workingDirectory) as data_file:
     helpText = json.load(data_file)
 
 
 defSerCon = \
-{
-    "Bans":{
-        "Enabled":"False",
-        "Channel":""
-    }, 
-    "RSS":{}, 
-    "Joins":{
-        "Enabled":"False",
-        "Channel":""
-    }, 
-    "Leaves":{
-        "Enabled":"False",
-        "Channel":""
-    },
-    "CustomCommands":{},
-    "ImgurAlbum" : {
-        "Enabled" : "False"
+    {
+        "Bans": {
+            "Enabled": "False",
+            "Channel": ""
+        },
+        "RSS": {},
+        "Joins": {
+            "Enabled": "False",
+            "Channel": "",
+            "Text" : "{mention} hi welcome i love you"
+        },
+        "Leaves": {
+            "Enabled": "False",
+            "Channel": "",
+            "Text" : "{mention} lol rip"
+        },
+        "CustomCommands": {},
+        "ImgurAlbum": {
+            "Enabled": "False"
+        }
     }
-}
 
 
-## Checks some config files to see if certain commands are available for use.
-## I've never actually used this properly so I'll phase it out for native permission
-## checking inside of discord.
+# Checks some config files to see if certain commands are available for use.
+# I've never actually used this properly so I'll phase it out for native permission
+# checking inside of discord.
 def isAllowed(ctx, calledFunction):
-    serverConStuff = None 
+    serverConStuff = None
     try:
-        with open(serverConfigs+ctx.message.server.id+'.json') as a:
+        with open(serverConfigs + ctx.message.server.id + '.json') as a:
             serverConStuff = json.load(a)
     except FileNotFoundError:
-        with open(serverConfigs+ctx.message.server.id+'.json', 'w') as a:
+        with open(serverConfigs + ctx.message.server.id + '.json', 'w') as a:
             serverConStuff = defSerCon
-            a.write(json.dumps(serverConStuff,indent=4))
+            a.write(json.dumps(serverConStuff, indent=4))
         return True
 
     try:
         q = serverConStuff["Commands"][calledFunction]
     except KeyError:
-        with open(serverConfigs+ctx.message.server.id+'.json', 'w') as a:
+        with open(serverConfigs + ctx.message.server.id + '.json', 'w') as a:
             serverConStuff["Commands"][calledFunction] = []
-            a.write(json.dumps(serverConStuff,indent=4))
+            a.write(json.dumps(serverConStuff, indent=4))
         return True
 
     if q == []:
         return True
 
     chekRol = [i.id for i in ctx.message.author.roles]
-    
+
     for i in q:
         if i in chekRol:
             return True
@@ -78,19 +80,19 @@ def giveAllowances(ctx):
             serId = ctx.message.server.id
         except AttributeError:
             serId = ctx.id
-    serverConStuff = None 
+    serverConStuff = None
     try:
-        with open(serverConfigs+serId+'.json') as a:
+        with open(serverConfigs + serId + '.json') as a:
             serverConStuff = json.load(a)
     except FileNotFoundError:
-        with open(serverConfigs+serId+'.json', 'w') as a:
+        with open(serverConfigs + serId + '.json', 'w') as a:
             serverConStuff = defSerCon
-            a.write(json.dumps(serverConStuff,indent=4))
+            a.write(json.dumps(serverConStuff, indent=4))
     return serverConStuff
 
 
-## Meant for use with the config commands, soon to be removed
-## Writes the configuration changes to file.
+# Meant for use with the config commands, soon to be removed
+# Writes the configuration changes to file.
 def writeAllow(ctx, jsonToWrite):
     if type(ctx) == str:
         serId = ctx
@@ -99,39 +101,42 @@ def writeAllow(ctx, jsonToWrite):
             serId = ctx.message.server.id
         except AttributeError:
             serId = ctx.id
-            
-    with open(serverConfigs+serId+'.json','w') as a:
-        a.write(json.dumps(jsonToWrite,indent=4))
+
+    with open(serverConfigs + serId + '.json', 'w') as a:
+        a.write(json.dumps(jsonToWrite, indent=4))
 
 
-## Returns the permissions of a given user.
+# Returns the permissions of a given user.
 def givePerms(ctx):
     return ctx.message.channel.permissions_for(ctx.message.author)
 
 
-## Input a ctx and a list of permissions that the user will need..
-## This will return true if a user has a certain permission, as asked for by
-## the command call.
-def allowUse(ctx,listOfNeeds=['admin'],needsAll=True):
+# Input a ctx and a list of permissions that the user will need..
+# This will return true if a user has a certain permission, as asked for by
+# the command call.
+def allowUse(ctx, listOfNeeds=['admin'], needsAll=True):
     allowLst = []
     permList = ctx.message.channel.permissions_for(ctx.message.author)
     convertDict = {
-        'manage_messages':permList.manage_messages,
-        'admin':permList.administrator,
-        'kick_members':permList.kick_members,
-        'kick':permList.kick_members,
-        'ban_members':permList.ban_members,
-        'ban':permList.ban_members,
-        'manage_nicknames':permList.manage_nicknames,
-        'manage_channels':permList.manage_channels,
-        'manage_roles':permList.manage_roles,
-        'is_caleb':ctx.message.author.id=='141231597155385344'
+        'manage_messages': permList.manage_messages,
+        'admin': permList.administrator,
+        'kick_members': permList.kick_members,
+        'kick': permList.kick_members,
+        'ban_members': permList.ban_members,
+        'ban': permList.ban_members,
+        'manage_nicknames': permList.manage_nicknames,
+        'manage_channels': permList.manage_channels,
+        'manage_roles': permList.manage_roles,
+        'manage_emoji':permList.manage_emojis,
+        'emoji':permList.manage_emojis,
+        'emojis':permList.manage_emojis,
+        'is_caleb': ctx.message.author.id == '141231597155385344'
     }
     for i in listOfNeeds:
         allowLst.append(convertDict[i])
 
-    if convertDict['admin'] and ctx.message.content.startswith('.kill')==False and ctx.message.content.startswith('.restart')==False:
-        return True 
+    if convertDict['admin'] and ctx.message.content.startswith('.kill') == False and ctx.message.content.startswith('.restart') == False:
+        return True
     if needsAll:
         if False in allowLst:
             return False
@@ -139,6 +144,6 @@ def allowUse(ctx,listOfNeeds=['admin'],needsAll=True):
             return True
     else:
         if True in allowLst:
-            return True 
+            return True
         else:
             return False

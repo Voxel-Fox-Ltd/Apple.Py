@@ -1,44 +1,36 @@
-## Discordpy essentials
 import discord
 import asyncio
 from discord.ext import commands
-## Use of file handling commands
 import os
-## Use of custom commands
 import json
-## Use of uptime and restart
 import datetime
-## Use of permissions within isAllowed
 import sys
-## Logging, obviously
 import logging
-## Use of client specific variables and functions
 from isAllowed import *
-## Converting album images into lists of regular images
 from imgurpython import ImgurClient
-
 import requests
-import random
 
 
-## Set up the start time for the restart command
+# Set up the start time for the restart command
 startTime = datetime.datetime.now()
 
 
-## Start up some logging for debugging
+# Start up some logging for debugging
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='%sbot.log' %workingDirectory, encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+handler = logging.FileHandler(filename='%sbot.log' %
+                              workingDirectory, encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter(
+    '%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
 
-## Create the bot
+# Create the bot
 description = '''This is my bot I like to make it do things.'''
-bot = commands.Bot(command_prefix='.', description=description, pm_help=True)
+bot = commands.Bot(command_prefix=['.','<@199136310416375808> '], description=description, pm_help=True)
 
 
-## Create all of the tokens and keys
+# Create all of the tokens and keys
 discordToken = tokens['Skybot']
 mashapeKey = {"X-Mashape-Key":
               tokens['Mashape']}
@@ -47,16 +39,16 @@ BOT_CLIENT_ID = tokens['SkybotID']
 imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
 
 
-## Make the bot more unicode-friendly
+# Make the bot more unicode-friendly
 non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 
 
-## Because they're referenced so much, they're variables
+# Because they're referenced so much, they're variables
 notallowed = "You are not allowed to use that command."
 waitmessage = "Please wait..."
 
 
-## This uses the imgur API to convert an album into a list of links
+# This uses the imgur API to convert an album into a list of links
 def imgurAlbumToItems(albumLink):
     if type(albumLink) == str:
         imgObj = imgurUsr.get_album_images(albumLink)
@@ -75,35 +67,26 @@ def imgurAlbumToItems(albumLink):
     return ret
 
 
-@bot.command(pass_context=True,help=helpText['echo'][1],brief=helpText['echo'][0])
+@bot.command(pass_context=True, help=helpText['echo'][1], brief=helpText['echo'][0])
 async def echo(ctx):
     """Simply says back what the person says."""
-    print("Echoing :: %s" % ctx.message.content.split(' ',1)[1])
+    print("Echoing :: %s" % ctx.message.content.split(' ', 1)[1])
     try:
         chan = discord.Object(ctx.message.raw_channel_mentions[0])
-        a = ctx.message.content.split(' ',2)[2]
+        a = ctx.message.content.split(' ', 2)[2]
     except:
         chan = ctx.message.channel
-        a = ctx.message.content.split(' ',1)[1]
+        a = ctx.message.content.split(' ', 1)[1]
     await bot.send_message(chan, a)
 
 
-@bot.command(pass_context=True,help=helpText['invite'][1],brief=helpText['invite'][0])
+@bot.command(pass_context=True, help=helpText['invite'][1], brief=helpText['invite'][0])
 async def invite(ctx):
     """Gives the invite link for the bot."""
     print("Told someone the invite link.")
     q = "https://discordapp.com/oauth2/authorize?scope=bot&client_id=%s&permissions=0x1c016c10" \
-           % BOT_CLIENT_ID
+        % BOT_CLIENT_ID
     await bot.say(q)
-
-
-@bot.command()
-async def insult():
-    e = await bot.say("Please wait...")
-    page = requests.get('http://www.insultgenerator.org/')
-    con = page.content
-    insult = con[431:-742]
-    await bot.edit_message(e, str(insult)[2:-1])
 
 
 @bot.command()
@@ -112,25 +95,28 @@ async def git():
     await bot.say("Feel free to fork me!\n<https://github.com/4Kaylum/SkyBot>")
 
 
-@bot.command(pass_context=True,help=helpText['purge'][1],brief=helpText['purge'][0])
+@bot.command(pass_context=True, help=helpText['purge'][1], brief=helpText['purge'][0])
 async def purge(ctx):
     """Purges x messages from the channel."""
-    if allowUse(ctx,['manage_messages']):
+    if allowUse(ctx, ['manage_messages']):
         try:
             a = int(ctx.message.content.split(" ")[1])
+            if a > 200:
+                await bot.say("No, fuck you.")
+                return
         except ValueError:
             await bot.say("Please provide a value.")
             return
-        print("Deleting %s messages." %a)
+        print("Deleting %s messages." % a)
         await bot.purge_from(ctx.message.channel, limit=a)
     else:
         await bot.say(notallowed)
 
 
-@bot.command(pass_context=True,help=helpText['rename'][1],brief=helpText['rename'][0])
+@bot.command(pass_context=True, help=helpText['rename'][1], brief=helpText['rename'][0])
 async def rename(ctx):
     """Renames the bot."""
-    if allowUse(ctx,['manage_nicknames']):
+    if allowUse(ctx, ['manage_nicknames']):
         try:
             ser = ctx.message.mentions[0]
             z = ctx.message.content.split(' ')
@@ -139,7 +125,7 @@ async def rename(ctx):
             toRn = ' '.join(z)
         except IndexError:
             ser = ctx.message.server.get_member_named(bot.user.name)
-            toRn = ctx.message.content.split(' ',1)[1]
+            toRn = ctx.message.content.split(' ', 1)[1]
         try:
             try:
                 await bot.change_nickname(ser, toRn)
@@ -160,28 +146,16 @@ def is_bot(m):
             return False
         else:
             return True
-@bot.command(pass_context=True,help=helpText['clean'][1],brief=helpText['clean'][0])
+
+
+@bot.command(pass_context=True, help=helpText['clean'][1], brief=helpText['clean'][0])
 async def clean(ctx):
     """Deletes the bot's messages from the last 50 posted to the channel."""
     q = await bot.purge_from(ctx.message.channel, limit=50, check=is_bot)
     await bot.say("Cleaned up **{}** messages".format(len(q)))
 
 
-@bot.command(pass_context=True,hidden=True)
-async def av(ctx):
-    if allowUse(ctx,['is_caleb']):
-        try:
-            a = requests.get(ctx.message.content.split(' ',1)[1]).content
-            await bot.edit_profile(avatar=a)
-            await bot.say("Changed profile image.")
-        except Exception as e:
-            exc = '{}: {}'.format(type(e).__name__, e)
-            await self.bot.say("Something went wrong :: {}".format(exc))
-    else:
-        await bot.say(notallowed)
-
-
-@bot.command(pass_context=True,help=helpText['uptime'][1],brief=helpText['uptime'][0])
+@bot.command(pass_context=True, help=helpText['uptime'][1], brief=helpText['uptime'][0])
 async def uptime(ctx):
     """Shows the uptime of the bot."""
     now = datetime.datetime.now()
@@ -195,7 +169,7 @@ async def uptime(ctx):
 
     out = '''```%s hours
 %s minutes
-%s seconds```''' %(hours, minutes, up)
+%s seconds```''' % (hours, minutes, up)
 
     userCount = []
     for i in bot.servers:
@@ -204,13 +178,13 @@ async def uptime(ctx):
                 userCount.append(o)
 
     outplut = '''```On %s servers
-Serving %s unique users```''' %(len(bot.servers),len(userCount))
+Serving %s unique users```''' % (len(bot.servers), len(userCount))
 
     superOut = outplut + '\n' + out
     await bot.say(superOut)
 
 
-@bot.command(pass_context=True,aliases=['ccolor'],help=helpText['ccolour'][1],brief=helpText['ccolour'][0])
+@bot.command(pass_context=True, aliases=['ccolor'], help=helpText['ccolour'][1], brief=helpText['ccolour'][0])
 async def ccolour(ctx):
     """Changes the users colour to the mentioned hex code."""
     if allowUse(ctx, ['manage_roles']):
@@ -241,8 +215,8 @@ async def ccolour(ctx):
                     flag = True
             if flag == False:
                 print("Creating role :: %s" % str(usrQ))
-                rrr = await bot.create_role(ctx.message.server, name=str(usrQ), colour=discord.Colour(int(hexc, 16)))
-                for i in range(0,500,1):
+                rrr = await bot.create_role(ctx.message.server, name=str(usrQ), colour=discord.Colour(int(hexc, 16)), permissions=discord.Permissions(permissions=0))
+                for i in range(0, 500, 1):
                     try:
                         await bot.move_role(ctx.message.server, rrr, i)
                         break
@@ -259,27 +233,17 @@ async def ccolour(ctx):
         await bot.say(notallowed)
 
 
-@bot.command(pass_context=True,hidden=True)
-async def restart(ctx):
-    if allowUse(ctx,['is_caleb']):
-        with open(workingDirectory+'restartFile.txt','w') as a:
-            a.write(str(ctx.message.channel.id))
-        await bot.say("Restarting...")
-
-        os.execl(sys.executable, *([sys.executable]+sys.argv))
-    else:
-        await bot.say('You have to be the bot\'s creator to use this command.')
-    return
-
-
-@bot.command(pass_context=True,hidden=True)
-async def kill(ctx):
-    if allowUse(ctx,['is_caleb']):
-        await bot.say("Killing.")
-        sys.exit()
-    else:
-        await bot.say('You have to be the bot\'s creator to use this command.')
-    return
+@bot.command(pass_context=True)
+async def ping(ctx):
+    channelName = ctx.message.content.split(' ',1)[1]
+    channel = discord.utils.get(ctx.message.server.channels, name=channelName, type=discord.ChannelType.voice)
+    if channel == None:
+        await bot.say("I could not find a VC under that name.")
+        return
+    x = []
+    for i in channel.voice_members:
+        x.append(i.mention)
+    await bot.say(' '.join(x))
 
 
 @bot.event
@@ -328,22 +292,22 @@ async def on_member_remove(member):
 async def on_ready():
     print("----------")
     print("Logged in as:")
-    print("    "+str(bot.user.name))
-    print("    "+str(bot.user.id))
-    gameThingy = ".help [ApplePy v0.3]"
+    print("    " + str(bot.user.name))
+    print("    " + str(bot.user.id))
+    gameThingy = ".help [ApplePy v0.5]"
     await bot.change_status(discord.Game(name=gameThingy))
     print("Game changed to '%s'." % gameThingy)
     print("----------")
 
     try:
-        with open(workingDirectory+'restartFile.txt','r') as a:
+        with open(workingDirectory + 'restartFile.txt', 'r') as a:
             cha = discord.Object(id=a.readlines()[0])
         await bot.send_message(cha, "Restarted.")
-        os.remove(workingDirectory+'restartFile.txt')
+        os.remove(workingDirectory + 'restartFile.txt')
     except FileNotFoundError:
         pass
 
-    startup_extensions = [] #['fun', 'search', 'permissions', 'counting','customcommands','strawpolling']
+    startup_extensions = []
     for i in os.listdir(os.path.dirname(os.path.realpath(__file__))):
         if i.startswith('addon_'):
             startup_extensions.append(i[:-3])
@@ -358,17 +322,20 @@ async def on_ready():
 @bot.event
 async def on_message(message):
 
+    if message.author.bot:
+        return
+
     continueWithComms = True
     aq = giveAllowances(message.server.id)
 
     if message.author.id != bot.user.id:
 
         try:
-            with open(serverConfigs+message.server.id+'.json','r',encoding='utf-8') as data_file:
+            with open(serverConfigs + message.server.id + '.json', 'r', encoding='utf-8') as data_file:
                 customCommands = json.load(data_file)['CustomCommands']
 
             try:
-                await bot.send_message(message.channel, eval(customCommands[message.content.lower()]).translate(non_bmp_map) )
+                await bot.send_message(message.channel, eval(customCommands[message.content.lower()]).translate(non_bmp_map))
             except KeyError:
                 pass
         except KeyError:
@@ -383,7 +350,7 @@ async def on_message(message):
                 imLink = message.content.split('imgur.com/gallery/')[1][:5]
             try:
                 imLink = imgurAlbumToItems(imLink)
-                await bot.send_message(message.channel, '%s\n%s' %(message.author.mention, imLink))
+                await bot.send_message(message.channel, '%s\n%s' % (message.author.mention, imLink))
             except UnboundLocalError:
                 pass
 
