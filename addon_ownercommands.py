@@ -13,7 +13,7 @@ class OwnerCommands():
 
 	## Change the icon of the bot
 	@commands.command(pass_context=True)
-	async def av(ctx):
+	async def av(self, ctx):
 	    if allowUse(ctx, ['is_caleb']):
 	        try:
 	        	## Get the url of the image
@@ -34,7 +34,7 @@ class OwnerCommands():
 
 	## Restart any running instance of the bot
 	@commands.command(pass_context=True, aliases=['rs'])
-	async def restart(ctx):
+	async def restart(self, ctx):
 	    if allowUse(ctx, ['is_caleb']):
 	    	## Write to file the channel that needs to be pinged when online again
 	        with open(workingDirectory + 'restartFile.txt', 'w') as a:
@@ -50,7 +50,7 @@ class OwnerCommands():
 
 	## Kill all running instances of the bot
 	@commands.command(pass_context=True, aliases=['k'])
-	async def kill(ctx):
+	async def kill(self, ctx):
 	    if allowUse(ctx, ['is_caleb']):
 	    	## Exit using sys
 	        await self.bot.say("Killing.")
@@ -61,7 +61,7 @@ class OwnerCommands():
 
 	## Run any given line of code
 	@commands.command(pass_context=True, hidden=True)
-	async def ex(ctx):
+	async def ex(self, ctx):
 	    if allowUse(ctx, ['is_caleb']):
 	        exec(ctx.message.content.split(' ',1)[1])
 	    else:
@@ -70,7 +70,7 @@ class OwnerCommands():
 
 	## Reload an extention without restarting bot
 	@commands.command(aliases=["rldext"],pass_context=True)
-	async def reloadextension(ctx, *, ext: str=None):
+	async def reloadextension(self, ctx, *, ext: str=None):
 	    """Reload bot extension"""
 	    if allowUse(ctx, ['is_caleb']):
 	    	## Check there's an extention being asked about
