@@ -24,11 +24,13 @@ defSerCon = \
         "RSS": {},
         "Joins": {
             "Enabled": "False",
-            "Channel": ""
+            "Channel": "",
+            "Text" : "{mention} hi welcome i love you"
         },
         "Leaves": {
             "Enabled": "False",
-            "Channel": ""
+            "Channel": "",
+            "Text" : "{mention} lol rip"
         },
         "CustomCommands": {},
         "ImgurAlbum": {
