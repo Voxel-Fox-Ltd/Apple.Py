@@ -1,24 +1,14 @@
-# Discordpy essentials
 import discord
 import asyncio
 from discord.ext import commands
-# Use of file handling commands
 import os
-# Use of custom commands
 import json
-# Use of uptime and restart
 import datetime
-# Use of permissions within isAllowed
 import sys
-## Logging, obviously
 import logging
-# Use of client specific variables and functions
 from isAllowed import *
-# Converting album images into lists of regular images
 from imgurpython import ImgurClient
-
 import requests
-import random
 
 
 # Set up the start time for the restart command
@@ -404,7 +394,6 @@ async def on_ready():
     except FileNotFoundError:
         pass
 
-    # ['fun', 'search', 'permissions', 'counting','customcommands','strawpolling']
     startup_extensions = []
     for i in os.listdir(os.path.dirname(os.path.realpath(__file__))):
         if i.startswith('addon_'):
@@ -422,9 +411,6 @@ async def on_message(message):
 
     if message.author.bot:
         return
-
-    # if message.content.lower() == "momma":
-    #     await bot.delete_message(message)
 
     continueWithComms = True
     aq = giveAllowances(message.server.id)
