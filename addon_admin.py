@@ -17,8 +17,10 @@ api = strawpoll.API()
 
 class Admin():
 
+
     def __init__(self, bot):
         self.bot = bot
+
 
     @commands.command(pass_context=True)
     async def ban(self, ctx):
@@ -32,6 +34,7 @@ class Admin():
             server = discord.Object(i['Bans']['Channel'])
             await self.bot.send_message(server, "**{}** has been banned.".format(ctx.message.mentions[0]))
         await self.bot.ban(ctx.message.mentions[0])
+
 
     @commands.command(pass_context=True)
     async def kick(self, ctx):
@@ -47,7 +50,7 @@ class Admin():
         await self.bot.kick(ctx.message.mentions[0])
 
 
-    @commands.group(pass_context=True)
+    @commands.group(pass_context=True,hidden=True)
     async def emoji(self, ctx):
         """Parent command for emoji usage"""
         pass
