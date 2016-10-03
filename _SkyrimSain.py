@@ -317,8 +317,8 @@ async def ex(ctx):
     return
 
 
-@bot.command(aliases=["rldext"])
-async def reloadextension(self, *, ext: str=None):
+@bot.command(aliases=["rldext"],pass_context=True)
+async def reloadextension(ctx, *, ext: str=None):
     """Reload bot extension"""
     if allowUse(ctx, ['is_caleb']):
         if (ext == None):
