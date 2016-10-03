@@ -90,15 +90,6 @@ async def invite(ctx):
 
 
 @bot.command()
-async def insult():
-    e = await bot.say("Please wait...")
-    page = requests.get('http://www.insultgenerator.org/')
-    con = page.content
-    insult = con[431:-742]
-    await bot.edit_message(e, str(insult)[2:-1])
-
-
-@bot.command()
 async def git():
     """Plonks the link to my Github in chat."""
     await bot.say("Feel free to fork me!\n<https://github.com/4Kaylum/SkyBot>")
@@ -253,12 +244,6 @@ async def ping(ctx):
     for i in channel.voice_members:
         x.append(i.mention)
     await bot.say(' '.join(x))
-
-
-@bot.command(pass_context=True)
-async def time(ctx):
-    time = str(datetime.datetime.now()).split(' ',1)[1][:-7]
-    await bot.say('The current time, in GMT, is `{}`'.format(time))
 
 
 @bot.event

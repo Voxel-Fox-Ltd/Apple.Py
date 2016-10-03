@@ -10,6 +10,7 @@ import sys
 from isAllowed import *
 import re
 import humanize
+import datetime
 # from urllib.request import urlretrieve
 
 cb = Cleverbot()
@@ -40,12 +41,15 @@ def randFromList(listThing):
 
 class Fun():
 
+
     def __init__(self, bot):
         self.bot = bot
+
 
     @commands.group()
     async def aes(self):
         pass
+
 
     @aes.command(pass_context=True, description='Makes your string into a coolio thingmie.')
     async def sq(self, ctx):
@@ -85,6 +89,7 @@ class Fun():
 
         await self.bot.say(acRet)
 
+
     @commands.command(pass_context=True, description='Gives you a random picture of a cat.')
     async def cat(self, ctx):
         edit = await self.bot.say(waitmessage)
@@ -92,11 +97,13 @@ class Fun():
         print("Got a cat picture :: %s" % page.url)
         await self.bot.edit_message(edit, page.url)
 
+
     @commands.command(pass_context=True, description='Prints out some Skyrim guard text.')
     async def guard(self, ctx):
         msg = randFromList(txtFileToList("skyrimText"))
         print("Spat out guard dialogue :: %s" % msg)
         await self.bot.say(msg)
+
 
     @commands.command(pass_context=True, aliases=['complement', 'complements', 'compliments'], description='Prints out some Skyrim guard text.')
     async def compliment(self, ctx):
@@ -107,9 +114,11 @@ class Fun():
         print("Spat out complement :: %s" % msg)
         await self.bot.say(msg)
 
+
     @commands.command(pass_context=True, description='Gives the lenny face.')
     async def lenny(self, ctx):
         await self.bot.say("( ͡° ͜ʖ ͡°)")
+
 
     @aes.command(pass_context=True)
     async def sp(self, ctx):
@@ -132,6 +141,7 @@ class Fun():
             return
         await self.bot.say(ret)
 
+
     @commands.command(pass_context=True, description='Gives you love, gives you life.')
     async def love(self, ctx):
         a = ctx.message.content[len(ctx.message.content.split(' ')[0]) + 1:]
@@ -143,6 +153,7 @@ class Fun():
             p = a
         await self.bot.say(p)
 
+
     @commands.command(pass_context=True, aliases=['joke'], description='Gives a random pin from punoftheday.com.')
     async def pun(self, ctx):
         edit = await self.bot.say(waitmessage)
@@ -151,6 +162,7 @@ class Fun():
         out = page.text.split('dropshadow1')[1][6:].split('<')[0]
         print("Said a pun :: %s" % out)
         await self.bot.edit_message(edit, out)
+
 
     @commands.command(pass_context=True, description='')
     async def weather(self, ctx):
@@ -177,9 +189,11 @@ class Fun():
 
         await self.bot.edit_message(edit, ret)
 
+
     @commands.command(pass_context=True, description='Gives the look of disapproval.')
     async def disapprove(self, ctx):
         await self.bot.say("ಠ_ಠ")
+
 
     @commands.command(pass_context=True, description='Lets you talk to Cleverbot.')
     async def c(self, ctx):
@@ -188,6 +202,7 @@ class Fun():
         x = cb.ask(query)
         print("Taling to Cleverbot :: \n    %s\n    %s" % (query, x))
         await self.bot.edit_message(edit, x.translate(non_bmp_map))
+
 
     @commands.command(pass_context=True, description='Evaluates the given codeset.')
     async def ev(self, ctx):
@@ -203,10 +218,12 @@ class Fun():
 
         await self.bot.say(out)
 
+
     @commands.group(pass_context=True, description='Turns binary into ascii and vice versa')
     async def binary(self, ctx):
         if ctx.invoked_subcommand is None:
             await self.bot.say("Please use `help binary` to see how to use this command properly.")
+
 
     @binary.command(pass_context=True, name='tobinary')
     async def toBinary(self, ctx):
@@ -221,6 +238,7 @@ class Fun():
             out = out + i + ' '
         out = out[:-1] + '```'
         await self.bot.say(out)
+
 
     @binary.command(pass_context=True, name='totext')
     async def toAscii(self, ctx):
@@ -238,6 +256,7 @@ class Fun():
 
         await self.bot.say(out)
 
+
     @commands.command(pass_context=True)
     async def mc(self, ctx):
         try:
@@ -248,6 +267,7 @@ class Fun():
 
         returnString = "https://mcapi.ca/skin/2d/%s/85/false" % character
         await self.bot.say(returnString)
+
 
     @commands.command(pass_context=True)
     async def meme(self, ctx):
@@ -292,6 +312,7 @@ class Fun():
             botText,
             url))
 
+
     @commands.command(pass_context=True)
     async def big(self, ctx):
         toReplace = ctx.message.content.split(' ',1)[1].lower()
@@ -308,6 +329,21 @@ class Fun():
                 o = ':' + humanize.apnumber(int(o)) + ': '
             qw = qw + o
         await self.bot.say(qw)
+
+
+    @commands.command(pass_context=True)
+    async def time(self, ctx):
+        time = str(datetime.datetime.now()).split(' ',1)[1][:-7]
+        await self.bot.say('The current time, in GMT, is `{}`'.format(time))
+
+
+    @commands.command()
+    async def insult(self):
+        e = await self.bot.say("Please wait...")
+        page = requests.get('http://www.insultgenerator.org/')
+        con = page.content
+        insult = con[431:-742]
+        await self.bot.edit_message(e, str(insult)[2:-1])        
 
 
 def setup(bot):
