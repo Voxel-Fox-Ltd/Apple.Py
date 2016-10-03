@@ -6,16 +6,6 @@ import sys
 from isAllowed import *
 
 
-workingDirectory = os.path.dirname(os.path.realpath(__file__)) + \
-    "\\botTxtFiles\\"
-serverConfigs = os.path.dirname(os.path.realpath(__file__)) + \
-    "\\botTxtFiles\\serverConfigs\\"
-
-
-notallowed = "You are not allowed to use that command."
-waitmessage = "Please wait..."
-
-
 class CustomCommands():
 
     def __init__(self, bot):

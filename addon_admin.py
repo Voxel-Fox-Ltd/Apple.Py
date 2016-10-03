@@ -8,10 +8,6 @@ from isAllowed import *
 from urllib.request import urlretrieve
 
 
-notallowed = "You are not allowed to use that command."
-waitmessage = "Please wait..."
-
-
 api = strawpoll.API()
 
 

@@ -2,6 +2,11 @@ import os
 import json
 import discord
 
+
+notallowed = "You are not allowed to use that command."
+waitmessage = "Please wait..."
+
+
 workingDirectory = os.path.dirname(os.path.realpath(__file__)) + \
     "\\botTxtFiles\\"
 serverConfigs = os.path.dirname(os.path.realpath(__file__)) + \

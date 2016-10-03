@@ -22,9 +22,6 @@ owm = OWM(API_key=tokens['OwmKey'], version='2.5')
 owm_en = OWM()
 non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 
-notallowed = "You are not allowed to use that command."
-waitmessage = "Please wait..."
-
 
 def txtFileToList(nameOfFile):
     nameOfFile = workingDirectory + nameOfFile + '.txt'

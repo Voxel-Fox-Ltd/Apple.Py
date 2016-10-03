@@ -7,10 +7,6 @@ import strawpoll
 from isAllowed import *
 
 
-notallowed = "You are not allowed to use that command."
-waitmessage = "Please wait..."
-
-
 api = strawpoll.API()
 
 

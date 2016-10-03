@@ -43,11 +43,6 @@ imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
 non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 
 
-# Because they're referenced so much, they're variables
-notallowed = "You are not allowed to use that command."
-waitmessage = "Please wait..."
-
-
 # This uses the imgur API to convert an album into a list of links
 def imgurAlbumToItems(albumLink):
     if type(albumLink) == str:

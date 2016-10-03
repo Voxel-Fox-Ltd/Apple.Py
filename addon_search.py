@@ -25,10 +25,6 @@ imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
 translator = Translator(tokens['MSTransID'], tokens['MSTransSecret'])
 
 
-notallowed = "You are not allowed to use that command."
-waitmessage = "Please wait..."
-
-
 def getSteamIDFromURL(urlInQuestion):
     print("    Converting vanity url...")
     van = steam.user.vanity_url(urlInQuestion)

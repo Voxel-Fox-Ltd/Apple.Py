@@ -6,10 +6,6 @@ import sys
 from isAllowed import *
 
 
-notallowed = "You are not allowed to use that command."
-waitmessage = "Please wait..."
-
-
 class Counting():
 
     def __init__(self, bot):
