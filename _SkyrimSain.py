@@ -279,7 +279,7 @@ async def restart(ctx):
     return
 
 
-@bot.command(pass_context=True, hidden=True)
+@bot.command(pass_context=True)
 async def ping(ctx):
     channelName = ctx.message.content.split(' ',1)[1]
     channel = discord.utils.get(ctx.message.server.channels, name=channelName, type=discord.ChannelType.voice)
@@ -302,7 +302,7 @@ async def kill(ctx):
     return
 
 
-@bot.command(pass_context=True, hidden=True)
+@bot.command(pass_context=True)
 async def time(ctx):
     time = str(datetime.datetime.now()).split(' ',1)[1][:-7]
     await bot.say('The current time, in GMT, is `{}`'.format(time))
