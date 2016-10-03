@@ -134,30 +134,6 @@ class Configuration():
             await self.bot.say("Something went wrong :: {}".format(exc))
             return
 
-    @commands.command(pass_context=True, help=helpText['pin'][1], brief=helpText['pin'][0])
-    async def pin(self, ctx):
-        """Pins the last message to the channel."""
-        if allowUse(ctx, ['manage_messages']) == False:
-            await self.bot.say(notallowed)
-            return
-        if len(ctx.message.content.split(' ')) == 1:
-            async for i in self.bot.logs_from(ctx.message.channel, limit=2):
-                message = i
-        else:
-            message = self.bot.get_message(
-                ctx.message.channel, ctx.message.content.split(' ')[1])
-            # message = discord.Object(ctx.message.content.split(' ')[1])
-            await self.bot.say(ctx.message.content.split(' ')[1])
-            await self.bot.say(type(message))
-        try:
-            await self.bot.pin_message(message)
-        except discord.HTTPException as e:
-            exc = '{}: {}'.format(type(e).__name__, e)
-            await self.bot.say("Something went wrong :: {}\nIt's likely that there are 50 pins in this channel already - that's the limit for Discord.".format(exc))
-        except Exception as e:
-            exc = '{}: {}'.format(type(e).__name__, e)
-            await self.bot.say("Something went wrong :: {}".format(exc))
-
 
 def setup(bot):
     bot.add_cog(Configuration(bot))
