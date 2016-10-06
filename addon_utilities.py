@@ -27,7 +27,10 @@ class Utilities:
         x = []
         for i in channel.voice_members:
             x.append(i.mention)
-        await self.bot.say(' '.join(x))
+        try:
+            await self.bot.say(' '.join(x))
+        except:
+            await self.bot.say("There's nobody in that VC smh")
 
 
     @commands.command(pass_context=True, help=helpText['clean'][1], brief=helpText['clean'][0])

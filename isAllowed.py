@@ -124,7 +124,7 @@ def givePerms(ctx):
 # Input a ctx and a list of permissions that the user will need..
 # This will return true if a user has a certain permission, as asked for by
 # the command call.
-def allowUse(ctx, listOfNeeds=['admin'], needsAll=True):
+def allowUse(ctx, listOfNeeds=['admin'], needsAll=False):
     allowLst = []
     permList = ctx.message.channel.permissions_for(ctx.message.author)
     convertDict = {
@@ -145,7 +145,7 @@ def allowUse(ctx, listOfNeeds=['admin'], needsAll=True):
     for i in listOfNeeds:
         allowLst.append(convertDict[i])
 
-    if convertDict['admin'] and ctx.message.content.startswith('.kill') == False and ctx.message.content.startswith('.restart') == False:
+    if convertDict['admin'] and 'is_caleb' not in listOfNeeds:
         return True
     if needsAll:
         if False in allowLst:
