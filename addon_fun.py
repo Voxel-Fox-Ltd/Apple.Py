@@ -203,8 +203,10 @@ class Fun():
 
     @commands.command(pass_context=True, description='Evaluates the given codeset.')
     async def ev(self, ctx):
-        toEx = ctx.message.content
-        toEx = toEx[len(toEx.split(' ')[0]) + 1:]
+        toEx = ctx.message.content.split(' ',1)[1]
+        server = ctx.message.server 
+        author = ctx.message.author 
+        channel = ctx.message.channel
         if 'sys' in toEx.lower() and 'exit' in toEx.lower():
             await self.bot.say("Nice try, asshole.")
             return

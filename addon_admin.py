@@ -103,7 +103,7 @@ class Admin():
                 del z[-1]
                 toRn = ' '.join(z)
             except IndexError:
-                ser = ctx.message.server.get_member_named(bot.user.name)
+                ser = ctx.message.server.get_member_named(self.bot.user.name)
                 toRn = ctx.message.content.split(' ', 1)[1]
             try:
                 try:
@@ -120,7 +120,7 @@ class Admin():
 
 
     @commands.command(pass_context=True, aliases=['ccolor'], help=helpText['ccolour'][1], brief=helpText['ccolour'][0])
-    async def ccolour(ctx):
+    async def ccolour(self, ctx):
         """Changes the users colour to the mentioned hex code."""
         if allowUse(ctx, ['manage_roles']):
             flag = False
@@ -169,7 +169,7 @@ class Admin():
 
 
     @commands.command(pass_context=True, help=helpText['purge'][1], brief=helpText['purge'][0])
-    async def purge(ctx):
+    async def purge(self, ctx):
         """Purges x messages from the channel."""
         if allowUse(ctx, ['manage_messages']):
             try:
