@@ -6,3 +6,4 @@ botTxtFiles/customCommands.json
 botTxtFiles/discordTokens.json
 botTxtFiles/game.txt
 *.jpg
+*.png
