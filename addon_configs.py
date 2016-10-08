@@ -6,10 +6,6 @@ import sys
 from isAllowed import *
 
 
-notallowed = "You are not allowed to use that command."
-waitmessage = "Please wait..."
-
-
 def normalize(toNormal):
     toNormal = toNormal.message.content.split(' ')[2].lower()
     if toNormal in ['bans', 'ban']:

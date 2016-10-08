@@ -8,10 +8,6 @@ from isAllowed import *
 from urllib.request import urlretrieve
 
 
-notallowed = "You are not allowed to use that command."
-waitmessage = "Please wait..."
-
-
 api = strawpoll.API()
 
 
@@ -94,6 +90,100 @@ class Admin():
         except Exception as e:
             exc = '{}: {}'.format(type(e).__name__, e)
             await self.bot.say("Something went wrong :: {}".format(exc))
+
+
+    @commands.command(pass_context=True, help=helpText['rename'][1], brief=helpText['rename'][0])
+    async def rename(self, ctx):
+        """Renames the bot."""
+        if allowUse(ctx, ['manage_nicknames']):
+            try:
+                ser = ctx.message.mentions[0]
+                z = ctx.message.content.split(' ')
+                del z[0]
+                del z[-1]
+                toRn = ' '.join(z)
+            except IndexError:
+                ser = ctx.message.server.get_member_named(self.bot.user.name)
+                toRn = ctx.message.content.split(' ', 1)[1]
+            try:
+                try:
+                    await self.bot.change_nickname(ser, toRn)
+                    x = "Changed nickname to '%s'." % toRn
+                except IndexError:
+                    await self.bot.change_nickname(ser, '')
+                    x = "Removed nickname."
+                await self.bot.say(x)
+            except discord.errors.Forbidden:
+                await self.bot.say("The bot is not allowed to change nickname [of that user].")
+        else:
+            await self.bot.say(notallowed)
+
+
+    @commands.command(pass_context=True, aliases=['ccolor'], help=helpText['ccolour'][1], brief=helpText['ccolour'][0])
+    async def ccolour(self, ctx):
+        """Changes the users colour to the mentioned hex code."""
+        if allowUse(ctx, ['manage_roles']):
+            flag = False
+            try:
+                hexc = ctx.message.content.split(' ')[1]
+            except IndexError:
+                await self.bot.say("Please provide a hex colour value.")
+                return
+
+            if hexc[0] == '#':
+                hexc = hexc[1:]
+            if len(hexc) != 6:
+                await self.bot.say("Please provide a **hex** colour value.")
+                return
+
+            try:
+                usrQ = ctx.message.mentions[0]
+            except IndexError:
+                usrQ = ctx.message.author
+
+            try:
+                for role in ctx.message.server.roles:
+                    if str(role.name) == str(usrQ):
+                        await self.bot.edit_role(ctx.message.server, role, colour=discord.Colour(int(hexc, 16)))
+                        rrr = role
+                        print("Editing role :: %s" % str(role.name))
+                        flag = True
+                if flag == False:
+                    print("Creating role :: %s" % str(usrQ))
+                    rrr = await self.bot.create_role(ctx.message.server, name=str(usrQ), colour=discord.Colour(int(hexc, 16)), permissions=discord.Permissions(permissions=0))
+                    for i in range(0, 500, 1):
+                        try:
+                            await self.bot.move_role(ctx.message.server, rrr, i)
+                            break
+                        except discord.errors.InvalidArgument:
+                            pass
+                        except discord.ext.commands.errors.CommandInvokeError:
+                            pass
+                print("Adding role to user.")
+                await self.bot.add_roles(usrQ, rrr)
+                await self.bot.say("Changed user role colour.")
+            except discord.errors.Forbidden:
+                await self.bot.say("This bot does not have permissions to manage roles [for that user].")
+        else:
+            await self.bot.say(notallowed)
+
+
+    @commands.command(pass_context=True, help=helpText['purge'][1], brief=helpText['purge'][0])
+    async def purge(self, ctx):
+        """Purges x messages from the channel."""
+        if allowUse(ctx, ['manage_messages']):
+            try:
+                a = int(ctx.message.content.split(" ")[1])
+                if a > 200:
+                    await self.bot.say("No, fuck you.")
+                    return
+            except ValueError:
+                await self.bot.say("Please provide a value.")
+                return
+            print("Deleting %s messages." % a)
+            await self.bot.purge_from(ctx.message.channel, limit=a)
+        else:
+            await self.bot.say(notallowed)
 
 
 def setup(bot):

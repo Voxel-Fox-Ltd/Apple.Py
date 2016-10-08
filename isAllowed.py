@@ -1,6 +1,12 @@
 import os
 import json
 import discord
+import datetime
+
+
+notallowed = "You are not allowed to use that command."
+waitmessage = "Please wait..."
+
 
 workingDirectory = os.path.dirname(os.path.realpath(__file__)) + \
     "\\botTxtFiles\\"
@@ -8,6 +14,10 @@ serverConfigs = os.path.dirname(os.path.realpath(__file__)) + \
     "\\botTxtFiles\\serverConfigs\\"
 with open('%sdiscordTokens.json' % workingDirectory) as data_file:
     tokens = json.load(data_file)
+
+
+# Set up the start time for the restart command
+startTime = datetime.datetime.now()
 
 
 # Load up all the help text for every command.
@@ -37,39 +47,6 @@ defSerCon = \
             "Enabled": "False"
         }
     }
-
-
-# Checks some config files to see if certain commands are available for use.
-# I've never actually used this properly so I'll phase it out for native permission
-# checking inside of discord.
-def isAllowed(ctx, calledFunction):
-    serverConStuff = None
-    try:
-        with open(serverConfigs + ctx.message.server.id + '.json') as a:
-            serverConStuff = json.load(a)
-    except FileNotFoundError:
-        with open(serverConfigs + ctx.message.server.id + '.json', 'w') as a:
-            serverConStuff = defSerCon
-            a.write(json.dumps(serverConStuff, indent=4))
-        return True
-
-    try:
-        q = serverConStuff["Commands"][calledFunction]
-    except KeyError:
-        with open(serverConfigs + ctx.message.server.id + '.json', 'w') as a:
-            serverConStuff["Commands"][calledFunction] = []
-            a.write(json.dumps(serverConStuff, indent=4))
-        return True
-
-    if q == []:
-        return True
-
-    chekRol = [i.id for i in ctx.message.author.roles]
-
-    for i in q:
-        if i in chekRol:
-            return True
-    return False
 
 
 def giveAllowances(ctx):
@@ -114,7 +91,7 @@ def givePerms(ctx):
 # Input a ctx and a list of permissions that the user will need..
 # This will return true if a user has a certain permission, as asked for by
 # the command call.
-def allowUse(ctx, listOfNeeds=['admin'], needsAll=True):
+def allowUse(ctx, listOfNeeds=['admin'], needsAll=False):
     allowLst = []
     permList = ctx.message.channel.permissions_for(ctx.message.author)
     convertDict = {
@@ -135,7 +112,7 @@ def allowUse(ctx, listOfNeeds=['admin'], needsAll=True):
     for i in listOfNeeds:
         allowLst.append(convertDict[i])
 
-    if convertDict['admin'] and ctx.message.content.startswith('.kill') == False and ctx.message.content.startswith('.restart') == False:
+    if convertDict['admin'] and 'is_caleb' not in listOfNeeds:
         return True
     if needsAll:
         if False in allowLst:
