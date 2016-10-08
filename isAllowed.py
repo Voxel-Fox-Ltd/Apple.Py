@@ -46,6 +46,10 @@ defSerCon = \
         "CustomCommands": {},
         "ImgurAlbum": {
             "Enabled": "False"
+        },
+        "Streams" : {
+            "Channel" : "",
+            "TwitchTV" : {}
         }
     }
 

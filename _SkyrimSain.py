@@ -57,6 +57,41 @@ def imgurAlbumToItems(albumLink):
     return ret
 
 
+# Returns streamID if channel live, otherwise -1
+def IsTwitchLive(channelName):
+    url = str('https://api.twitch.tv/kraken/streams/'+channelName)
+    streamID = -1
+    respose = requests.get(url,headers={'Client-ID':tokens['TwitchTV']})
+    html = respose.text
+    data = json.loads(html)
+    try:
+       streamID = data['stream']['_id']
+    except:
+       streamID = -1
+    return int(streamID)
+
+
+async def twitchChecker():
+    await bot.wait_until_ready()
+    fmt = 'The channel `{0}` is live on Twitch! Check it out! <http://twitch.tv/{0}>'
+    while True:
+        for i in bot.servers:
+            serverStuff = giveAllowances(i.id)
+            if serverStuff['Streams']['Channel'] != '':
+                toPostTo = discord.Object(serverStuff['Streams']['Channel'])
+            else:
+                toPostTo = i
+            streams = serverStuff['Streams']['TwitchTV']
+            for o in streams:
+                q = IsTwitchLive(o)
+                if streams[o] != str(q) and str(q) != '-1':
+                    await bot.send_message(toPostTo, fmt.format(o))
+                streams[o] = str(q) 
+            serverStuff['Streams']['TwitchTV'] = streams
+            writeAllow(i.id, serverStuff)
+        await asyncio.sleep(60)
+
+
 @bot.event
 async def on_member_join(member):
     server = member.server
@@ -160,4 +195,6 @@ async def on_message(message):
     if continueWithComms:
         await bot.process_commands(message)
 
+
+bot.loop.create_task(twitchChecker())
 bot.run(discordToken)
