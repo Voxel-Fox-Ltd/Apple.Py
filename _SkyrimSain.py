@@ -60,43 +60,34 @@ def imgurAlbumToItems(albumLink):
 @bot.event
 async def on_member_join(member):
     server = member.server
-    fmt = '**{0.mention}** hi welcome i love you.'
     i = giveAllowances(server)
     if i['Joins']['Channel'] != '':
         server = discord.Object(i['Joins']['Channel'])
     if i['Joins']['Enabled'] == 'True':
-        try:
-            await bot.send_message(server, fmt.format(member))
-        except:
-            await bot.send_message(member.server, fmt.format(member))
+        fmt = '**{0.mention}** hi welcome i love you.'
+        await bot.send_message(server, fmt.format(member))
 
 
 @bot.event
 async def on_member_ban(member):
     server = member.server
-    fmt = '**{0.mention}** was banned!'
     i = giveAllowances(server)
     if i['Bans']['Channel'] != '':
         server = discord.Object(i['Bans']['Channel'])
     if i['Bans']['Enabled'] == 'True':
-        try:
-            await bot.send_message(server, fmt.format(member))
-        except:
-            await bot.send_message(member.server, fmt.format(member))
+        fmt = '**{0.mention}** was banned!'
+        await bot.send_message(server, fmt.format(member))
 
 
 @bot.event
 async def on_member_remove(member):
     server = member.server
-    fmt = '**{0.mention}** lol rip'
     i = giveAllowances(server)
     if i['Leaves']['Channel'] != '':
         server = discord.Object(i['Leaves']['Channel'])
     if i['Leaves']['Enabled'] == 'True':
-        try:
-            await bot.send_message(server, fmt.format(member))
-        except:
-            await bot.send_message(member.server, fmt.format(member))
+        fmt = '**{0.mention}** lol rip'
+        await bot.send_message(server, fmt.format(member))
 
 
 @bot.event
@@ -106,7 +97,7 @@ async def on_ready():
     print("    " + str(bot.user.name))
     print("    " + str(bot.user.id))
     gameThingy = ".help [ApplePy v0.5]"
-    await bot.change_status(discord.Game(name=gameThingy))
+    await bot.change_presence(game=discord.Game(name=gameThingy))
     print("Game changed to '%s'." % gameThingy)
     print("----------")
 
