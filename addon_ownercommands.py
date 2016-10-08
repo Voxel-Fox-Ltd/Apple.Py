@@ -147,11 +147,16 @@ class OwnerCommands():
 
     @commands.group(pass_context=True,hidden=True)
     async def json(self, ctx):
-        pass
+        if allowUse(ctx, ['is_caleb']):
+            pass
+        else:
+            await self.bot.say(notallowed)
 
 
     @json.command(pass_context=True)
     async def print(self, ctx, message:str):
+        if not allowUse(ctx, ['is_caleb']):
+            return
         try:
             await self.bot.say("```json\n"+json.dumps(giveAllowances(message),indent=4)+"\n```")
         except:
@@ -160,6 +165,8 @@ class OwnerCommands():
 
     @json.command(pass_context=True)
     async def fix(self, ctx, message:str):
+        if not allowUse(ctx, ['is_caleb']):
+            return
         x = fixJson(giveAllowances(message))
         writeAllow(message, x)
         await self.bot.say("Configs fixed and updated.")
@@ -167,6 +174,8 @@ class OwnerCommands():
 
     @json.command(pass_context=True)
     async def fixall(self, ctx):
+        if not allowUse(ctx, ['is_caleb']):
+            return
         for i in self.bot.servers:
             x = fixJson(giveAllowances(str(i.id)))
             writeAllow(i.id, x)
