@@ -11,7 +11,10 @@ from isAllowed import *
 import re
 import humanize
 import datetime
-# from urllib.request import urlretrieve
+from io import StringIO
+from PIL import Image
+from urllib.request import urlretrieve
+
 
 cb = Cleverbot()
 mashapeKey = {"X-Mashape-Key":
@@ -342,7 +345,25 @@ class Fun():
         page = requests.get('http://www.insultgenerator.org/')
         con = page.content
         insult = con[431:-742]
-        await self.bot.edit_message(e, str(insult)[2:-1])        
+        await self.bot.edit_message(e, str(insult)[2:-1])
+
+
+    @commands.command(pass_context=True)
+    async def jpeg(self, ctx):
+        quality = 5
+        message = ctx.message.content
+        if len(message.split(' ')) > 2:
+            quality = int(message.split(' ',2)[1])
+            message = message.split(' ',2)[2]
+        try:
+            urlretrieve(message, 'jpegTEMP.jpg')
+        except:
+            await self.bot.say("I couldn't get that image rip")
+            return
+        im = Image.open('jpegTEMP.jpg')
+        im.save('jpegTEMP.jpg', "JPEG", quality=quality)
+        with open("jpegTEMP.jpg", "rb") as a:
+            await self.bot.send_file(ctx.message.channel, a)
 
 
 def setup(bot):
