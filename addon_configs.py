@@ -148,6 +148,55 @@ class Configuration():
             await self.bot.say("Something went wrong :: {}".format(exc))
             return
 
+    @commands.group(pass_context=True)
+    async def twitch(self, ctx):
+        if allowUse(ctx, ['manage_server']):
+            pass
+        else:
+            await self.bot.say(notallowed)
+
+    @twitch.command(pass_context=True,name='add')
+    async def twitchAdd(self, ctx, channelID:str):
+        if not allowUse(ctx, ['manage_server']):
+            return
+        i = giveAllowances(ctx)
+        strm = i['Streams']['TwitchTV']
+        if channelID.lower() in strm:
+            await self.bot.say("This user has already been added to the streamer list for this server.")
+            return
+        strm[channelID.lower()] = "-1"
+        i['Streams']['TwitchTV'] = strm
+        writeAllow(ctx, i)
+        await self.bot.say("This user has now been added to the streamer list for this server.")
+
+    @twitch.command(pass_context=True,name='del',aliases=['delete','rem','remove'])
+    async def twitchDel(self, ctx, channelID:str):
+        if not allowUse(ctx, ['manage_server']):
+            return
+        i = giveAllowances(ctx)
+        strm = i['Streams']['TwitchTV']
+        if channelID.lower() not in strm:
+            await self.bot.say("This user isn't in the streamer list for this server.")
+            return
+        del strm[channelID.lower()]
+        i['Streams']['TwitchTV'] = strm
+        writeAllow(ctx, i)
+        await self.bot.say("This user has now been removed from the streamer list for this server.")
+
+    @twitch.command(pass_context=True,name='set')
+    async def twitchSet(self, ctx, channelID:str):
+        if not allowUse(ctx, ['manage_server']):
+            return
+        i = giveAllowances(ctx)
+        try:
+            chan = ctx.message.raw_channel_mentions[0]
+        except IndexError:
+            await self.bot.say("Please provide a channel.")
+            return
+        i['Streams']['Channel'] = chan
+        writeAllow(ctx, i)
+        await self.bot.say("The stream announcements have now been set to <#{}>".format(chan))
+
 
 def setup(bot):
     bot.add_cog(Configuration(bot))
