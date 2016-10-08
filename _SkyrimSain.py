@@ -96,7 +96,8 @@ async def on_ready():
     print("Logged in as:")
     print("    " + str(bot.user.name))
     print("    " + str(bot.user.id))
-    gameThingy = ".help [ApplePy v0.5]"
+    with open(workingDirectory+'game.txt') as a:
+        gameThingy = a.read()
     await bot.change_presence(game=discord.Game(name=gameThingy))
     print("Game changed to '%s'." % gameThingy)
     print("----------")

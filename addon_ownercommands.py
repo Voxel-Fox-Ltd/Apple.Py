@@ -106,8 +106,12 @@ class OwnerCommands():
         if allowUse(ctx, ['is_caleb']):
             try:
                 gameTo = discord.Game(name=ctx.message.content.split(' ',1)[1])
+                with open(workingDirectory+'game.txt','w') as a:
+                    a.write(gameTo)
             except IndexError:
                 gameTo = None 
+                with open(workingDirectory+'game.txt','w') as a:
+                    a.write('')
             await self.bot.change_presence(game=gameTo)
             await self.bot.say("Presence has been updated.")
         else:
