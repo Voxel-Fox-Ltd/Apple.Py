@@ -64,8 +64,8 @@ async def on_member_join(member):
     if i['Joins']['Channel'] != '':
         server = discord.Object(i['Joins']['Channel'])
     if i['Joins']['Enabled'] == 'True':
-        fmt = '**{0.mention}** hi welcome i love you.'
-        await bot.send_message(server, fmt.format(member))
+        fmt = i['Joins']['Text'].replace('{mention}',member.mention).replace('{name}',member.name)
+        await bot.send_message(server, fmt)
 
 
 @bot.event
@@ -75,8 +75,8 @@ async def on_member_ban(member):
     if i['Bans']['Channel'] != '':
         server = discord.Object(i['Bans']['Channel'])
     if i['Bans']['Enabled'] == 'True':
-        fmt = '**{0.mention}** was banned!'
-        await bot.send_message(server, fmt.format(member))
+        fmt = i['Bans']['Text'].replace('{mention}',member.mention).replace('{name}',member.name)
+        await bot.send_message(server, fmt)
 
 
 @bot.event
@@ -86,8 +86,8 @@ async def on_member_remove(member):
     if i['Leaves']['Channel'] != '':
         server = discord.Object(i['Leaves']['Channel'])
     if i['Leaves']['Enabled'] == 'True':
-        fmt = '**{0.mention}** lol rip'
-        await bot.send_message(server, fmt.format(member))
+        fmt = i['Leaves']['Text'].replace('{mention}',member.mention).replace('{name}',member.name)
+        await bot.send_message(server, fmt)
 
 
 @bot.event

@@ -89,6 +89,24 @@ class Configuration():
         writeAllow(ctx, currentAllow)
         await self.bot.say("Configs updated.")
 
+    @config.command(name='text', pass_context=True)
+    async def configText(self, ctx, textstr:str):
+        if allowUse(ctx) == False:
+            return
+        try:
+            toEnable = normalize(ctx)
+            if toEnable == 'ImgurAlbum':
+                raise IOError(
+                    "The input from the user was not found in the configuration JSON.")
+        except IOError as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+
+        currentAllow = giveAllowances(ctx)
+        currentAllow[toEnable]['Text'] = ctx.message.content.split(' ',3)[3]
+        writeAllow(ctx, currentAllow)
+        await self.bot.say("Configs updated.")
+
     @commands.group(pass_context=True, help=helpText['channel'][1], brief=helpText['channel'][0])
     async def channel(self, ctx):
         """Parent command for channel."""

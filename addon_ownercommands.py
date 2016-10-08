@@ -4,6 +4,7 @@ from isAllowed import *
 import requests
 import os
 import sys
+# import json
 
 
 class OwnerCommands():
@@ -138,6 +139,27 @@ class OwnerCommands():
                     await self.bot.say("Presence changed.")
         else:
             await self.bot.say(notallowed)
+
+
+    @commands.group(pass_context=True,hidden=True)
+    async def json(self, ctx):
+        pass
+
+
+    @json.command(pass_context=True)
+    async def print(self, ctx, message:str):
+        try:
+            await self.bot.say("```json\n"+json.dumps(giveAllowances(message),indent=4)+"\n```")
+        except:
+            await self.bot.say("idk i couldn't do that soz")
+
+
+    @json.command(pass_context=True)
+    async def fix(self, ctx, message:str):
+        x = fixJson(giveAllowances(message))
+        writeAllow(ctx, x)
+        await self.bot.say("Configs fixed and updated.")
+
 
 
 def setup(bot):

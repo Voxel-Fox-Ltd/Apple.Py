@@ -29,7 +29,8 @@ defSerCon = \
     {
         "Bans": {
             "Enabled": "False",
-            "Channel": ""
+            "Channel": "",
+            "Text" : "{mention} has been banned."
         },
         "RSS": {},
         "Joins": {
@@ -66,6 +67,25 @@ def giveAllowances(ctx):
             serverConStuff = defSerCon
             a.write(json.dumps(serverConStuff, indent=4))
     return serverConStuff
+
+
+# Fixes a dictionary according to a reference. Pushes all keys into the input
+def fixJson(inputDictionary, referenceDictionary=defSerCon):
+    # inputDictionary = {"Joins": {"Enabled": "False","Channel": ""}}
+    # referenceDictionary = {"Joins": {"Enabled": "False","Channel": "","Text" : "{mention} hi welcome i love you"}}
+    for i in referenceDictionary:
+        if type(referenceDictionary[i]) == dict:
+            if i not in inputDictionary:
+                inputDictionary[i] = referenceDictionary[i]
+            else:
+                inputDictionary[i] = fixJson(inputDictionary[i], referenceDictionary[i])
+        else:
+            if i in inputDictionary:
+                pass
+            else:
+                inputDictionary[i] = referenceDictionary[i]
+    return inputDictionary
+    # writeAllow(ctx, inputDictionary)
 
 
 # Meant for use with the config commands, soon to be removed
