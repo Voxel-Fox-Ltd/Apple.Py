@@ -362,6 +362,7 @@ class Fun():
             return
         im = Image.open('jpegTEMP.jpg')
         im.save('jpegTEMP.jpg', "JPEG", quality=quality)
+        im.close()
         with open("jpegTEMP.jpg", "rb") as a:
             await self.bot.send_file(ctx.message.channel, a)
 
