@@ -157,7 +157,15 @@ class OwnerCommands():
     @json.command(pass_context=True)
     async def fix(self, ctx, message:str):
         x = fixJson(giveAllowances(message))
-        writeAllow(ctx, x)
+        writeAllow(message, x)
+        await self.bot.say("Configs fixed and updated.")
+
+
+    @json.command(pass_context=True)
+    async def fixall(self, ctx):
+        for i in self.bot.servers:
+            x = fixJson(giveAllowances(str(i.id)))
+            writeAllow(i.id, x)
         await self.bot.say("Configs fixed and updated.")
 
 
