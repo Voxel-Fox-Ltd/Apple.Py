@@ -58,13 +58,13 @@ class Misc:
 %s seconds```''' % (hours, minutes, up)
 
         userCount = []
-        for i in bot.servers:
+        for i in self.bot.servers:
             for o in i.members:
                 if o not in userCount:
                     userCount.append(o)
 
         outplut = '''```On %s servers
-Serving %s unique users```''' % (len(bot.servers), len(userCount))
+Serving %s unique users```''' % (len(self.bot.servers), len(userCount))
 
         superOut = outplut + '\n' + out
         await self.bot.say(superOut)
@@ -83,6 +83,28 @@ Serving %s unique users```''' % (len(bot.servers), len(userCount))
             await self.bot.say(q)
         except:
             await self.bot.say("There are too many pins to fit into one message .-.")
+
+
+    @commands.command(pass_context=True)
+    async def createinvite(self, ctx):
+        try:
+            serverID = ctx.message.content.split(' ',1)[1]
+        except IndexError:
+            await self.bot.say('Provide a server ID to give an invite to.')
+            return
+
+        server = self.bot.get_server(serverID)
+        if server == None:
+            await self.bot.say("I could not find a server with that ID.")
+            return
+
+        try:
+            inv = await self.bot.create_invite(server)
+        except:
+            await self.bot.say('I could not create the server invite - missing permissions?')
+            return
+        await self.bot.say(inv.url)
+
 
 
 def setup(bot):
