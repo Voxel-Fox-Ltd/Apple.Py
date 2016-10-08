@@ -1,18 +1,22 @@
 {
-	"Commands" : {
-		"Default" : {
-			"COMMANDNAME" : {
-				"Enabled" : "True",
-				"CanUse" : [],
-				"NotAllowedMessage" : "You must be whitelisted to use this command."
-			}
-		}
-	},
-	"Channels" : {
-		"Bans" : "",
-		"RSS" : {
-			"ChannelName" : "RSS Link"
-		}
-	}
+    "ImgurAlbum": {
+        "Enabled": "False"
+    },
+    "RSS": {},
+    "Joins": {
+        "Enabled": "False",
+        "Channel": "",
+        "Text": "{mention} hi welcome i love you"
+    },
+    "CustomCommands": {},
+    "Leaves": {
+        "Enabled": "False",
+        "Channel": "",
+        "Text": "{mention} lol rip"
+    },
+    "Bans": {
+        "Enabled": "False",
+        "Channel": "",
+        "Text": "{mention} has been banned."
+    }
 }
-
