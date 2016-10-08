@@ -49,39 +49,6 @@ defSerCon = \
     }
 
 
-# Checks some config files to see if certain commands are available for use.
-# I've never actually used this properly so I'll phase it out for native permission
-# checking inside of discord.
-def isAllowed(ctx, calledFunction):
-    serverConStuff = None
-    try:
-        with open(serverConfigs + ctx.message.server.id + '.json') as a:
-            serverConStuff = json.load(a)
-    except FileNotFoundError:
-        with open(serverConfigs + ctx.message.server.id + '.json', 'w') as a:
-            serverConStuff = defSerCon
-            a.write(json.dumps(serverConStuff, indent=4))
-        return True
-
-    try:
-        q = serverConStuff["Commands"][calledFunction]
-    except KeyError:
-        with open(serverConfigs + ctx.message.server.id + '.json', 'w') as a:
-            serverConStuff["Commands"][calledFunction] = []
-            a.write(json.dumps(serverConStuff, indent=4))
-        return True
-
-    if q == []:
-        return True
-
-    chekRol = [i.id for i in ctx.message.author.roles]
-
-    for i in q:
-        if i in chekRol:
-            return True
-    return False
-
-
 def giveAllowances(ctx):
     if type(ctx) == str:
         serId = ctx
