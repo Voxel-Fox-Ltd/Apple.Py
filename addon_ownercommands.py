@@ -1,10 +1,4 @@
-import discord
-from discord.ext import commands
 from isAllowed import *
-import requests
-import os
-import sys
-# import json
 
 
 class OwnerCommands():
