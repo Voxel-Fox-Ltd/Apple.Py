@@ -1,7 +1,4 @@
-import os
-import json
-import discord
-import datetime
+from skybotImports import *
 
 
 notallowed = "You are not allowed to use that command."

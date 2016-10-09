@@ -1,19 +1,4 @@
-import discord
-from discord.ext import commands
-import requests
-import os
-import json
-from cleverbot import Cleverbot
-import random
-from pyowm import OWM
-import sys
 from isAllowed import *
-import re
-import humanize
-import datetime
-from io import StringIO
-from PIL import Image
-from urllib.request import urlretrieve
 
 
 cb = Cleverbot()

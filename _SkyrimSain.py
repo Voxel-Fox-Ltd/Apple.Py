@@ -1,14 +1,4 @@
-import discord
-import asyncio
-from discord.ext import commands
-import os
-import json
-import datetime
-import sys
-import logging
 from isAllowed import *
-from imgurpython import ImgurClient
-import requests
 
 
 # Start up some logging for debugging

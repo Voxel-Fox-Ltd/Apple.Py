@@ -1,11 +1,4 @@
-import discord
-from discord.ext import commands
-import json
-import os
-import sys
-import strawpoll
 from isAllowed import *
-from urllib.request import urlretrieve
 
 
 api = strawpoll.API()
