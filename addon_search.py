@@ -1,19 +1,3 @@
-import discord
-from discord.ext import commands
-from google import search
-import esix
-import wolframalpha
-import praw
-import json
-import os
-from imgurpython import ImgurClient
-from steam.api import interface
-import wikipedia
-import steam
-import datetime
-import sys
-import random
-from microsofttranslator import *
 from isAllowed import *
 
 

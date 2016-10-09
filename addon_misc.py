@@ -1,7 +1,4 @@
-import discord
-from discord.ext import commands
 from isAllowed import *
-import datetime
 
 
 BOT_CLIENT_ID = tokens['SkybotID']
