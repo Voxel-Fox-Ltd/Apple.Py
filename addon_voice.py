@@ -15,15 +15,16 @@ class Voice():
 
     async def musicMan(self, ctx, searchTerm):
         try:
-            self.voice[ctx.message.server.id][1].stop()
-        except:
-            pass
-        try:
             self.voice[ctx.message.server.id][0] = await self.bot.join_voice_channel(ctx.message.author.voice_channel)
         except discord.InvalidArgument:
             await self.bot.say("You're not in a VC .-.")
             return
         except discord.ClientException:
+            pass
+        try:
+            self.voice[ctx.message.server.id][1].stop()
+            self.voice[ctx.message.server.id][1] = None
+        except:
             pass
         self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player('ytsearch:'+searchTerm)
         self.voice[ctx.message.server.id][1].start()
@@ -72,6 +73,41 @@ class Voice():
     @commands.command(pass_context=True)
     async def scream(self, ctx):
         await self.musicMan(ctx, "incoherent screaming")
+
+
+    @commands.command(pass_context=True)
+    async def fuckmyass(self, ctx):
+        await self.musicMan(ctx, "mujsPpzx2Sc")
+
+
+    @commands.command(pass_context=True)
+    async def rickroll(self, ctx):
+        await self.musicMan(ctx, "dQw4w9WgXcQ")
+
+
+    @commands.command(pass_context=True)
+    async def pause(self, ctx):
+        if self.voice[ctx.message.server.id][0] == None:
+            await self.bot.say("I'm can't pause if I'm not playing anything u lil shit.")
+            return
+        if self.voice[ctx.message.server.id][1] == None:
+            await self.bot.say("I'm can't pause if I'm not playing anything u lil shit.")
+            return
+        self.voice[ctx.message.server.id][1].pause()
+        await self.bot.say('kdun')
+
+
+    @commands.command(pass_context=True)
+    async def resume(self, ctx):
+        if self.voice[ctx.message.server.id][0] == None:
+            await self.bot.say("I'm can't resume if I'm not playing anything u lil shit.")
+            return
+        if self.voice[ctx.message.server.id][1] == None:
+            await self.bot.say("I'm can't resume if I'm not playing anything u lil shit.")
+            return
+        self.voice[ctx.message.server.id][1].resume()
+        await self.bot.say('kden')
+
 
 
 
