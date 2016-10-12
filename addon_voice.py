@@ -28,6 +28,7 @@ class Voice():
             pass
         self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player('ytsearch:'+searchTerm)
         self.voice[ctx.message.server.id][1].start()
+        self.voice[ctx.message.server.id][1].volume = 0.2
         lenth = str(datetime.timedelta(seconds=self.voice[ctx.message.server.id][1].duration))
         await self.bot.say("Now playing :: `{0.title}` :: `[{1}]`".format(self.voice[ctx.message.server.id][1], lenth))
 
@@ -108,6 +109,19 @@ class Voice():
         self.voice[ctx.message.server.id][1].resume()
         await self.bot.say('kden')
 
+
+    @commands.command(pass_context=True)
+    async def volume(self, ctx):
+        if self.voice[ctx.message.server.id][1] == None:
+            await self.bot.say("I aint playin anythin m8")
+            return
+        toVol = int(ctx.message.content.split(' ')[1])
+        if toVol > 200:
+            toVol = 200
+        if toVol < 0: 
+            toVol = 0
+        self.voice[ctx.message.server.id][1].volume = toVol/100
+        await self.bot.say("Volume changed to {}%".format(toVol))
 
 
 
