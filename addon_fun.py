@@ -102,6 +102,10 @@ class Fun():
 
     @commands.command(pass_context=True, description='Gives the lenny face.')
     async def lenny(self, ctx):
+        try:
+            await self.bot.delete_message(ctx.message)
+        except:
+            pass
         await self.bot.say("( ͡° ͜ʖ ͡°)")
 
 
