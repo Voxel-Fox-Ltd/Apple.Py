@@ -75,7 +75,7 @@ class Fun():
         await self.bot.say(acRet)
 
 
-    @commands.command(pass_context=True, description='Gives you a random picture of a cat.')
+    @commands.command(pass_context=True, description='Gives you a random picture of a cat.',aliases=['kitty','kitten','kittycat','kittykat','cittycat','kittykit'])
     async def cat(self, ctx):
         edit = await self.bot.say(waitmessage)
         page = requests.get('http://thecatapi.com/api/images/get?format=src')
