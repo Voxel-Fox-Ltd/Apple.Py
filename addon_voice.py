@@ -10,12 +10,25 @@ class Voice():
         if not discord.opus.is_loaded():
             discord.opus.load_opus()
         for i in self.bot.servers:
-            self.voice[i.id] = [None, None, []]
-            try:
-                self.bot.voice_client_in(i).disconnect()
-            except:
-                pass
+            self.voice[i.id] = [self.bot.voice_client_in(i), None, []]
 
+
+    async def musicMan(self, ctx, searchTerm):
+        try:
+            self.voice[ctx.message.server.id][1].stop()
+        except:
+            pass
+        try:
+            self.voice[ctx.message.server.id][0] = await self.bot.join_voice_channel(ctx.message.author.voice_channel)
+        except discord.InvalidArgument:
+            await self.bot.say("You're not in a VC .-.")
+            return
+        except discord.ClientException:
+            pass
+        self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player('ytsearch:'+searchTerm)
+        self.voice[ctx.message.server.id][1].start()
+        lenth = str(datetime.timedelta(seconds=self.voice[ctx.message.server.id][1].duration))
+        await self.bot.say("Now playing :: `{0.title}` :: `[{1}]`".format(self.voice[ctx.message.server.id][1], lenth))
 
 
     @commands.command(pass_context=True)
@@ -42,29 +55,11 @@ class Voice():
 
 
     @commands.command(pass_context=True)
-    async def play(self, ctx, *, url:str):
-        try:
-            self.voice[ctx.message.server.id][1].stop()
-        except:
-            pass
-        try:
-            self.voice[ctx.message.server.id][0] = await self.bot.join_voice_channel(ctx.message.author.voice_channel)
-        except discord.InvalidArgument:
-            await self.bot.say("You're not in a VC .-.")
-            return
-        except discord.ClientException:
-            pass
-        self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player('ytsearch:'+url)
-        self.voice[ctx.message.server.id][1].start()
-        m, s = divmod(self.voice[ctx.message.server.id][1].duration, 60)
-        m = str(m)
-        s = str(s)
-        if len(str(s)) < 2:
-            s = '0' + s
-        await self.bot.say("Now playing :: `{0.title}` :: `[{1}:{2}]`".format(self.voice[ctx.message.server.id][1], m, s))
+    async def play(self, ctx):
+        await self.musicMan(ctx, ctx.message.content.split(' ',1)[1])
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, aliases=['syop'])
     async def stop(self, ctx):
         if self.voice[ctx.message.server.id][1] == None:
             await self.bot.say("I'm not playing anything but okay whatever")
@@ -72,6 +67,11 @@ class Voice():
         self.voice[ctx.message.server.id][1].stop()
         self.voice[ctx.message.server.id][1] = None 
         await self.bot.say("k done")
+
+
+    @commands.command(pass_context=True)
+    async def scream(self, ctx):
+        await self.musicMan(ctx, "incoherent screaming")
 
 
 
