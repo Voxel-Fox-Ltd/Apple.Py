@@ -153,34 +153,44 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    # The people on my server are idiots.
+    if message.content.lower().startswith('+volume') and message.server.id == '178070516353990657':
+        num = message.content.split(' ')[1]
+        try:
+            if int(num) > 100:
+                await bot.send_message(message.channel, "+volume 100")
+        except:
+            pass
+
+    # Get custom commands
     continueWithComms = True
     aq = giveAllowances(message.server.id)
 
-    if message.author.id != bot.user.id:
+    # Read custom commands
+    try:
+        with open(serverConfigs + message.server.id + '.json', 'r', encoding='utf-8') as data_file:
+            customCommands = json.load(data_file)['CustomCommands']
 
         try:
-            with open(serverConfigs + message.server.id + '.json', 'r', encoding='utf-8') as data_file:
-                customCommands = json.load(data_file)['CustomCommands']
-
-            try:
-                await bot.send_message(message.channel, eval(customCommands[message.content.lower()]).translate(non_bmp_map))
-            except KeyError:
-                pass
+            await bot.send_message(message.channel, eval(customCommands[message.content.lower()]).translate(non_bmp_map))
         except KeyError:
             pass
-        except FileNotFoundError:
-            pass
+    except KeyError:
+        pass
+    except FileNotFoundError:
+        pass
 
-        if 'imgur.com/' in message.content and aq['ImgurAlbum']['Enabled'] == 'True':
-            if 'imgur.com/a/' in message.content:
-                imLink = message.content.split('imgur.com/a/')[1][:5]
-            elif 'imgur.com/gallery/' in message.content:
-                imLink = message.content.split('imgur.com/gallery/')[1][:5]
-            try:
-                imLink = imgurAlbumToItems(imLink)
-                await bot.send_message(message.channel, '%s\n%s' % (message.author.mention, imLink))
-            except UnboundLocalError:
-                pass
+    # Read Imgur album into images
+    if 'imgur.com/' in message.content and aq['ImgurAlbum']['Enabled'] == 'True':
+        if 'imgur.com/a/' in message.content:
+            imLink = message.content.split('imgur.com/a/')[1][:5]
+        elif 'imgur.com/gallery/' in message.content:
+            imLink = message.content.split('imgur.com/gallery/')[1][:5]
+        try:
+            imLink = imgurAlbumToItems(imLink)
+            await bot.send_message(message.channel, '%s\n%s' % (message.author.mention, imLink))
+        except UnboundLocalError:
+            pass
 
     if continueWithComms:
         await bot.process_commands(message)

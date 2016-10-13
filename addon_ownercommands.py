@@ -1,10 +1,4 @@
-import discord
-from discord.ext import commands
 from isAllowed import *
-import requests
-import os
-import sys
-# import json
 
 
 class OwnerCommands():
@@ -100,14 +94,14 @@ class OwnerCommands():
 
 
     ## Changes the "playing" status of the bot
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,aliases=['playing'])
     async def game(self, ctx):
         """Change the bot's game"""
         if allowUse(ctx, ['is_caleb']):
             try:
                 gameTo = discord.Game(name=ctx.message.content.split(' ',1)[1])
                 with open(workingDirectory+'game.txt','w') as a:
-                    a.write(gameTo)
+                    a.write(ctx.message.content.split(' ',1)[1])
             except IndexError:
                 gameTo = None 
                 with open(workingDirectory+'game.txt','w') as a:

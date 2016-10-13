@@ -88,7 +88,7 @@ class Admin():
     @commands.command(pass_context=True, help=helpText['rename'][1], brief=helpText['rename'][0])
     async def rename(self, ctx):
         """Renames the bot."""
-        if allowUse(ctx, ['manage_nicknames']):
+        if allowUse(ctx, ['manage_nicknames','is_caleb']):
             try:
                 ser = ctx.message.mentions[0]
                 z = ctx.message.content.split(' ')
@@ -177,6 +177,47 @@ class Admin():
             await self.bot.purge_from(ctx.message.channel, limit=a)
         else:
             await self.bot.say(notallowed)
+
+    @commands.group(pass_context=True, help=helpText['channel'][1], brief=helpText['channel'][0])
+    async def channel(self, ctx):
+        """Parent command for channel."""
+        if allowUse(ctx, ['manage_channels']) == False:
+            await self.bot.say(notallowed)
+            return
+        elif ctx.invoked_subcommand is None:
+            await self.bot.say("Please use `channel help` to see how to use this command properly.")
+
+    @channel.command(name='create', aliases=['add', 'make'], pass_context=True)
+    async def channelCreate(self, ctx):
+        if allowUse(ctx, ['manage_channels']) == False:
+            return
+        serverObj = ctx.message.server
+        channelName = ctx.message.content.split(' ', 2)[2]
+        try:
+            await self.bot.create_channel(serverObj, channelName)
+            await self.bot.say("Channel created.")
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+
+    @channel.command(name='delete', aliases=['del', 'remove', 'rem', 'rm'], pass_context=True)
+    async def channelDelete(self, ctx):
+        if allowUse(ctx, ['manage_channels']) == False:
+            return
+        try:
+            toSet = ctx.message.raw_channel_mentions[0]
+        except IndexError as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+            return
+
+        try:
+            await self.bot.delete_channel(discord.Object(toSet))
+            await self.bot.say("Channel deleted.")
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            await self.bot.say("Something went wrong :: {}".format(exc))
+            return
 
 
 def setup(bot):

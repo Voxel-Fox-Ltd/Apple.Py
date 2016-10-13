@@ -1,1 +1,1 @@
-pls fix oauth
+.help | c:

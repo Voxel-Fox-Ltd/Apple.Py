@@ -103,6 +103,11 @@ Serving %s unique users```''' % (len(self.bot.servers), len(userCount))
         await self.bot.say(inv.url)
 
 
+    @commands.command(pass_context=True,hidden=True,enabled=False)
+    async def tts(self, ctx):
+        await self.bot.send_message(ctx.message.channel, ctx.message.content.split(' ',1)[1],tts=True)
+
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))
