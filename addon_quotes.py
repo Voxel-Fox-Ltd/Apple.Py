@@ -30,8 +30,6 @@ class Quote:
     async def quoteAdd(self, ctx, *, message:str):
         i = giveAllowances(ctx)
         x = len(i['Quotes'])+1
-        # Determine if the string is a message ID
-        # Else string is string to be added
         i['Quotes'][str(x)] = [ctx.message.content.split(' ',2)[2],'```\nQuote added by {0.name} ({0.id}) at {1}GMT```'.format(ctx.message.author, str(datetime.datetime.now())[:-7])]
         writeAllow(ctx, i)
         await self.bot.say("Quote added as number `{}` c:".format(str(x)))
@@ -61,6 +59,22 @@ class Quote:
             await self.bot.say(p)
         except KeyError:
             await self.bot.say("That quote doesn't exist yet ;-;")
+
+
+    @quote.command(pass_context=True,name='addid')
+    async def quoteByID(self, ctx, *, idStr:str):
+        i = giveAllowances(ctx)
+        x = len(i['Quotes'])+1
+        try:
+            message = await self.bot.get_message(ctx.message.channel, idStr)
+        except discord.NotFound:
+            await self.bot.say("I couldn't find that message ID in this channel.")
+            return
+        i['Quotes'][str(x)] = [message.content,
+            '```\nMessage of id {0.id} was made by {0.author.name} ({0.author.id}) at {1}```'.format(message, str(message.timestamp)[:-7])+
+            '```\nQuote added by {0.name} ({0.id}) at {1}GMT```'.format(ctx.message.author, str(datetime.datetime.now())[:-7])]
+        writeAllow(ctx, i)
+        await self.bot.say("Quote added as number `{}` c:".format(str(x)))
 
 
 
