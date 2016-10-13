@@ -26,7 +26,13 @@ class Voice():
             self.voice[ctx.message.server.id][1] = None
         except:
             pass
-        self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player('ytsearch:'+searchTerm)
+
+        if 'youtube.com' in searchTerm.lower() or 'youtu.be' in searchTerm.lower():
+            pass
+        else:
+            searchTerm = 'ytsearch:' + searchTerm
+
+        self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player(searchTerm)
         self.voice[ctx.message.server.id][1].start()
         self.voice[ctx.message.server.id][1].volume = 0.2
         lenth = str(datetime.timedelta(seconds=self.voice[ctx.message.server.id][1].duration))
