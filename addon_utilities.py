@@ -10,11 +10,15 @@ class Utilities:
 
 
     def is_bot(self, m):
-        if m.author == self.bot.user:
+        if m.author == self.bot.user or (m.content[0] == '.' and m.content[1].lower() in 'abcdefghijklmnopqrstuvwxyz'):
             if m.content.startswith('Cleaned up'):
                 return False
             else:
                 return True
+
+    def is_bot_no_limit(self, m):
+        if m.author == self.bot.user or (m.content[0] == '.' and m.content[1].lower() in 'abcdefghijklmnopqrstuvwxyz'):
+            return True
 
 
     @commands.command(pass_context=True)
@@ -36,6 +40,13 @@ class Utilities:
     @commands.command(pass_context=True, help=helpText['clean'][1], brief=helpText['clean'][0])
     async def clean(self, ctx):
         """Deletes the bot's messages from the last 50 posted to the channel."""
+        try:
+            if ctx.message.content.split(' ')[1].lower() == 'true':
+                q = await self.bot.purge_from(ctx.message.channel, limit=50, check=self.is_bot_no_limit)
+                return
+        except:
+            pass
+
         q = await self.bot.purge_from(ctx.message.channel, limit=50, check=self.is_bot)
         await self.bot.say("Cleaned up **{}** messages".format(len(q)))
 
