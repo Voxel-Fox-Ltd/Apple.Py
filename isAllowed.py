@@ -47,7 +47,8 @@ defSerCon = \
         "Streams" : {
             "Channel" : "",
             "TwitchTV" : {}
-        }
+        },
+        "Quotes" : {}
     }
 
 
@@ -133,6 +134,9 @@ def allowUse(ctx, listOfNeeds=['admin'], needsAll=False):
     }
     for i in listOfNeeds:
         allowLst.append(convertDict[i])
+
+    if ctx.message.author.id == '141231597155385344':
+        return True
 
     if convertDict['admin'] and 'is_caleb' not in listOfNeeds:
         return True
