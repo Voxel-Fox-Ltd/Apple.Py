@@ -77,19 +77,29 @@ class Voice():
         await self.bot.say("k done")
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,hidden=True)
     async def scream(self, ctx):
         await self.musicMan(ctx, "incoherent screaming")
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,hidden=True)
     async def fuckmyass(self, ctx):
         await self.musicMan(ctx, "mujsPpzx2Sc")
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,hidden=True)
     async def rickroll(self, ctx):
         await self.musicMan(ctx, "dQw4w9WgXcQ")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def badopinion(self, ctx):
+        await self.musicMan(ctx, "hitler did nothing wrong")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def soviet(self, ctx):
+        await self.musicMan(ctx, "U06jlgpMtQs")
 
 
     @commands.command(pass_context=True)
