@@ -77,10 +77,11 @@ class Fun():
 
     @commands.command(pass_context=True, description='Gives you a random picture of a cat.',aliases=['kitty','kitten','kittycat','kittykat','cittycat','kittykit'])
     async def cat(self, ctx):
-        edit = await self.bot.say(waitmessage)
+        # edit = await self.bot.say(waitmessage)
         page = requests.get('http://thecatapi.com/api/images/get?format=src')
         print("Got a cat picture :: %s" % page.url)
-        await self.bot.edit_message(edit, page.url)
+        # await self.bot.edit_message(edit, page.url)
+        await self.bot.say(page.url + ' :3')
 
 
     @commands.command(pass_context=True, description='Prints out some Skyrim guard text.')
@@ -319,7 +320,7 @@ class Fun():
             if o in '01236456789':
                 o = ':' + humanize.apnumber(int(o)) + ': '
             qw = qw + o
-        await self.bot.say(qw)
+        await self.bot.say(qw.replace(':0:',':zero:'))
 
 
     @commands.command(pass_context=True)
