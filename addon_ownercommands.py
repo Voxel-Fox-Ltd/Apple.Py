@@ -93,6 +93,27 @@ class OwnerCommands():
             await self.bot.say(notallowed)
 
 
+    ## Unnloads an extention without restarting bot
+    @commands.command(aliases=["uldext",'uld'],pass_context=True)
+    async def unloadextension(self, ctx, *, ext: str=None):
+        """Reload bot extension"""
+        if allowUse(ctx, ['is_caleb']):
+            ## Check there's an extention being asked about
+            if ext == None:
+                await self.bot.say("Please choose an extension, currently available to be reloaded are:\n```" + "\n".join(self.bot.cogs) + "```")
+                return
+
+            await self.bot.say("Unloading extension...")
+            try: 
+                ## Unload it
+                self.bot.unload_extension(ext)
+            except: 
+                pass
+            await self.bot.say("Done!")
+        else:
+            await self.bot.say(notallowed)
+
+
     ## Changes the "playing" status of the bot
     @commands.command(pass_context=True,aliases=['playing'])
     async def game(self, ctx):
