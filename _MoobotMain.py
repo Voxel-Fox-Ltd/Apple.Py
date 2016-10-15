@@ -29,7 +29,7 @@ async def on_ready():
     except FileNotFoundError:
         pass
 
-    startup_extensions = []
+    startup_extensions = ['addon_ownercommands']
     for i in os.listdir(os.path.dirname(os.path.realpath(__file__))):
         if i.startswith('moobot_addon_'):
             startup_extensions.append(i[:-3])

@@ -1,1 +1,1 @@
-.help | c:
+.help
