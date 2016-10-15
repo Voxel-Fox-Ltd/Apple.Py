@@ -130,7 +130,7 @@ def allowUse(ctx, listOfNeeds=['admin'], needsAll=False):
         'emoji':permList.manage_emojis,
         'emojis':permList.manage_emojis,
         'manage_server':permList.manage_server,
-        'is_caleb': ctx.message.author.id == '141231597155385344'
+        'is_caleb': ctx.message.author.id in ['141231597155385344']
     }
     for i in listOfNeeds:
         allowLst.append(convertDict[i])
