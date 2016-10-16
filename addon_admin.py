@@ -70,11 +70,10 @@ class Admin():
             async for i in self.bot.logs_from(ctx.message.channel, limit=2):
                 message = i
         else:
-            message = self.bot.get_message(
+            message = await self.bot.get_message(
                 ctx.message.channel, ctx.message.content.split(' ')[1])
-            # message = discord.Object(ctx.message.content.split(' ')[1])
-            await self.bot.say(ctx.message.content.split(' ')[1])
-            await self.bot.say(type(message))
+            # await self.bot.say(ctx.message.content.split(' ')[1])
+            # await self.bot.say(type(message))
         try:
             await self.bot.pin_message(message)
         except discord.HTTPException as e:

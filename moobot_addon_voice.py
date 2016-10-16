@@ -10,10 +10,12 @@ class Voice():
         if not discord.opus.is_loaded():
             discord.opus.load_opus()
         for i in self.bot.servers:
-            self.voice[i.id] = [self.bot.voice_client_in(i), None, []]
+            # Voice[serverID] = [DiscordVoiceClient, [YTDLStreamPlayer], ChannelToTalkIn, Volume]
+            self.voice[i.id] = [self.bot.voice_client_in(i), None, None]
 
 
     async def musicMan(self, ctx, searchTerm):
+        self.voice[ctx.message.server.id][2] = ctx.message.channel
         try:
             self.voice[ctx.message.server.id][0] = await self.bot.join_voice_channel(ctx.message.author.voice_channel)
         except discord.InvalidArgument:
@@ -54,15 +56,15 @@ class Voice():
 
     @commands.command(pass_context=True)
     async def leave(self, ctx):
-        if self.voice[ctx.message.server.id]:
+        try:
             await self.voice[ctx.message.server.id][0].disconnect()
             self.voice[ctx.message.server.id][0] = None
             await self.bot.say("Okay bye :c")
-        else:
+        except:
             await self.bot.say("But I'm not there anyway? I'm sorry you want me gone so much, but like... chill.")
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,aliases=['p','P','PLAY'])
     async def play(self, ctx):
         await self.musicMan(ctx, ctx.message.content.split(' ',1)[1])
 
@@ -74,22 +76,50 @@ class Voice():
             return
         self.voice[ctx.message.server.id][1].stop()
         self.voice[ctx.message.server.id][1] = None 
+        self.voice[ctx.message.server.id][2] = None
+        self.voice[ctx.message.server.id][3] = []
         await self.bot.say("k done")
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,hidden=True)
     async def scream(self, ctx):
         await self.musicMan(ctx, "incoherent screaming")
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,hidden=True)
     async def fuckmyass(self, ctx):
         await self.musicMan(ctx, "mujsPpzx2Sc")
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,hidden=True)
     async def rickroll(self, ctx):
         await self.musicMan(ctx, "dQw4w9WgXcQ")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def badopinion(self, ctx):
+        await self.musicMan(ctx, "hitler did nothing wrong")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def soviet(self, ctx):
+        await self.musicMan(ctx, "U06jlgpMtQs")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def wet(self, ctx):
+        await self.musicMan(ctx, "Hit me with your wet dick")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def stfu(self, ctx):
+        await self.musicMan(ctx, "OLpeX4RRo28") 
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def flute(self, ctx):
+        toPlay = random.choice(['nF7lv1gfP1Q','2IRcM9qwDwo','Qh6z8qOaXro','VeFzYPKbz1g','GUhVe4DHN98','a-P0p_UtagM'])
+        await self.musicMan(ctx, toPlay)
 
 
     @commands.command(pass_context=True)
@@ -116,16 +146,26 @@ class Voice():
         await self.bot.say('kden')
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,aliases=['vol','v'])
     async def volume(self, ctx):
         if self.voice[ctx.message.server.id][1] == None:
             await self.bot.say("I aint playin anythin m8")
             return
-        toVol = int(ctx.message.content.split(' ')[1])
-        if toVol > 200:
-            toVol = 200
+        toVol = float(ctx.message.content.split(' ')[1])
+        maxVol = 100
+        if toVol > maxVol:
+            toVol = maxVol
         if toVol < 0: 
             toVol = 0
+        self.voice[ctx.message.server.id][1].volume = toVol/100
+        await self.bot.say("Volume changed to {}%".format(toVol))
+
+
+    @commands.command(pass_context=True,aliases=[])
+    async def np(self, ctx):
+        if self.voice[ctx.message.server.id][1] == None:
+            await self.bot.say("You are `1/{}` of the way through your life".format(random.randint(2,15)))
+            return
         self.voice[ctx.message.server.id][1].volume = toVol/100
         await self.bot.say("Volume changed to {}%".format(toVol))
 

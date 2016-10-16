@@ -13,7 +13,7 @@ class Misc:
     @commands.command()
     async def git(self):
         """Plonks the link to my Github in chat."""
-        await self.bot.say("Feel free to fork me!\n<https://github.com/4Kaylum/SkyBot>")
+        await self.bot.say("Feel free to fork me!\n<https://github.com/4Kaylum/Apple.py>")
 
 
     @commands.command(pass_context=True, help=helpText['invite'][1], brief=helpText['invite'][0])
