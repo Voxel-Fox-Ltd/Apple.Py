@@ -5,7 +5,7 @@ steam.api.key.set(tokens['Steam'])
 wolfClient = wolframalpha.Client(tokens['Wolfram'])
 furryPorn = 'https://e621.net/post/index.json?'
 r_e = praw.Reddit(user_agent="A post searcher for a Discord user.")
-imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
+# imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
 translator = Translator(tokens['MSTransID'], tokens['MSTransSecret'])
 
 
@@ -220,8 +220,8 @@ Username :: %s
                 break
             ret = ret[0]
             rUrl = ret.url
-            if 'imgur' in rUrl.lower():
-                rUrl = imgurAlbumToItems(rUrl)
+            # if 'imgur' in rUrl.lower():
+            #     rUrl = imgurAlbumToItems(rUrl)
             await self.bot.edit_message(edit, '**%s**\n%s' % (ret.title, rUrl))
 
         except praw.errors.InvalidSubreddit:
@@ -240,7 +240,8 @@ Username :: %s
 
         print("Searching Imgur :: %s" % query)
         for i in imgurUsr.gallery_search(query, sort='viral'):
-            await self.bot.edit_message(edit, '**%s**\n%s' % (i.title, imgurAlbumToItems(i)))
+            # await self.bot.edit_message(edit, '**%s**\n%s' % (i.title, imgurAlbumToItems(i)))
+            await self.bot.edit_message(edit, '**%s**\n%s' % (i.title, i.url))
             return
 
     @commands.command(pass_context=True, description='Searches E621 for some furry shit.', enabled=False, hidden=True)

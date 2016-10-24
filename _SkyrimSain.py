@@ -21,7 +21,7 @@ discordToken = tokens['Skybot']
 mashapeKey = {"X-Mashape-Key":
               tokens['Mashape']}
 htmlHead = {'Accept-Endoding': 'identity'}
-imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
+# imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
 
 
 # Make the bot more unicode-friendly
@@ -181,16 +181,16 @@ async def on_message(message):
         pass
 
     # Read Imgur album into images
-    if 'imgur.com/' in message.content and aq['ImgurAlbum']['Enabled'] == 'True':
-        if 'imgur.com/a/' in message.content:
-            imLink = message.content.split('imgur.com/a/')[1][:5]
-        elif 'imgur.com/gallery/' in message.content:
-            imLink = message.content.split('imgur.com/gallery/')[1][:5]
-        try:
-            imLink = imgurAlbumToItems(imLink)
-            await bot.send_message(message.channel, '%s\n%s' % (message.author.mention, imLink))
-        except UnboundLocalError:
-            pass
+    # if 'imgur.com/' in message.content and aq['ImgurAlbum']['Enabled'] == 'True':
+    #     if 'imgur.com/a/' in message.content:
+    #         imLink = message.content.split('imgur.com/a/')[1][:5]
+    #     elif 'imgur.com/gallery/' in message.content:
+    #         imLink = message.content.split('imgur.com/gallery/')[1][:5]
+    #     try:
+    #         imLink = imgurAlbumToItems(imLink)
+    #         await bot.send_message(message.channel, '%s\n%s' % (message.author.mention, imLink))
+    #     except UnboundLocalError:
+    #         pass
 
     if continueWithComms:
         await bot.process_commands(message)
