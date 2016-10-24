@@ -15,6 +15,20 @@ class Voice():
 
 
     async def musicMan(self, ctx, searchTerm):
+        if ctx.message.author.id != '141231597155385344':
+            if searchTerm.split(' ')[-2].lower() not in ['please','plx','plz','pl0x','pliz'] and searchTerm.split(' ')[-1].lower() not in ['sir','master','daddy','mr','daddy-kun']:
+                await self.bot.say("Say 'please daddy' ;3")
+                return
+            else:
+                if random.randint(0,100) == 2:
+                    await self.bot.say('No. Fuck yourself.')
+                    return
+                qw = searchTerm.split(' ')
+                del qw[-1]
+                del qw[-1]
+                # del qw[-1]
+                searchTerm = ' '.join(qw)
+
         self.voice[ctx.message.server.id][2] = ctx.message.channel
         try:
             self.voice[ctx.message.server.id][0] = await self.bot.join_voice_channel(ctx.message.author.voice_channel)
@@ -76,8 +90,8 @@ class Voice():
             return
         self.voice[ctx.message.server.id][1].stop()
         self.voice[ctx.message.server.id][1] = None 
-        self.voice[ctx.message.server.id][2] = None
-        self.voice[ctx.message.server.id][3] = []
+        # self.voice[ctx.message.server.id][2] = None
+        # self.voice[ctx.message.server.id][3] = []
         await self.bot.say("k done")
 
 
@@ -117,9 +131,24 @@ class Voice():
 
 
     @commands.command(pass_context=True,hidden=True)
+    async def kim(self, ctx):
+        await self.musicMan(ctx, "kim possible theme")
+
+
+    @commands.command(pass_context=True,hidden=True)
     async def flute(self, ctx):
         toPlay = random.choice(['nF7lv1gfP1Q','2IRcM9qwDwo','Qh6z8qOaXro','VeFzYPKbz1g','GUhVe4DHN98','a-P0p_UtagM'])
         await self.musicMan(ctx, toPlay)
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def putin(self, ctx):
+        await self.musicMan(ctx, "PUTIN IS NUMBER ONE GREATEST PRESIDENT SONG")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def bike(self, ctx):
+        await self.musicMan(ctx, "nigger stole my bike")
 
 
     @commands.command(pass_context=True)
@@ -166,8 +195,8 @@ class Voice():
         if self.voice[ctx.message.server.id][1] == None:
             await self.bot.say("You are `1/{}` of the way through your life".format(random.randint(2,15)))
             return
-        self.voice[ctx.message.server.id][1].volume = toVol/100
-        await self.bot.say("Volume changed to {}%".format(toVol))
+        lenth = str(datetime.timedelta(seconds=self.voice[ctx.message.server.id][1].duration))
+        await self.bot.say("Now playing :: `{0.title}` :: `[{1}]`".format(self.voice[ctx.message.server.id][1], lenth))
 
 
 
