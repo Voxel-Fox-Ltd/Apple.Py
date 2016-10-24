@@ -17,12 +17,25 @@ class Admin():
         if allowUse(ctx, ['ban']) == False:
             await self.bot.say(notallowed)
             return
+
+        try:
+            x = ctx.message.content.split(' ',2)[2]
+        except:
+            await self.bot.say('Please give a reason.')
+            return
+
+        try:
+            await self.bot.ban(ctx.message.mentions[0])
+            await self.bot.send_message(ctx.message.mentions[0], "You have been banned from **{}** for the following :: \n{}".format(ctx.message.server.name, x))
+        except:
+            await self.bot.say("Privellage level too low.")
+            return
+
         await self.bot.say("**{}** has been banned.".format(ctx.message.mentions[0]))
         i = giveAllowances(ctx)
         if i['Bans']['Channel'] != '':
             server = discord.Object(i['Bans']['Channel'])
-            await self.bot.send_message(server, "**{}** has been banned.".format(ctx.message.mentions[0]))
-        await self.bot.ban(ctx.message.mentions[0])
+            await self.bot.send_message(server, "**{}** has been banned by {} for the following :: \n{}".format(ctx.message.mentions[0], ctx.message.author.mention, x))
 
 
     @commands.command(pass_context=True)
@@ -31,12 +44,25 @@ class Admin():
         if allowUse(ctx, ['kick']) == False:
             await self.bot.say(notallowed)
             return
+
+        try:
+            x = ctx.message.content.split(' ',2)[2]
+        except:
+            await self.bot.say('Please give a reason.')
+            return
+
+        try:
+            await self.bot.kick(ctx.message.mentions[0])
+            await self.bot.send_message(ctx.message.mentions[0], "You have been kicked from **{}** for the following :: \n{}".format(ctx.message.server.name, x))
+        except:
+            await self.bot.say("Privellage level too low.")
+            return
+
         await self.bot.say("**{}** has been kicked.".format(ctx.message.mentions[0]))
         i = giveAllowances(ctx)
         if i['Bans']['Channel'] != '':
             server = discord.Object(i['Bans']['Channel'])
-            await self.bot.send_message(server, "**{}** has been kicked.".format(ctx.message.mentions[0]))
-        await self.bot.kick(ctx.message.mentions[0])
+            await self.bot.send_message(server, "**{}** has been kicked by {} for the following :: \n{}".format(ctx.message.mentions[0], ctx.message.author.mention, x))
 
 
     @commands.group(pass_context=True,hidden=True)
