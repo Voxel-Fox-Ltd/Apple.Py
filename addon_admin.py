@@ -26,10 +26,13 @@ class Admin():
 
         try:
             await self.bot.ban(ctx.message.mentions[0])
+        except:
+            await self.bot.say("Privilege level too low.")
+            return
+        try:
             await self.bot.send_message(ctx.message.mentions[0], "You have been banned from **{}** for the following :: \n{}".format(ctx.message.server.name, x))
         except:
-            await self.bot.say("Privellage level too low.")
-            return
+            pass
 
         await self.bot.say("**{}** has been banned.".format(ctx.message.mentions[0]))
         i = giveAllowances(ctx)
@@ -53,10 +56,13 @@ class Admin():
 
         try:
             await self.bot.kick(ctx.message.mentions[0])
+        except:
+            await self.bot.say("Privilege level too low.")
+            return
+        try:
             await self.bot.send_message(ctx.message.mentions[0], "You have been kicked from **{}** for the following :: \n{}".format(ctx.message.server.name, x))
         except:
-            await self.bot.say("Privellage level too low.")
-            return
+            pass
 
         await self.bot.say("**{}** has been kicked.".format(ctx.message.mentions[0]))
         i = giveAllowances(ctx)
