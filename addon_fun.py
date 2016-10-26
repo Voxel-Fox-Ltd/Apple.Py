@@ -37,9 +37,8 @@ class Fun():
 
 
     @aes.command(pass_context=True, description='Makes your string into a coolio thingmie.')
-    async def sq(self, ctx):
-        a = ctx.message.content.split(
-            ' ', 2)[2].upper()  # knock off the ".as "
+    async def sq(self, ctx, *, message : str):
+        a = message
         for i in a:
             if i == '\n':
                 return self.bot.say("Please have your word on one line.")
@@ -111,12 +110,12 @@ class Fun():
 
 
     @aes.command(pass_context=True)
-    async def sp(self, ctx):
+    async def sp(self, ctx, *, message : str):
         ret = '```\n'
         if '\n' in ctx.message.content:
             await self.bot.say("Please only use one line in your input.")
             return
-        toAlt = list(ctx.message.content.split(' ', 2)[2])
+        toAlt = list(message)
         for i in range(0, 4):
             for o in toAlt:
                 ret = ret + o + ' ' * i
@@ -133,9 +132,9 @@ class Fun():
 
 
     @commands.command(pass_context=True, description='Gives you love, gives you life.')
-    async def love(self, ctx):
-        a = ctx.message.content[len(ctx.message.content.split(' ')[0]) + 1:]
-        if a == "":
+    async def love(self, ctx, *, message : str):
+        a = message
+        if a == None:
             p = "What do you love?"
         else:
             a = "%s is love, %s is life." % (a, a)
@@ -155,9 +154,8 @@ class Fun():
 
 
     @commands.command(pass_context=True, description='')
-    async def weather(self, ctx):
-        placeName = ctx.message.content[
-            len(ctx.message.content.split(' ')[0]) + 1:]
+    async def weather(self, ctx, *, message : str = ''):
+        placeName = message
         if placeName == '':
             await self.bot.say("Please provide a location to check the weather of.")
             return
@@ -186,8 +184,7 @@ class Fun():
 
 
     @commands.command(pass_context=True, description='Lets you talk to Cleverbot.')
-    async def c(self, ctx):
-        query = ctx.message.content.split(' ',1)[1]
+    async def c(self, ctx, *, query : str):
         edit = await self.bot.say(waitmessage)
         x = cb.ask(query)
         print("Taling to Cleverbot :: \n    %s\n    %s" % (query, x))
@@ -195,8 +192,7 @@ class Fun():
 
 
     @commands.command(pass_context=True, description='Evaluates the given codeset.')
-    async def ev(self, ctx):
-        toEx = ctx.message.content.split(' ',1)[1]
+    async def ev(self, ctx, *, toEx):
         server = ctx.message.server 
         author = ctx.message.author 
         channel = ctx.message.channel
@@ -217,10 +213,8 @@ class Fun():
             await self.bot.say("Please use `help binary` to see how to use this command properly.")
 
 
-    @binary.command(pass_context=True, name='tobinary')
-    async def toBinary(self, ctx):
-        text = ctx.message.content
-        text = text[len(text.split(' ')[0]) + len(text.split(' ')[1]) + 2:]
+    @binary.command(pass_context=True, name='tobinary', aliases=['tonumbers','fromtext','fromascii'])
+    async def toBinary(self, ctx, *, text : str):
         letters = list(text)
         binary = []
         for i in letters:
@@ -232,10 +226,8 @@ class Fun():
         await self.bot.say(out)
 
 
-    @binary.command(pass_context=True, name='totext')
-    async def toAscii(self, ctx):
-        text = ctx.message.content
-        text = text[len(text.split(' ')[0]) + len(text.split(' ')[1]) + 2:]
+    @binary.command(pass_context=True, name='totext', aliases=['frombinary','toascii','fromnumbers'])
+    async def toAscii(self, ctx, *, text : str):
         if len(text.split(' ')) > 1:
             binary = text.split(' ')
         else:
@@ -250,10 +242,10 @@ class Fun():
 
 
     @commands.command(pass_context=True)
-    async def mc(self, ctx):
-        try:
-            character = ctx.message.content.split(' ', 1)[1].replace(' ','_')
-        except IndexError:
+    async def mc(self, ctx, character : str = None):
+        if character != None:
+            pass
+        else:
             await self.bot.say("Please provide a Minecraft username.")
             return
 
@@ -262,10 +254,13 @@ class Fun():
 
 
     @commands.command(pass_context=True)
-    async def meme(self, ctx):
-        spl = ctx.message.content.split('\n')
+    async def meme(self, ctx, *, message : str = None):
+        if message == None:
+            await self.bot.say("Please give an image and top/bottom text.")
+            return
+        spl = message.split('\n')
 
-        url = spl[0].split(' ', 1)[1].replace(' ', '')
+        url = spl[0].replace(' ', '')
         try:
             topText = spl[1].replace(
                 '-', '--').replace('_', '__').replace(' ', '-').replace('?', '~q')
@@ -291,13 +286,6 @@ class Fun():
             await self.bot.delete_message(ctx.message)
         except:
             pass
-        # await self.bot.say(ctx.message.author.mention)
-        # await self.bot.send_file(ctx.message.channel,
-        #     requests.get("http://memegen.link/custom/{}/{}.jpg?alt={}".format(
-        #     topText,
-        #     botText,
-        #     url)).content
-        # )
         await self.bot.say("{} http://memegen.link/custom/{}/{}.jpg?alt={}".format(
             ctx.message.author.mention,
             topText,
@@ -306,12 +294,9 @@ class Fun():
 
 
     @commands.command(pass_context=True)
-    async def big(self, ctx):
-        toReplace = ctx.message.content.split(' ',1)[1].lower()
-        # qw = toReplace.replace(" ", )
+    async def big(self, ctx, *, toReplace : str):
+        toReplace = toReplace.lower()
         qw = ''
-        # for i in 'abcdefghijklmnopqrstuvwxyz':
-        #     qw = qw.replace(i, ":regional_indicator_{}: ".format(i))
         for o in toReplace:
             if o in 'abcdefghijklmnopqrstuvwxyz':
                 o = ":regional_indicator_{}: ".format(o)
@@ -355,6 +340,17 @@ class Fun():
         im.close()
         with open("jpegTEMP.jpg", "rb") as a:
             await self.bot.send_file(ctx.message.channel, a)
+
+
+    @commands.command(pass_context=True, description='Gives the lenny face.')
+    async def urban(self, ctx, *, message : str):
+        try:
+            x = urbandictionary.define(message)[0]
+        except:
+            await self.bot.say("There were no definitions for `{}`.".format(message))
+            return
+        y = "`{}` :: {}".format(x.word, x.definition)
+        await self.bot.say(y)
 
 
 def setup(bot):

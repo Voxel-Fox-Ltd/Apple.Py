@@ -25,3 +25,4 @@ from cleverbot import Cleverbot
 from pyowm import OWM
 import asyncio
 import logging
+import urbandictionary
