@@ -15,19 +15,21 @@ class Voice():
 
 
     async def musicMan(self, ctx, searchTerm):
-        if ctx.message.author.id != '141231597155385344':
-            if searchTerm.split(' ')[-2].lower() not in ['please','plx','plz','pl0x','pliz'] and searchTerm.split(' ')[-1].lower() not in ['sir','master','daddy','mr','daddy-kun']:
-                await self.bot.say("Say 'please daddy' ;3")
-                return
-            else:
-                if random.randint(0,100) == 2:
-                    await self.bot.say('No. Fuck yourself.')
-                    return
-                qw = searchTerm.split(' ')
-                del qw[-1]
-                del qw[-1]
-                # del qw[-1]
-                searchTerm = ' '.join(qw)
+        # termOne = ['fuck','fuk','fukc','fuck','fuq','faq'] # ['please','plx','plz','pl0x','pliz']
+        # termTwo = ['george','gozzy','auguste','aughuste','auguste','auguste','gervase','gervaise'] # ['sir','master','daddy','mr','daddy-kun']
+        # if ctx.message.author.id != '141231597155385344':
+        #     if searchTerm.split(' ')[-2].lower() not in termOne or searchTerm.split(' ')[-1].lower() not in termTwo:
+        #         await self.bot.say("Say '{} {}' ;3".format(termOne[0], termTwo[0]))
+        #         return
+        #     else:
+        #         if random.randint(0,100) == 2:
+        #             await self.bot.say('No. Fuck yourself.')
+        #             return
+        #         qw = searchTerm.split(' ')
+        #         del qw[-1]
+        #         del qw[-1]
+        #         # del qw[-1]
+        #         searchTerm = ' '.join(qw)
 
         self.voice[ctx.message.server.id][2] = ctx.message.channel
         try:
