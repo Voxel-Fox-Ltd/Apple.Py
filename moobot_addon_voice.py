@@ -7,31 +7,20 @@ class Voice():
     def __init__(self, bot):
         self.bot = bot
         self.voice = {}
+
+        # Start OPUS if not loaded
         if not discord.opus.is_loaded():
             discord.opus.load_opus()
+
+        # Load what VCs it's already in
         for i in self.bot.servers:
-            # Voice[serverID] = [DiscordVoiceClient, [YTDLStreamPlayer], ChannelToTalkIn, Volume]
-            self.voice[i.id] = [self.bot.voice_client_in(i), None, None]
+            # [VoiceClient, StreamClient]
+            self.voice[i.id] = [self.bot.voice_client_in(i), None]
 
 
     async def musicMan(self, ctx, searchTerm):
-        # termOne = ['fuck','fuk','fukc','fuck','fuq','faq'] # ['please','plx','plz','pl0x','pliz']
-        # termTwo = ['george','gozzy','auguste','aughuste','auguste','auguste','gervase','gervaise'] # ['sir','master','daddy','mr','daddy-kun']
-        # if ctx.message.author.id != '141231597155385344':
-        #     if searchTerm.split(' ')[-2].lower() not in termOne or searchTerm.split(' ')[-1].lower() not in termTwo:
-        #         await self.bot.say("Say '{} {}' ;3".format(termOne[0], termTwo[0]))
-        #         return
-        #     else:
-        #         if random.randint(0,100) == 2:
-        #             await self.bot.say('No. Fuck yourself.')
-        #             return
-        #         qw = searchTerm.split(' ')
-        #         del qw[-1]
-        #         del qw[-1]
-        #         # del qw[-1]
-        #         searchTerm = ' '.join(qw)
 
-        self.voice[ctx.message.server.id][2] = ctx.message.channel
+        # Attempt to join the calling user's VC
         try:
             self.voice[ctx.message.server.id][0] = await self.bot.join_voice_channel(ctx.message.author.voice_channel)
         except discord.InvalidArgument:
@@ -39,39 +28,53 @@ class Voice():
             return
         except discord.ClientException:
             pass
+
+        # Stop any playing music currently if there is any
         try:
             self.voice[ctx.message.server.id][1].stop()
             self.voice[ctx.message.server.id][1] = None
         except:
             pass
 
-        if 'youtube.com' in searchTerm.lower() or 'youtu.be' in searchTerm.lower():
+        # Differentiate between search terms and other
+        if 'http://' in searchTerm.lower():
             pass
         else:
             searchTerm = 'ytsearch:' + searchTerm
 
+        # Create StreamClient
         self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player(searchTerm)
         self.voice[ctx.message.server.id][1].start()
         self.voice[ctx.message.server.id][1].volume = 0.2
+
+        # Output to client
         lenth = str(datetime.timedelta(seconds=self.voice[ctx.message.server.id][1].duration))
         await self.bot.say("Now playing :: `{0.title}` :: `[{1}]`".format(self.voice[ctx.message.server.id][1], lenth))
 
 
     @commands.command(pass_context=True)
     async def join(self, ctx):
+        await self.joinNoCommand(ctx, True)
+
+
+    async def joinNoComman(self, ctx, outputToClient = False):
+
+        # Attempt to join the calling user's VC
         try:
             self.voice[ctx.message.server.id][0] = await self.bot.join_voice_channel(ctx.message.author.voice_channel)
         except discord.InvalidArgument:
-            await self.bot.say("You're not in a VC .-.")
+            if outputToClient: await self.bot.say("You're not in a VC .-.")
             return
         except discord.ClientException:
-            await self.bot.say("I-I'm already here though... ;-;")
+            if outputToClient: await self.bot.say("I-I'm already here though... ;-;")
             return
-        await self.bot.say("Joined ya~")
+        if outputToClient: await self.bot.say("Joined ya~")
 
 
     @commands.command(pass_context=True)
     async def leave(self, ctx):
+
+        # Attempt to disconnect from any joined VC in the server
         try:
             await self.voice[ctx.message.server.id][0].disconnect()
             self.voice[ctx.message.server.id][0] = None
@@ -80,21 +83,24 @@ class Voice():
             await self.bot.say("But I'm not there anyway? I'm sorry you want me gone so much, but like... chill.")
 
 
-    @commands.command(pass_context=True,aliases=['p','P','PLAY'])
-    async def play(self, ctx):
-        await self.musicMan(ctx, ctx.message.content.split(' ',1)[1])
-
-
     @commands.command(pass_context=True, aliases=['syop'])
     async def stop(self, ctx):
+        await self.stopNoCommand(ctx, True)
+
+
+    async def stopNoCommand(self, ctx, outputToClient = False):
+        # Attempt to stop the currently playing StreamClient
         if self.voice[ctx.message.server.id][1] == None:
-            await self.bot.say("I'm not playing anything but okay whatever")
+            if outputToClient: await self.bot.say("I'm not playing anything but okay whatever")
             return
         self.voice[ctx.message.server.id][1].stop()
         self.voice[ctx.message.server.id][1] = None 
-        # self.voice[ctx.message.server.id][2] = None
-        # self.voice[ctx.message.server.id][3] = []
-        await self.bot.say("k done")
+        if outputToClient: await self.bot.say("k done")
+
+
+    @commands.command(pass_context=True,aliases=['p','P','PLAY'])
+    async def play(self, ctx):
+        await self.musicMan(ctx, ctx.message.content.split(' ',1)[1])
 
 
     @commands.command(pass_context=True,hidden=True)
@@ -139,7 +145,8 @@ class Voice():
 
     @commands.command(pass_context=True,hidden=True)
     async def flute(self, ctx):
-        toPlay = random.choice(['nF7lv1gfP1Q','2IRcM9qwDwo','Qh6z8qOaXro','VeFzYPKbz1g','GUhVe4DHN98','a-P0p_UtagM'])
+        fluteSongs = ['nF7lv1gfP1Q','2IRcM9qwDwo','Qh6z8qOaXro','VeFzYPKbz1g','GUhVe4DHN98','a-P0p_UtagM']
+        toPlay = random.choice(fluteSongs)
         await self.musicMan(ctx, toPlay)
 
 
@@ -151,6 +158,11 @@ class Voice():
     @commands.command(pass_context=True,hidden=True)
     async def bike(self, ctx):
         await self.musicMan(ctx, "nigger stole my bike")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def succ(self, ctx):
+        await self.musicMan(ctx, "succ")
 
 
     @commands.command(pass_context=True)
