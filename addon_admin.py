@@ -12,27 +12,32 @@ class Admin():
 
 
     @commands.command(pass_context=True)
-    async def ban(self, ctx):
+    async def ban(self, ctx, user : str = None, *, reason : str = None):
         """Ban command."""
         if allowUse(ctx, ['ban']) == False:
             await self.bot.say(notallowed)
             return
 
+        x = reason
         try:
-            x = ctx.message.content.split(' ',2)[2]
+            user = ctx.message.mentions[0]
         except:
-            await self.bot.say('Please give a reason.')
+            if '<@' in ctx.message.content:
+                await self.bot.say("That user doesn't exist but okay.")
+                return
+        if x == None or user == None:
+            await self.bot.say('Please tag a user and give a reason.')
             return
 
-        try:
-            await self.bot.ban(ctx.message.mentions[0])
-        except:
+        if user.top_role.position < ctx.message.server.get_member(self.bot.user.id).top_role.position:
+            try:
+                await self.bot.send_message(ctx.message.mentions[0], "You have been banned from **{}** for the following :: \n{}".format(ctx.message.server.name, x))
+            except:
+                pass
+            await self.bot.ban(user)
+        else:
             await self.bot.say("Privilege level too low.")
             return
-        try:
-            await self.bot.send_message(ctx.message.mentions[0], "You have been banned from **{}** for the following :: \n{}".format(ctx.message.server.name, x))
-        except:
-            pass
 
         await self.bot.say("**{}** has been banned.".format(ctx.message.mentions[0]))
         i = giveAllowances(ctx)
@@ -42,27 +47,38 @@ class Admin():
 
 
     @commands.command(pass_context=True)
-    async def kick(self, ctx):
+    async def kick(self, ctx, user : str = None, *, reason : str = None):
         """Kick command."""
         if allowUse(ctx, ['kick']) == False:
             await self.bot.say(notallowed)
             return
 
+        x = reason
         try:
-            x = ctx.message.content.split(' ',2)[2]
+            user = ctx.message.mentions[0]
         except:
-            await self.bot.say('Please give a reason.')
+            if '<@' in ctx.message.content:
+                await self.bot.say("That user doesn't exist but okay.")
+                return
+        if x == None or user == None:
+            await self.bot.say('Please tag a user and give a reason.')
             return
 
         try:
-            await self.bot.kick(ctx.message.mentions[0])
+            inviteLink = await self.bot.create_invite(ctx.message.server)
+            inviteLink = inviteLink.url
         except:
+            inviteLink = "`COULD NOT CREATE INVITE LINK`"
+
+        if user.top_role.position < ctx.message.server.get_member(self.bot.user.id).top_role.position:
+            try:
+                await self.bot.send_message(ctx.message.mentions[0], "You have been kicked from **{}** for the following :: \n{}\n\nRejoin when you're ready :: {}".format(ctx.message.server.name, x, inviteLink))
+            except:
+                pass
+            await self.bot.kick(user)
+        else:
             await self.bot.say("Privilege level too low.")
             return
-        try:
-            await self.bot.send_message(ctx.message.mentions[0], "You have been kicked from **{}** for the following :: \n{}".format(ctx.message.server.name, x))
-        except:
-            pass
 
         await self.bot.say("**{}** has been kicked.".format(ctx.message.mentions[0]))
         i = giveAllowances(ctx)
