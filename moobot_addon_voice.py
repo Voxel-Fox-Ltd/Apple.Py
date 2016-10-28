@@ -14,11 +14,23 @@ class Voice():
 
         # Load what VCs it's already in
         for i in self.bot.servers:
-            # [VoiceClient, StreamClient]
-            self.voice[i.id] = [self.bot.voice_client_in(i), None]
+            # [VoiceClient, StreamClient, Volume, LastCalled, QueuedSearchTerms]
+            self.voice[i.id] = [self.bot.voice_client_in(i), None, 0.2, 0.0, [None]]
 
 
-    async def musicMan(self, ctx, searchTerm):
+    async def musicMan(self, ctx, searchTerm=None):
+
+        # if self.voice[ctx.message.server.id][3].append()
+
+        if time.time() > self.voice[ctx.message.server.id][3] + 5:
+            self.voice[ctx.message.server.id][3] = time.time()
+        else:
+            await self.bot.say("Please wait 5 seconds between songs before calling another.")
+            return
+
+        if ctx.message.author.id == '178964476480061440':
+            await self.bot.say("Robbie is blacklisted.")
+            return
 
         # Attempt to join the calling user's VC
         try:
@@ -45,14 +57,14 @@ class Voice():
         # Create StreamClient
         self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player(searchTerm)
         self.voice[ctx.message.server.id][1].start()
-        self.voice[ctx.message.server.id][1].volume = 0.2
+        self.voice[ctx.message.server.id][1].volume = self.voice[ctx.message.server.id][2]
 
         # Output to client
         lenth = str(datetime.timedelta(seconds=self.voice[ctx.message.server.id][1].duration))
         await self.bot.say("Now playing :: `{0.title}` :: `[{1}]`".format(self.voice[ctx.message.server.id][1], lenth))
 
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, aliases=['summon'])
     async def join(self, ctx):
         await self.joinNoCommand(ctx, True)
 
@@ -83,7 +95,7 @@ class Voice():
             await self.bot.say("But I'm not there anyway? I'm sorry you want me gone so much, but like... chill.")
 
 
-    @commands.command(pass_context=True, aliases=['syop'])
+    @commands.command(pass_context=True, aliases=['syop','STOP','st0p','ST0P'])
     async def stop(self, ctx):
         await self.stopNoCommand(ctx, True)
 
@@ -99,8 +111,8 @@ class Voice():
 
 
     @commands.command(pass_context=True,aliases=['p','P','PLAY'])
-    async def play(self, ctx):
-        await self.musicMan(ctx, ctx.message.content.split(' ',1)[1])
+    async def play(self, ctx, *, searchTerm : str):
+        await self.musicMan(ctx, searchTerm)
 
 
     @commands.command(pass_context=True,hidden=True)
@@ -201,6 +213,7 @@ class Voice():
         if toVol < 0: 
             toVol = 0
         self.voice[ctx.message.server.id][1].volume = toVol/100
+        self.voice[ctx.message.server.id][2] = toVol/100
         await self.bot.say("Volume changed to {}%".format(toVol))
 
 
