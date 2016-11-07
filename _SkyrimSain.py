@@ -153,6 +153,9 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    if message.content.lower() == 'weed':
+        await bot.add_reaction(message, '🌿')
+
     # The people on my server are idiots.
     if message.content.lower().startswith('+volume') and message.server.id == '178070516353990657':
         num = message.content.split(' ')[1]
