@@ -76,11 +76,20 @@ class Fun():
 
     @commands.command(pass_context=True, description='Gives you a random picture of a cat.',aliases=['kitty','kitten','kittycat','kittykat','cittycat','kittykit'])
     async def cat(self, ctx):
-        # edit = await self.bot.say(waitmessage)
-        page = requests.get('http://thecatapi.com/api/images/get?format=src')
+        try:
+            await self.bot.add_reaction(ctx.message, '👀')
+            edit = None
+        except:
+            edit = await self.bot.say(waitmessage)
+
+        while True:
+            try:
+                page = requests.get('http://thecatapi.com/api/images/get?format=src')
+                break
+            except:
+                pass
         print("Got a cat picture :: %s" % page.url)
-        # await self.bot.edit_message(edit, page.url)
-        await self.bot.say(page.url + ' :3')
+        await self.bot.say(page.url + ' :3') if edit == None else await self.bot.edit_message(edit, page.url + ' :3')
 
 
     @commands.command(pass_context=True, description='Prints out some Skyrim guard text.')
@@ -145,12 +154,17 @@ class Fun():
 
     @commands.command(pass_context=True, aliases=['joke'], description='Gives a random pin from punoftheday.com.')
     async def pun(self, ctx):
-        edit = await self.bot.say(waitmessage)
+        try:
+            await self.bot.add_reaction(ctx.message, '👀')
+            edit = None
+        except:
+            edit = await self.bot.say(waitmessage)
+
         page = requests.get('http://www.punoftheday.com/cgi-bin/randompun.pl',
                             headers=htmlHead)
         out = page.text.split('dropshadow1')[1][6:].split('<')[0]
         print("Said a pun :: %s" % out)
-        await self.bot.edit_message(edit, out)
+        await self.bot.say(out) if edit == None else await self.bot.edit_message(edit, out)
 
 
     @commands.command(pass_context=True, description='')
@@ -160,7 +174,12 @@ class Fun():
             await self.bot.say("Please provide a location to check the weather of.")
             return
 
-        edit = await self.bot.say(waitmessage)
+        try:
+            await self.bot.add_reaction(ctx.message, '👀')
+            edit = None
+        except:
+            edit = await self.bot.say(waitmessage)
+
         weatherAtPlace = owm.weather_at_place(placeName)
         weath = weatherAtPlace.get_weather()
         wea_wind = weath.get_wind()['speed']  # mph
@@ -175,7 +194,7 @@ class Fun():
         ret = 'Weather in **%s**\n```\nWeather     :: %s\nTemperature :: %sC\nWindspeed   :: %smph```' % (
             weatherAtPlace.get_location().get_name(), wea_gene, wea_temp, wea_wind)
 
-        await self.bot.edit_message(edit, ret)
+        await self.bot.say(ret) if edit == None else await self.bot.edit_message(edit, ret)
 
 
     @commands.command(pass_context=True, description='Gives the look of disapproval.')
@@ -185,10 +204,16 @@ class Fun():
 
     @commands.command(pass_context=True, description='Lets you talk to Cleverbot.')
     async def c(self, ctx, *, query : str):
-        edit = await self.bot.say(waitmessage)
+        try:
+            await self.bot.add_reaction(ctx.message, '👀')
+            edit = None
+        except:
+            edit = await self.bot.say(waitmessage)
+
         x = cb.ask(query)
+        toOut = x.translate(non_bmp_map)
         print("Taling to Cleverbot :: \n    %s\n    %s" % (query, x))
-        await self.bot.edit_message(edit, x.translate(non_bmp_map))
+        await self.bot.say(toOut) if edit == None else await self.bot.edit_message(edit, toOut)
 
 
     @commands.command(pass_context=True, description='Evaluates the given codeset.')
@@ -314,13 +339,19 @@ class Fun():
         await self.bot.say('The current time, in GMT, is `{}`'.format(time))
 
 
-    @commands.command()
-    async def insult(self):
-        e = await self.bot.say("Please wait...")
+    @commands.command(pass_context=True)
+    async def insult(self, ctx):
+        try:
+            await self.bot.add_reaction(ctx.message, '👀')
+            edit = None
+        except:
+            edit = await self.bot.say(waitmessage)
+
         page = requests.get('http://www.insultgenerator.org/')
         con = page.content
         insult = con[431:-742]
-        await self.bot.edit_message(e, str(insult)[2:-1])
+        toOut = str(insult)[2:-1]
+        await self.bot.say(toOut) if edit == None else await self.bot.edit_message(edit, toOut)
 
 
     @commands.command(pass_context=True)
@@ -345,12 +376,18 @@ class Fun():
     @commands.command(pass_context=True, description='Gives the lenny face.')
     async def urban(self, ctx, *, message : str):
         try:
+            await self.bot.add_reaction(ctx.message, '👀')
+            edit = None
+        except:
+            edit = await self.bot.say(waitmessage)
+
+        try:
             x = urbandictionary.define(message)[0]
         except:
             await self.bot.say("There were no definitions for `{}`.".format(message))
             return
         y = "`{}` :: {}".format(x.word, x.definition)
-        await self.bot.say(y)
+        await self.bot.say(y) if edit == None else await self.bot.edit_message(edit, y)
 
 
 def setup(bot):

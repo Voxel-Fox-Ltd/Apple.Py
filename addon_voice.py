@@ -20,7 +20,11 @@ class Voice():
 
     async def musicMan(self, ctx, searchTerm=None):
 
-        # if self.voice[ctx.message.server.id][3].append()
+        try:
+            await self.bot.add_reaction(ctx.message, '👀')
+        except:
+            # I don't need t a wait message here tbh
+            pass
 
         if time.time() > self.voice[ctx.message.server.id][3] + 5:
             self.voice[ctx.message.server.id][3] = time.time()
@@ -28,8 +32,12 @@ class Voice():
             await self.bot.say("Please wait 5 seconds between songs before calling another.")
             return
 
-        if ctx.message.author.id == '178964476480061440':
-            await self.bot.say("Robbie is blacklisted.")
+        with open(workingDirectory+"\\moobotBlacklist.txt") as a:
+            q = a.read()
+            blacklistedUsers = q.split('\n')
+
+        if ctx.message.author.id in blacklistedUsers:
+            await self.bot.say("Sorry but you've been blacklisted.")
             return
 
         # Attempt to join the calling user's VC
@@ -49,15 +57,43 @@ class Voice():
             pass
 
         # Differentiate between search terms and other
-        if 'http://' in searchTerm.lower():
-            pass
-        else:
-            searchTerm = 'ytsearch:' + searchTerm
+        if "youtube.com" in searchTerm.lower():
+            searchTerm = searchTerm.split('?v=')[1][:11]
+        searchTerm = 'ytsearch:' + searchTerm
 
         # Create StreamClient
-        self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player(searchTerm)
-        self.voice[ctx.message.server.id][1].start()
-        self.voice[ctx.message.server.id][1].volume = self.voice[ctx.message.server.id][2]
+        try:
+            self.voice[ctx.message.server.id][1] = await self.voice[ctx.message.server.id][0].create_ytdl_player(searchTerm)
+            self.voice[ctx.message.server.id][1].start()
+            self.voice[ctx.message.server.id][1].volume = self.voice[ctx.message.server.id][2]
+        except:
+            await self.bot.say("There were no video results for that/the video was disabled for non-YouTube playback.")
+            self.voice[ctx.message.server.id][1] = None
+            return
+
+        # Blacklist earrape
+        title = self.voice[ctx.message.server.id][1].title.lower()
+        for i in ['earrape','ear rape','rip headphone','ripheadphone','Thomas the Pain Train']:
+            if i.lower() in title:
+                await self.bot.say("Pls no earrape thx")
+                self.voice[ctx.message.server.id][1].stop()
+                self.voice[ctx.message.server.id][1] = None
+                return
+                
+        for i in ['yee']:
+            if i.lower() in title:
+                await self.bot.say("No.")
+                self.voice[ctx.message.server.id][1].stop()
+                self.voice[ctx.message.server.id][1] = None
+                return
+
+        # Blacklist songs longer than 5 hours
+        length = self.voice[ctx.message.server.id][1].duration
+        if length > 60*60*5:
+            await self.bot.say("This song is longer than 5 hours - stopping.")
+            self.voice[ctx.message.server.id][1].stop()
+            self.voice[ctx.message.server.id][1] = None
+            return
 
         # Output to client
         lenth = str(datetime.timedelta(seconds=self.voice[ctx.message.server.id][1].duration))
@@ -69,7 +105,15 @@ class Voice():
         await self.joinNoCommand(ctx, True)
 
 
-    async def joinNoComman(self, ctx, outputToClient = False):
+    async def joinNoCommand(self, ctx, outputToClient = False):
+
+        with open(workingDirectory+"\\moobotBlacklist.txt") as a:
+            q = a.read()
+            blacklistedUsers = q.split('\n')
+            
+        if ctx.message.author.id in blacklistedUsers:
+            await self.bot.say("Sorry but you've been blacklisted.")
+            return
 
         # Attempt to join the calling user's VC
         try:
@@ -86,6 +130,14 @@ class Voice():
     @commands.command(pass_context=True)
     async def leave(self, ctx):
 
+        with open(workingDirectory+"\\moobotBlacklist.txt") as a:
+            q = a.read()
+            blacklistedUsers = q.split('\n')
+            
+        if ctx.message.author.id in blacklistedUsers:
+            await self.bot.say("Sorry but you've been blacklisted.")
+            return
+
         # Attempt to disconnect from any joined VC in the server
         try:
             await self.voice[ctx.message.server.id][0].disconnect()
@@ -101,6 +153,15 @@ class Voice():
 
 
     async def stopNoCommand(self, ctx, outputToClient = False):
+
+        with open(workingDirectory+"\\moobotBlacklist.txt") as a:
+            q = a.read()
+            blacklistedUsers = q.split('\n')
+            
+        if ctx.message.author.id in blacklistedUsers:
+            await self.bot.say("Sorry but you've been blacklisted.")
+            return
+
         # Attempt to stop the currently playing StreamClient
         if self.voice[ctx.message.server.id][1] == None:
             if outputToClient: await self.bot.say("I'm not playing anything but okay whatever")
@@ -177,8 +238,37 @@ class Voice():
         await self.musicMan(ctx, "succ")
 
 
+    @commands.command(pass_context=True,hidden=True)
+    async def shia(self, ctx):
+        await self.musicMan(ctx, "\"Shia LaBeouf\" Live - Rob Cantor")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def sorry(self, ctx):
+        await self.musicMan(ctx, "liberal democrats apology song autotune")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def same(self, ctx):
+        await self.musicMan(ctx, "Hey how you doing. Well I'm doing just fine. I lied I'm dying inside vine by Choonie")
+
+
+    @commands.command(pass_context=True,hidden=True)
+    async def spain(self, ctx):
+        await self.musicMan(ctx, "9-_2QpbXMbw")
+
+
     @commands.command(pass_context=True)
     async def pause(self, ctx):
+
+        with open(workingDirectory+"\\moobotBlacklist.txt") as a:
+            q = a.read()
+            blacklistedUsers = q.split('\n')
+            
+        if ctx.message.author.id in blacklistedUsers:
+            await self.bot.say("Sorry but you've been blacklisted.")
+            return
+
         if self.voice[ctx.message.server.id][0] == None:
             await self.bot.say("I'm can't pause if I'm not playing anything u lil shit.")
             return
@@ -191,6 +281,15 @@ class Voice():
 
     @commands.command(pass_context=True)
     async def resume(self, ctx):
+
+        with open(workingDirectory+"\\moobotBlacklist.txt") as a:
+            q = a.read()
+            blacklistedUsers = q.split('\n')
+            
+        if ctx.message.author.id in blacklistedUsers:
+            await self.bot.say("Sorry but you've been blacklisted.")
+            return
+
         if self.voice[ctx.message.server.id][0] == None:
             await self.bot.say("I'm can't resume if I'm not playing anything u lil shit.")
             return
@@ -202,11 +301,20 @@ class Voice():
 
 
     @commands.command(pass_context=True,aliases=['vol','v'])
-    async def volume(self, ctx):
+    async def volume(self, ctx, toVol : str = '20'):
+
+        with open(workingDirectory+"\\moobotBlacklist.txt") as a:
+            q = a.read()
+            blacklistedUsers = q.split('\n')
+            
+        if ctx.message.author.id in blacklistedUsers:
+            await self.bot.say("Sorry but you've been blacklisted.")
+            return
+                    
         if self.voice[ctx.message.server.id][1] == None:
             await self.bot.say("I aint playin anythin m8")
             return
-        toVol = float(ctx.message.content.split(' ')[1])
+        toVol = float(toVol)
         maxVol = 100
         if toVol > maxVol:
             toVol = maxVol

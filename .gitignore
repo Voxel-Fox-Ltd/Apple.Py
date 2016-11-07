@@ -5,6 +5,6 @@ botTxtFiles/bot.log
 botTxtFiles/customCommands.json
 botTxtFiles/discordTokens.json
 botTxtFiles/game.txt
-botTxtFiles/game_moosic.txt
+botTxtFiles/moobotBlacklist.txt
 *.jpg
 *.png
