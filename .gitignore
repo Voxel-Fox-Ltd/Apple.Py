@@ -6,5 +6,6 @@ botTxtFiles/customCommands.json
 botTxtFiles/discordTokens.json
 botTxtFiles/game.txt
 botTxtFiles/moobotBlacklist.txt
+tempAddon.py
 *.jpg
 *.png
