@@ -5,7 +5,7 @@ steam.api.key.set(tokens['Steam'])
 wolfClient = wolframalpha.Client(tokens['Wolfram'])
 furryPorn = 'https://e621.net/post/index.json?'
 r_e = praw.Reddit(user_agent="A post searcher for a Discord user.")
-# imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
+imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
 translator = Translator(tokens['MSTransID'], tokens['MSTransSecret'])
 
 
@@ -118,33 +118,32 @@ class Search():
     async def info(self, ctx):
         mea = ctx.message
         try:
-            x = mea.mentions[0]
-            avatar = str(x.avatar_url)
-            username = str(x.name)
-            display = str(x.display_name)
-            idthing = str(x.id)
-            botacc = str(x.bot)
-            created = str(x.joined_at)[:-10]
-            age = str(datetime.datetime.now() - x.joined_at).split(",")[0]
-            roles = ""
-            for i in x.roles:
-                roles += str(i) + ', '  # str(x.roles)
-            z = """%s
-```
-Username :: %s
- Display :: %s
-      ID :: %s
-     Bot :: %s
-  Joined :: %s (Age %s)
-   Roles :: %s
-```""" % (avatar, username, display, idthing, botacc, created, age, roles[11:-2])
-
+            u = mea.mentions[0]
         except IndexError:
-            z = "You need to mention a user in your message."
+            await self.bot.say("You need to mention a user in your message.")
+            return
 
+        z = u.avatar_url if u.avatar_url != None else u.default_avatar_url
+        a = discord.Embed(colour=0xDEADBF)
+        a.set_author(name=str(u), icon_url=z)
+        s = {
+             'Username' : u.name,
+             'Discriminator' : u.discriminator,
+             'Display Name' : u.display_name if u.display_name != None else u.name,
+             'ID' : u.id,
+             'Bot' : u.bot,
+             'Created' : str(u.joined_at)[:-10],
+             'Age' : str(datetime.datetime.now() - u.joined_at).split(",")[0],
+             'Roles' : ', '.join([g.name for g in u.roles][1:])
+             }
+        for i in s:
+            if s[i] == '':
+                s[i] = 'None'
+            a.add_field(name=i, value='{}'.format(s[i]), inline=True)
+
+        await self.bot.say(z, embed=a)
         print("Giving info on user :: %s" % mea.content.split(' ', 1)[1])
-        await self.bot.say(z)
-        return
+
 
     @commands.command(pass_context=True, description='Searches Wolfram Alpha.')
     async def w(self, ctx):
@@ -240,8 +239,8 @@ Username :: %s
 
         print("Searching Imgur :: %s" % query)
         for i in imgurUsr.gallery_search(query, sort='viral'):
-            # await self.bot.edit_message(edit, '**%s**\n%s' % (i.title, imgurAlbumToItems(i)))
-            await self.bot.edit_message(edit, '**%s**\n%s' % (i.title, i.url))
+            await self.bot.edit_message(edit, '**%s**\n%s' % (i.title, imgurAlbumToItems(i)))
+            # await self.bot.edit_message(edit, '**%s**\n%s' % (i.title, i.url))
             return
 
     @commands.command(pass_context=True, description='Searches E621 for some furry shit.', enabled=False, hidden=True)
