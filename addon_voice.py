@@ -15,7 +15,7 @@ class Voice():
         # Load what VCs it's already in
         for i in self.bot.servers:
             # [VoiceClient, StreamClient, Volume, LastCalled, QueuedSearchTerms]
-            self.voice[i.id] = [self.bot.voice_client_in(i), None, 0.2, 0.0, [None]]
+            self.voice[i.id] = [self.bot.voice_client_in(i), None, 0.2, 0.0, []]
 
 
     async def musicMan(self, ctx, searchTerm=None):
@@ -128,6 +128,11 @@ class Voice():
 
 
     @commands.command(pass_context=True)
+    async def queue(self, ctx, *, searchTerm : str):
+        pass
+
+
+    @commands.command(pass_context=True)
     async def leave(self, ctx):
 
         with open(workingDirectory+"\\moobotBlacklist.txt") as a:
@@ -168,6 +173,7 @@ class Voice():
             return
         self.voice[ctx.message.server.id][1].stop()
         self.voice[ctx.message.server.id][1] = None 
+        self.voice[ctx.message.server.id][4] = []
         if outputToClient: await self.bot.say("k done")
 
 
@@ -233,9 +239,9 @@ class Voice():
         await self.musicMan(ctx, "nigger stole my bike")
 
 
-    @commands.command(pass_context=True,hidden=True)
-    async def succ(self, ctx):
-        await self.musicMan(ctx, "succ")
+    # @commands.command(pass_context=True,hidden=True)
+    # async def succ(self, ctx):
+    #     await self.musicMan(ctx, "succ")
 
 
     @commands.command(pass_context=True,hidden=True)
