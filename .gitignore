@@ -7,5 +7,6 @@ botTxtFiles/discordTokens.json
 botTxtFiles/game.txt
 botTxtFiles/moobotBlacklist.txt
 tempAddon.py
+.google-cookie
 *.jpg
 *.png

@@ -21,7 +21,7 @@ discordToken = tokens['Skybot']
 mashapeKey = {"X-Mashape-Key":
               tokens['Mashape']}
 htmlHead = {'Accept-Endoding': 'identity'}
-# imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
+imgurUsr = ImgurClient(tokens['ImgurClient'], tokens['ImgurSecret'])
 
 
 # Make the bot more unicode-friendly
@@ -153,8 +153,18 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    if message.content.lower() == 'weed':
-        await bot.add_reaction(message, '🌿')
+    z = {
+        'weed':'🌿',
+        'blaze':'🔥',
+        'nice':'👌'
+    }
+    try:
+        await bot.add_reaction(message, z[message.content.lower()])
+    except:
+        pass
+
+    # if message.content.lower() == 'same':
+    #     await bot.send_message(message.channel, 'Same')
 
     # The people on my server are idiots.
     if message.content.lower().startswith('+volume') and message.server.id == '178070516353990657':
@@ -184,16 +194,29 @@ async def on_message(message):
         pass
 
     # Read Imgur album into images
-    # if 'imgur.com/' in message.content and aq['ImgurAlbum']['Enabled'] == 'True':
-    #     if 'imgur.com/a/' in message.content:
-    #         imLink = message.content.split('imgur.com/a/')[1][:5]
-    #     elif 'imgur.com/gallery/' in message.content:
-    #         imLink = message.content.split('imgur.com/gallery/')[1][:5]
-    #     try:
-    #         imLink = imgurAlbumToItems(imLink)
-    #         await bot.send_message(message.channel, '%s\n%s' % (message.author.mention, imLink))
-    #     except UnboundLocalError:
-    #         pass
+    if 'imgur.com/' in message.content and aq['ImgurAlbum']['Enabled'] == 'True':
+        print('yee')
+        if 'imgur.com/a/' in message.content:
+            imLink = message.content.split('imgur.com/a/')[1][:5]
+        elif 'imgur.com/gallery/' in message.content:
+            imLink = message.content.split('imgur.com/gallery/')[1][:5]
+        try:
+            imLink = imgurAlbumToItems(imLink)
+            x = [message.author.mention] + [i for i in imLink.split('\n')]
+            y = z = ''
+            while True:
+                if x == []:
+                    break 
+                y = z + x[0] + '\n'
+                if len(y) > 2000:
+                    await bot.send_message(message.channel, z)
+                    y = z = ''
+                else:
+                    z = y 
+                    del x[0]
+            # await bot.send_message(message.channel, '{}\n{}'.format(message.author.mention, imLink))
+        except UnboundLocalError:
+            pass
 
     if continueWithComms:
         await bot.process_commands(message)
