@@ -322,9 +322,15 @@ class Fun():
     async def big(self, ctx, *, toReplace : str):
         toReplace = toReplace.lower()
         qw = ''
+        zzz = {}
+        zz = 0
+        for z in 'abcdefghijklmnopqrstuvwxyz':
+            zzz[z] = '🇦🇧🇨🇩🇪🇫🇬🇭🇮🇯🇰🇱🇲🇳🇴🇵🇶🇷🇸🇹🇺🇻🇼🇽🇾🇿'[zz]
+            zz += 1
         for o in toReplace:
             if o in 'abcdefghijklmnopqrstuvwxyz':
-                o = ":regional_indicator_{}: ".format(o)
+                # o = ":regional_indicator_{}: ".format(o)
+                o = '{} '.format(zzz[o])
             if o == ' ':
                 o = " ▫ "
             if o in '01236456789':
