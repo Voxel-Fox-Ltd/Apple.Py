@@ -87,6 +87,13 @@ class Voice():
                 self.voice[ctx.message.server.id][1] = None
                 return
 
+        for i in ['animal cover']:
+            if i.lower() in title:
+                await self.bot.say("No animals in general.")
+                self.voice[ctx.message.server.id][1].stop()
+                self.voice[ctx.message.server.id][1] = None
+                return
+
         # Blacklist songs longer than 5 hours
         length = self.voice[ctx.message.server.id][1].duration
         if length > 60*60*5:
@@ -322,10 +329,11 @@ class Voice():
             return
         toVol = float(toVol)
         maxVol = 100
-        if toVol > maxVol:
-            toVol = maxVol
-        if toVol < 0: 
-            toVol = 0
+        if allowUse(ctx, ['is_caleb']) == False:
+            if toVol > maxVol:
+                toVol = maxVol
+            if toVol < 0: 
+                toVol = 0
         self.voice[ctx.message.server.id][1].volume = toVol/100
         self.voice[ctx.message.server.id][2] = toVol/100
         await self.bot.say("Volume changed to {}%".format(toVol))
