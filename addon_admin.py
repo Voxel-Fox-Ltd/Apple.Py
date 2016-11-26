@@ -290,6 +290,24 @@ class Admin():
         await self.bot.say("This person has been {} `{}`".format({False:'muted in',True:'unmuted in'}[speak], ctx.message.channel.name))
 
 
+    @commands.command(pass_context=True)
+    async def rolecolour(self, ctx, colour : str, *, role : str):
+        if allowUse(ctx, ['manage_roles']) == False:
+            await self.bot.say(notallowed)
+            return
+        try:
+            rol = [i for i in ctx.message.server.roles if role in i.name.lower()][0]
+            if len([i for i in ctx.message.server.roles if role in i.name.lower()]) > 1:
+                raise Exception("Too many arguments")
+        except IndexError:
+            await self.bot.say("No role found by that name.")
+            return
+        except Exception:
+            await self.bot.say("There are too many roles with the string `{}` in their name.".format(role))
+            return
+        await self.bot.edit_role(ctx.message.server, rol, colour=discord.Colour(int(colour, 16)))
+        await self.bot.say("Changed colour of role :: `{}`".format(rol.name))
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
