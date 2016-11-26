@@ -40,6 +40,13 @@ defSerCon = \
             "Channel": "",
             "Text" : "{mention} lol rip"
         },
+        "ChannelUpdates": {
+            "Enabled": "False"
+        },
+        "ServerUpdates": {
+            "Enabled": "False",
+            "Channel": ""
+        },
         "CustomCommands": {},
         "ImgurAlbum": {
             "Enabled": "False"

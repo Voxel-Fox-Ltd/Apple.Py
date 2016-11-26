@@ -86,8 +86,10 @@ async def twitchChecker():
 async def on_member_join(member):
     server = member.server
     i = giveAllowances(server)
+
     if i['Joins']['Channel'] != '':
         server = discord.Object(i['Joins']['Channel'])
+
     if i['Joins']['Enabled'] == 'True':
         fmt = i['Joins']['Text'].replace('{mention}',member.mention).replace('{name}',member.name)
         await bot.send_message(server, fmt)
@@ -97,8 +99,10 @@ async def on_member_join(member):
 async def on_member_ban(member):
     server = member.server
     i = giveAllowances(server)
+
     if i['Bans']['Channel'] != '':
         server = discord.Object(i['Bans']['Channel'])
+
     if i['Bans']['Enabled'] == 'True':
         fmt = i['Bans']['Text'].replace('{mention}',member.mention).replace('{name}',member.name)
         await bot.send_message(server, fmt)
@@ -108,11 +112,57 @@ async def on_member_ban(member):
 async def on_member_remove(member):
     server = member.server
     i = giveAllowances(server)
+
     if i['Leaves']['Channel'] != '':
         server = discord.Object(i['Leaves']['Channel'])
+
     if i['Leaves']['Enabled'] == 'True':
         fmt = i['Leaves']['Text'].replace('{mention}',member.mention).replace('{name}',member.name)
         await bot.send_message(server, fmt)
+
+
+@bot.event
+async def on_channel_update(before, after):
+    i = giveAllowances(after.server)
+    toSay = []
+
+    if i['ChannelUpdates']['Enabled'] != 'True':
+        return
+
+    if before.name != after.name:
+        # This will run if the channel's name changed
+        toSay = toSay + ["This channel's name was changed from `{0.name}` to `{1.name}`".format(before, after)]
+    if before.topic != after.topic:
+        # This will run if the chanenl's topic changed
+        if before.topic in [None, '', ' ']: before.topic = '[None]'
+        if after.topic in [None, '', ' ']: after.topic = '[None]'
+        toSay = toSay + ["This channel's topic was changed from `{0.topic}` to `{1.topic}`".format(before, after)]
+
+    await bot.send_message(after, '\n\n'.join(toSay))
+
+
+@bot.event
+async def on_server_update(before, after):
+    i = giveAllowances(after)
+    toSay = []
+
+    if i['ServerUpdates']['Enabled'] != 'True':
+        return
+
+    server = after
+    if i['ServerUpdates']['Channel'] != '':
+        server = discord.Object(i['ServerUpdates']['Channel'])
+
+    if before.name != after.name:
+        # This runs if the server's name has changed
+        toSay = toSay + ["This server's name changed from `{0.name}` to `{1.name}`".format(before, after)]
+    if before.icon_url != after.icon_url:
+        # This runs if the icon has changed
+        bef = '`[None]`' if before.icon_url in [None, '', ' '] else '<{}>'.format(before.icon_url)
+        aft = '`[None]`' if after.icon_url in [None, '', ' '] else '<{}>'.format(after.icon_url)
+        toSay = toSay + ["This server's icon changed from {0} to {1}".format(bef, aft)]
+
+    await bot.send_message(server, '\n\n'.join(toSay))
 
 
 @bot.event
@@ -156,7 +206,10 @@ async def on_message(message):
     z = {
         'weed':'🌿',
         'blaze':'🔥',
-        'nice':'👌'
+        'nice':'👌',
+        'weed.':'🌿',
+        'blaze.':'🔥',
+        'nice.':'👌'
     }
     try:
         await bot.add_reaction(message, z[message.content.lower()])
