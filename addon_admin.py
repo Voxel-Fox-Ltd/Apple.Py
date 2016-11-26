@@ -266,6 +266,30 @@ class Admin():
             await self.bot.say("Something went wrong :: {}".format(exc))
             return
 
+    @commands.command(pass_context=True)
+    async def mute(self, ctx):
+        await self.muteUnmute(ctx, False)
+
+
+    @commands.command(pass_context=True)
+    async def unmute(self, ctx):
+        await self.muteUnmute(ctx, True)
+
+
+    async def muteUnmute(self, ctx, speak):
+        if allowUse(ctx, ['manage_channels']) == False:
+            await self.bot.say(notallowed)
+            return
+        try:
+            person = ctx.message.mentions[0]
+        except IndexError:
+            await self.bot.say("You need to mention a person.")
+            return
+        p = discord.PermissionOverwrite(send_messages=speak)
+        await self.bot.edit_channel_permissions(ctx.message.channel, person, p)
+        await self.bot.say("This person has been {} `{}`".format({False:'muted in',True:'unmuted in'}[speak], ctx.message.channel.name))
+
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
