@@ -23,10 +23,25 @@ class ContextEmbed(discord.Embed):
 
         self.colour = random.randint(0, 0xffffff)
 
-    def set_author_to_user(self, author:discord.User):
+    def set_footer(self, text:str, *args, **kwargs):
+        """Sets the footer of the embed"""
+
+        super().set_footer(*args, text=text, **kwargs)
+
+    def set_image(self, url:str):
+        """Sets the image of the embed"""
+
+        super().set_image(url=url)
+
+    def set_thumbnail(self, url:str):
+        """Sets the thumbnail of the embed"""
+
+        super().set_image(url=url)
+
+    def set_author_to_user(self, user:discord.User):
         """Sets the author of the embed to a given Discord user"""
 
-        super().set_author(name=str(author), icon_url=author.avatar_url)
+        super().set_author(name=str(user), icon_url=user.avatar_url)
 
     def add_field(self, name:str, value:str, inline:bool=False):
         """Adds a field to the embed without using kwargs"""
