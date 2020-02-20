@@ -18,6 +18,9 @@ guild_id = 1  # The ID of the main/support guild
     port = 5432
     enabled = false
 
+[api_keys]
+    steam = "steam_api_key"
+
 # This data is passed directly over to aioredis
 [redis]
     host = "127.0.0.1"

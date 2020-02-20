@@ -6,7 +6,7 @@ from cogs import utils
 
 class BotSettings(utils.Cog):
 
-    @commands.command(cls=utils.Command)
+    @commands.command(cls=utils.Command, enabled=False)
     @commands.guild_only()
     @commands.bot_has_permissions(send_messages=True)
     @commands.has_permissions(manage_guild=True)
