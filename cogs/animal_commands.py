@@ -19,14 +19,20 @@ class AnimalCommands(utils.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command, aliases=['doggo', 'puppy', 'pupper'])
-    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    async def dog(self, ctx:utils.Context):
+    @utils.cooldown.cooldown(1, 2, commands.BucketType.channel)
+    async def dog(self, ctx:utils.Context, *, breed:str=None):
         """Gives you some dog pictures"""
 
         await ctx.channel.trigger_typing()
         headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
-        async with self.bot.session.get("https://dog.ceo/api/breeds/image/random", headers=headers) as r:
+        if breed is None:
+            url = "https://dog.ceo/api/breeds/image/random"
+        else:
+            url = f"https://dog.ceo/api/breed/{breed.replace(' ', '/')}/images/random"
+        async with self.bot.session.get(url, headers=headers) as r:
             data = await r.json()
+        if data['status'] == "error":
+            return await ctx.send("No dogs were found :(")
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_image(url=data['message'])
         await ctx.send(embed=embed)
