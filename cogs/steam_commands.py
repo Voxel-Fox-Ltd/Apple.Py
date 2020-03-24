@@ -43,7 +43,7 @@ class SteamCommand(utils.Cog):
             await self.load_game_cache()
 
         # Get app
-        app_name_raw = app_name
+        # app_name_raw = app_name
         app_object = None
         await ctx.trigger_typing()
 
@@ -62,7 +62,10 @@ class SteamCommand(utils.Cog):
         # By app name
         if app_object is None:
             app_name = self.get_valid_name(app_name)
-            valid_items = [i for i in self.game_cache if self.get_valid_name(i['name']).lower() == app_name.lower()]
+            valid_items = [i for i in self.game_cache if app_name.lower() in self.get_valid_name(i['name']).lower()]
+            full_title_match = [i for i in valid_items if app_name.lower() == self.get_valid_name(i['name']).lower()]
+            if full_title_match:
+                valid_items = [full_title_match[0]]
             if len(valid_items) > 1:
                 return await ctx.send("There are multiple results with that name.")  # TODO
             elif len(valid_items) == 0:
@@ -83,7 +86,6 @@ class SteamCommand(utils.Cog):
         # See if it's NSFW
         if int(game_object.get('required_age', '0')) >= 18 and ctx.channel.nsfw is False:
             return await ctx.send("That game is marked as an 18+, so can't be sent in a non-NSFW channel.")
-
 
         # Embed it babey
         with utils.Embed(use_random_colour=True) as embed:
