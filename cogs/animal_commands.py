@@ -7,13 +7,23 @@ class AnimalCommands(utils.Cog):
 
     @commands.command(cls=utils.Command, aliases=['kitty'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    async def cat(self, ctx:utils.Context):
+    async def cat(self, ctx:utils.Context, *, breed:str=None):
         """Gives you some kitty pictures"""
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
-        async with self.bot.session.get("https://api.thecatapi.com/v1/images/search", headers=headers) as r:
+        headers = {
+            "User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831",
+            "x-api-key": self.bot.config['api_keys']['cat_api']
+        }
+        params = {
+            "limit": 1
+        }
+        if breed:
+            params.update({"breed_ids": breed})
+        async with self.bot.session.get("https://api.thecatapi.com/v1/images/search", params=params, headers=headers) as r:
             data = await r.json()
+        if not data:
+            return await ctx.send("Couldn't find that breed mate.")
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_image(url=data[0]['url'])
         await ctx.send(embed=embed)

@@ -20,6 +20,7 @@ guild_id = 1  # The ID of the main/support guild
 
 [api_keys]
     steam = "steam_api_key"
+    cat_api = ""  # https://thecatapi.com
 
 # This data is passed directly over to aioredis
 [redis]
