@@ -19,11 +19,13 @@ class BotInfo(utils.Cog):
         bot_info = bot_info[0]
 
         with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author_to_user(bot)
+            embed.set_author_to_user(user=bot)
             embed.description = bot_info['description']
             for field in bot_info.get('fields', list()):
                 embed.add_field(name=field['name'], value=field['value'], inline=field.get('inline', False))
             embed.set_thumbnail(url=bot.avatar_url)
+            if bot_info.get('image'):
+                embed.set_image(url=bot_info['image'])
         return await ctx.send(embed=embed)
 
 
