@@ -17,28 +17,43 @@ def create_id(n:int=5):
 class QuoteCommands(utils.Cog):
 
     @commands.command(cls=utils.Command)
-    async def quote(self, ctx:utils.Context, user:discord.Member, *, text:str):
+    @commands.guild_only()
+    async def quote(self, ctx:utils.Context, user:typing.Union[discord.Message, discord.Member], *, text:str=None):
         """Qutoes a user babeyyyyy lets GO"""
 
         # Validate input
-        if not text:
+        if not text and isinstance(user, discord.Member):
             return await ctx.send("You need to provide some text to quote.")
+        elif isinstance(user, discord.Message):
+            text = user.content
+            user = user.author
 
         # Save to db
         quote_id = create_id()
         async with self.bot.database() as db:
             await db(
-                "INSERT INTO user_quotes (quote_id, user_id, text, timestamp) VALUES ($1, $2, $3, $4)",
-                quote_id, user.id, text, ctx.message.created_at
+                "INSERT INTO user_quotes (quote_id, guild_id, user_id, text, timestamp) VALUES ($1, $2, $3, $4, $5)",
+                quote_id, ctx.guild.id, user.id, text, ctx.message.created_at
             )
 
-        # Output to user
+        # Make embed
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
             embed.description = text
             embed.set_footer(text=f"Quote ID {quote_id.upper()}")
             embed.timestamp = ctx.message.created_at
-        return await ctx.send(f"Quote saved with ID `{quote_id.upper()}`", embed=embed)
+
+        # See if they have a quotes channel
+        quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
+        if quote_channel_id:
+            channel = self.bot.get_channel(quote_channel_id) or await self.bot.fetch_channel(quote_channel_id)
+            try:
+                await channel.send(embed=embed)
+            except (discord.Forbidden, AttributeError):
+                pass
+
+        # Output to user
+        await ctx.send(f"Quote saved with ID `{quote_id.upper()}`", embed=embed)
 
     @commands.command(cls=utils.Command)
     async def getquote(self, ctx:utils.Context, quote_id:commands.clean_content):
