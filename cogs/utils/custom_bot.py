@@ -153,8 +153,6 @@ class CustomBot(commands.AutoShardedBot):
     async def startup(self):
         """Clears all the bot's caches and fills them from a DB read"""
 
-        return
-
         # Remove caches
         self.logger.debug("Clearing caches")
         self.guild_settings.clear()
