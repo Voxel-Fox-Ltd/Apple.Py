@@ -1,4 +1,6 @@
+import collections
 import json
+import random
 
 import discord
 from discord.ext import commands
@@ -86,6 +88,25 @@ class NicknameHandler(utils.Cog):
         new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
         await user.edit(nick=new_name)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
+
+    @commands.command(cls=utils.Command, aliases=['unfun'])
+    @commands.has_permissions(manage_nicknames=True)
+    @commands.bot_has_permissions(manage_nicknames=True)
+    async def breakname(self, ctx:utils.Context, user:discord.Member):
+        """Fixes a user's nickname to remove dumbass characters"""
+
+        try:
+            with open("config/letter_replacements.json") as a:
+                replacements = json.load(a)
+        except Exception as e:
+            return await ctx.send(f"Could not open letter replacement file - `{e}`.")
+        unreplacements = collections.defaultdict(list)
+        for broken, real in replacements.items():
+            unreplacements[real].append(broken)
+        current_name = user.nick or user.name
+        new_name = '\n'.join(f"`{''.join(random.choice(unreplacements.get(i, [i])) for i in current_name)}`" for _ in range(10))
+        # return await ctx.send(f"I think I would change their name from `{current_name}` to `{new_name}`.")
+        return await ctx.send(new_name)
 
     @commands.command(ignore_extra=False, cls=utils.Command)
     @commands.has_permissions(manage_nicknames=True)
