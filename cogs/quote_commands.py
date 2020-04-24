@@ -18,22 +18,30 @@ class QuoteCommands(utils.Cog):
 
     @commands.command(cls=utils.Command)
     @commands.guild_only()
-    async def quote(self, ctx:utils.Context, user:typing.Union[discord.Message, discord.Member], *, text:str=None):
+    async def quote(self, ctx:utils.Context, message:typing.Union[discord.Message, discord.Member]):
         """Qutoes a user babeyyyyy lets GO"""
 
         # Validate input
-        if not text and isinstance(user, discord.Member):
-            return await ctx.send("You need to provide some text to quote.")
-        elif isinstance(user, discord.Message):
-            text = user.content
-            user = user.author
+        # if not text and isinstance(user, discord.Member):
+        #     return await ctx.send("You need to provide some text to quote.")
+        # elif isinstance(user, discord.Message):
+        text = message.content
+        timestamp = message.created_at
+        user = message.author
+        text = message.content
+        # else:
+        #     timestamp = ctx.message.created_at
+
+        # Make sure they're not quoting themself
+        if user.id == ctx.author.id:
+            return await ctx.send("You can't quote yourself :/")
 
         # Save to db
         quote_id = create_id()
         async with self.bot.database() as db:
             await db(
                 "INSERT INTO user_quotes (quote_id, guild_id, user_id, text, timestamp) VALUES ($1, $2, $3, $4, $5)",
-                quote_id, ctx.guild.id, user.id, text, ctx.message.created_at
+                quote_id, ctx.guild.id, user.id, text, timestamp
             )
 
         # Make embed
@@ -41,7 +49,7 @@ class QuoteCommands(utils.Cog):
             embed.set_author_to_user(user)
             embed.description = text
             embed.set_footer(text=f"Quote ID {quote_id.upper()}")
-            embed.timestamp = ctx.message.created_at
+            embed.timestamp = timestamp
 
         # See if they have a quotes channel
         quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
