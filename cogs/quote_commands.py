@@ -16,10 +16,19 @@ def create_id(n:int=5):
 
 class QuoteCommands(utils.Cog):
 
-    @commands.command(cls=utils.Command)
+    @commands.group(cls=utils.Group)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
         """Qutoes a user babeyyyyy lets GO"""
+
+        # Make sure no subcommand is passed
+        if ctx.invoked_subcommand is not None:
+            return
+
+        # Make sure a message was passed
+        if not messages:
+            return await ctx.send("I couldn't find any references to messages in your command call.")
 
         # Validate input
         timestamp = messages[0].created_at
@@ -35,6 +44,12 @@ class QuoteCommands(utils.Cog):
         # Save to db
         quote_id = create_id()
         async with self.bot.database() as db:
+            rows = await db(
+                "SELECT * FROM user_quotes WHERE guild_id=$1 AND user_id=$2 AND timestamp=$3 AND text=$4",
+                ctx.guild.id, user.id, timestamp, text
+            )
+            if rows:
+                return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
             await db(
                 "INSERT INTO user_quotes (quote_id, guild_id, user_id, text, timestamp) VALUES ($1, $2, $3, $4, $5)",
                 quote_id, ctx.guild.id, user.id, text, timestamp
@@ -59,8 +74,9 @@ class QuoteCommands(utils.Cog):
         # Output to user
         await ctx.send(f"Quote saved with ID `{quote_id.upper()}`", embed=embed)
 
-    @commands.command(cls=utils.Command)
-    async def getquote(self, ctx:utils.Context, quote_id:commands.clean_content):
+    @quote.command(cls=utils.Command)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def get(self, ctx:utils.Context, quote_id:commands.clean_content):
         """Gets a quote from the database"""
 
         # Grab data from db
@@ -85,8 +101,9 @@ class QuoteCommands(utils.Cog):
         # Output to user
         return await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command)
-    async def searchquotes(self, ctx:utils.Context, user:typing.Optional[discord.Member]=None, *, search_term:str):
+    @quote.command(cls=utils.Command)
+    @commands.bot_has_permissions(send_messages=True)
+    async def search(self, ctx:utils.Context, user:typing.Optional[discord.Member]=None, *, search_term:str=""):
         """Searches the datbase for a quote with some text in it babeyeyeyey"""
 
         # Grab data from the database
