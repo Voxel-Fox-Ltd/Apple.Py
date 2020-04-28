@@ -45,6 +45,7 @@ class SteamCommand(utils.Cog):
         # Get app
         # app_name_raw = app_name
         app_object = None
+        appid = None
         await ctx.trigger_typing()
 
         # By url
@@ -54,13 +55,14 @@ class SteamCommand(utils.Cog):
 
         # By app id
         if app_name.isdigit():
+            appid = int(app_name)
             try:
                 app_object = [i for i in self.game_cache if i['appid'] == int(app_name)][0]
             except IndexError:
                 pass
 
         # By app name
-        if app_object is None:
+        if app_object is None and appid is None:
             app_name = self.get_valid_name(app_name)
             valid_items = [i for i in self.game_cache if app_name.lower() in self.get_valid_name(i['name']).lower()]
             full_title_match = [i for i in valid_items if app_name.lower() == self.get_valid_name(i['name']).lower()]
@@ -71,9 +73,10 @@ class SteamCommand(utils.Cog):
             elif len(valid_items) == 0:
                 return await ctx.send("There are no results with that name.")  # TODO
             app_object = valid_items[0]
+            appid = app_object['appid']
 
         # Get info
-        appid = app_object['appid']
+        # appid = app_object['appid']
         params = {
             "appids": appid
         }
@@ -109,6 +112,7 @@ class SteamCommand(utils.Cog):
             "embed": embed,
             "screenshots": screenshots,
             "index": 0,
+            "allowed_members": [ctx.author.id],
         }
         await m.add_reaction("⬅️")
         await m.add_reaction("➡️")
@@ -126,6 +130,10 @@ class SteamCommand(utils.Cog):
 
         # Get changed data
         data = self.sent_message_cache[message.id]
+        if user.id not in data['allowed_members']:
+            return
+
+        # Get valid reaction
         if str(reaction.emoji) == "➡️":
             index = data['index'] + 1
             if index >= len(data['screenshots']):
