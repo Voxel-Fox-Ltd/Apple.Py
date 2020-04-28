@@ -125,6 +125,19 @@ class QuoteCommands(utils.Cog):
                 text_rows.append(f"`{row['quote_id'].upper()}` - {row['text'][:50]}...")
         return await ctx.send('\n'.join(text_rows))
 
+    @quote.command(cls=utils.Command)
+    @commands.has_permissions(manage_messages=True)
+    @commands.bot_has_permissions(send_messages=True)
+    async def delete(self, ctx:utils.Context, quote_id:str):
+        """Deletes a quote from your server"""
+
+        async with self.bot.database() as db:
+            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
+            if rows:
+                await db("DELETE FROM user_quotes WHERE quote_id=$1", quote_id.lower())
+                return await ctx.send("Deleted quote.")
+            return await ctx.send(f"No quote with ID `{quote_id.upper()}` exists.")
+
 
 def setup(bot:utils.Bot):
     x = QuoteCommands(bot)
