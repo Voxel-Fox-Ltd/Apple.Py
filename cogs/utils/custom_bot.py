@@ -13,7 +13,6 @@ from discord.ext import commands
 
 from cogs.utils.custom_context import CustomContext
 from cogs.utils.database import DatabaseConnection
-from cogs.utils.redis import RedisConnection
 
 
 def get_prefix(bot, message:discord.Message):
@@ -57,16 +56,39 @@ class CustomBot(commands.AutoShardedBot):
         self.database = DatabaseConnection
         self.database.logger = self.logger.getChild('database')
 
-        # Allow redis connections like this
-        self.redis = RedisConnection
-        self.redis.logger = self.logger.getChild('redis')
-
         # Store the startup method so I can see if it completed successfully
         self.startup_time = dt.now()
         self.startup_method = None
 
         # Here's the storage for cached stuff
         self.guild_settings = collections.defaultdict(self.DEFAULT_GUILD_SETTINGS.copy)
+
+    async def startup(self):
+        """Clears all the bot's caches and fills them from a DB read"""
+
+        # Remove caches
+        self.logger.debug("Clearing caches")
+        self.guild_settings.clear()
+
+        # Get database connection
+        db = await self.database.get_connection()
+
+        # Get stored prefixes
+        try:
+            guild_data = await db("SELECT * FROM guild_settings")
+        except Exception as e:
+            self.logger.critical(f"Error selecting from guild_settings - {e}")
+            exit(1)
+        for row in guild_data:
+            for key, value in row.items():
+                self.guild_settings[row['guild_id']][key] = value
+
+        # Wait for the bot to cache users before continuing
+        self.logger.debug("Waiting until ready before completing startup method.")
+        await self.wait_until_ready()
+
+        # Close database connection
+        await db.disconnect()
 
     def get_invite_link(self, *, scope:str='bot', response_type:str=None, redirect_uri:str=None, guild_id:int=None, **kwargs):
         """Gets the invite link for the bot, with permissions all set properly"""
@@ -149,33 +171,6 @@ class CustomBot(commands.AutoShardedBot):
         """A setter method so that the original bot object doesn't complain"""
 
         pass
-
-    async def startup(self):
-        """Clears all the bot's caches and fills them from a DB read"""
-
-        # Remove caches
-        self.logger.debug("Clearing caches")
-        self.guild_settings.clear()
-
-        # Get database connection
-        db = await self.database.get_connection()
-
-        # Get stored prefixes
-        try:
-            guild_data = await db("SELECT * FROM guild_settings")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from guild_settings - {e}")
-            exit(1)
-        for row in guild_data:
-            for key, value in row.items():
-                self.guild_settings[row['guild_id']][key] = value
-
-        # Wait for the bot to cache users before continuing
-        self.logger.debug("Waiting until ready before completing startup method.")
-        await self.wait_until_ready()
-
-        # Close database connection
-        await db.disconnect()
 
     def get_uptime(self) -> float:
         """Gets the uptime of the bot in seconds

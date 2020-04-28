@@ -23,13 +23,6 @@ dm_uncaught_errors = false
     steam = "steam_api_key"
     cat_api = ""  # https://thecatapi.com
 
-# This data is passed directly over to aioredis
-[redis]
-    host = "127.0.0.1"
-    port = 6379
-    db = 0
-    enabled = false
-
 # What the bot is playing
 [presence]
     activity_type = "playing"  # Should be one of 'playing', 'listening', 'watching'

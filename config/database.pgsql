@@ -20,3 +20,12 @@ CREATE TABLE permanent_nicknames(
     nickname VARCHAR(32),
     PRIMARY KEY (guild_id, user_id)
 );
+
+
+CREATE TABLE role_list(
+    guild_id BIGINT,
+    role_id BIGINT,
+    key VARCHAR(50),
+    value VARCHAR(50),
+    PRIMARY KEY (guild_id, role_id, key)
+);
