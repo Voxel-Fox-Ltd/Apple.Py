@@ -26,7 +26,7 @@ class BotSettings(utils.Cog):
                 await db("UPDATE guild_settings SET prefix=$2 WHERE guild_id=$1", ctx.guild.id, new_prefix)
         await ctx.send(f"My prefix has been updated to `{new_prefix}`.")
 
-    @commands.command(cls=utils.Command, enabled=False)
+    @commands.command(cls=utils.Command)
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
@@ -38,9 +38,9 @@ class BotSettings(utils.Cog):
         menu.bulk_add_options(
             ctx,
             {
-                'display': lambda c: "Set setting (currently {0})".format(settings_mention(c, 'setting_id')),
-                'converter_args': [("What do you want to set the setting to?", "setting channel", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('setting_id'),
+                'display': lambda c: "Set quote channel (currently {0})".format(settings_mention(c, 'quote_channel_id')),
+                'converter_args': [("What do you want to set the quote channel to?", "quote channel", commands.TextChannelConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('quote_channel_id'),
             },
         )
         await menu.start(ctx)
