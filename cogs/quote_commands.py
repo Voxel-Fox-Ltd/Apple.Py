@@ -18,22 +18,18 @@ class QuoteCommands(utils.Cog):
 
     @commands.command(cls=utils.Command)
     @commands.guild_only()
-    async def quote(self, ctx:utils.Context, message:typing.Union[discord.Message, discord.Member]):
+    async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
         """Qutoes a user babeyyyyy lets GO"""
 
         # Validate input
-        # if not text and isinstance(user, discord.Member):
-        #     return await ctx.send("You need to provide some text to quote.")
-        # elif isinstance(user, discord.Message):
-        text = message.content
-        timestamp = message.created_at
-        user = message.author
-        text = message.content
-        # else:
-        #     timestamp = ctx.message.created_at
+        timestamp = messages[0].created_at
+        user = messages[0].author
+        text = '\n'.join([m.content for m in messages])
+        if len(set([i.author.id for i in messages])) != 1:
+            return await ctx.send("You can only quote one person at a time.")
 
         # Make sure they're not quoting themself
-        if user.id == ctx.author.id:
+        if ctx.author.id in [i.author.id for i in messages]:
             return await ctx.send("You can't quote yourself :/")
 
         # Save to db
