@@ -41,7 +41,12 @@ class BotSettings(utils.Cog):
             {
                 'display': lambda c: "Set quote channel (currently {0})".format(settings_mention(c, 'quote_channel_id')),
                 'converter_args': [("What do you want to set the quote channel to?", "quote channel", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('quote_channel_id'),
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'quote_channel_id'),
+            },
+            {
+                'display': lambda c: "Set automatic nickname fixer (currently {0})".format(c.bot.guild_settings[c.guild.id]['automatic_nickname_update']),
+                'converter_args': [("Do you want to enable automatic nickname fixing?", "auto nickname", utils.converters.BooleanConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'automatic_nickname_update'),
             },
         )
         try:

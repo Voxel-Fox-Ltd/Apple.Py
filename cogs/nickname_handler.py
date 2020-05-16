@@ -1,6 +1,4 @@
-import collections
 import json
-import random
 
 import discord
 from discord.ext import commands
@@ -46,6 +44,19 @@ ZALGO_CHARACTERS = [
 
 class NicknameHandler(utils.Cog):
 
+    @utils.Cog.listener()
+    async def on_member_join(self, member:discord.Member):
+        if self.bot.guild_settings[member.guild.id]['automatic_nickname_update']:
+            self.logger.info(f"Pinging nickname update for member join (G{member.guild.id}/U{member.id})")
+            await self.fix_user_nickname(member)
+
+    @utils.Cog.listener()
+    async def on_member_update(self, before:discord.Member, member:discord.Member):
+        if self.bot.guild_settings[member.guild.id]['automatic_nickname_update']:
+            if (before.nick or before.name) != (member.nick or member.name):
+                self.logger.info(f"Pinging nickname update for member update (G{member.guild.id}/U{member.id})")
+                await self.fix_user_nickname(member)
+
     async def fix_user_nickname(self, user:discord.Member) -> str:
         """Fix the nickname of a user"""
 
@@ -55,6 +66,10 @@ class NicknameHandler(utils.Cog):
         current_name = user.nick or user.name
         new_name_with_zalgo = current_name.translate(translator)
         new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
+        if current_name == new_name:
+            self.logger.info(f"Not updating the nickname '{new_name}' (G{user.guild.id}/U{user.id})")
+            return new_name
+        self.logger.info(f"Updating nickname '{current_name}' to '{new_name}' (G{user.guild.id}/U{user.id})")
         await user.edit(nick=new_name)
         return new_name
 
