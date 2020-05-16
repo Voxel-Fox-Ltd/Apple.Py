@@ -109,11 +109,13 @@ class QuoteCommands(utils.Cog):
         # Grab data from the database
         async with self.bot.database() as db:
             if user is None:
-                rows = await db("SELECT * FROM user_quotes WHERE text LIKE CONCAT('%', $1::text, '%') ORDER BY timestamp DESC", search_term)
+                rows = await db("SELECT * FROM user_quotes WHERE text LIKE CONCAT('%', $1::text, '%') ORDER BY timestamp DESC LIMIT 10", search_term)
             else:
-                rows = await db("SELECT * FROM user_quotes WHERE user_id=$1 AND text LIKE CONCAT('%', $2::text, '%') ORDER BY timestamp DESC", user.id, search_term)
+                rows = await db("SELECT * FROM user_quotes WHERE user_id=$1 AND text LIKE CONCAT('%', $2::text, '%') ORDER BY timestamp DESC LIMIT 10", user.id, search_term)
         if not rows:
-            return await ctx.send("I couldn't find any text matching that pattern.")
+            if search_term:
+                return await ctx.send("I couldn't find any text matching that pattern.")
+            return await ctx.send(f"{(user or ctx.author).mention} hasn't been featured in any quotes.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
         # Format output
         rows = rows[:10]
@@ -122,8 +124,8 @@ class QuoteCommands(utils.Cog):
             if len(row['text']) <= 50:
                 text_rows.append(f"`{row['quote_id'].upper()}` - {row['text']}")
             else:
-                text_rows.append(f"`{row['quote_id'].upper()}` - {row['text'][:50]}...")
-        return await ctx.send('\n'.join(text_rows))
+                text_rows.append(f"`{row['quote_id'].upper()}` - {row['text'][:100]}...")
+        return await ctx.send('\n'.join(text_rows), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
     @quote.command(cls=utils.Command)
     @commands.has_permissions(manage_messages=True)
