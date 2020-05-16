@@ -46,24 +46,27 @@ ZALGO_CHARACTERS = [
 
 class NicknameHandler(utils.Cog):
 
+    async def fix_user_nickname(self, user:discord.Member) -> str:
+        """Fix the nickname of a user"""
+
+        with open("config/letter_replacements.json") as a:
+            replacements = json.load(a)
+        translator = str.maketrans(replacements)
+        current_name = user.nick or user.name
+        new_name_with_zalgo = current_name.translate(translator)
+        new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
+        await user.edit(nick=new_name)
+        return new_name
+
     @commands.command(cls=utils.Command, aliases=['fun'])
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     async def fixunzalgoname(self, ctx:utils.Context, user:discord.Member):
         """Fixes a user's nickname to remove dumbass characters"""
 
-        try:
-            with open("config/letter_replacements.json") as a:
-                replacements = json.load(a)
-        except Exception as e:
-            return await ctx.send(f"Could not open letter replacement file - `{e}`.")
-        translator = str.maketrans(replacements)
         current_name = user.nick or user.name
-        new_name_with_zalgo = current_name.translate(translator)
-        new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
-        await user.edit(nick=new_name)
+        new_name = await self.fix_user_nickname(user)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
-        return await ctx.send(new_name)
 
     @commands.command(ignore_extra=False, cls=utils.Command)
     @commands.has_permissions(manage_nicknames=True)

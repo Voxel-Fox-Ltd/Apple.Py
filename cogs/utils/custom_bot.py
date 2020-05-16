@@ -47,6 +47,7 @@ class CustomBot(commands.AutoShardedBot):
         self.DEFAULT_GUILD_SETTINGS = {
             'prefix': self.config['default_prefix'],
             'quote_channel_id': None,
+            'automatic_nickname_update': False,
         }
 
         # Aiohttp session
