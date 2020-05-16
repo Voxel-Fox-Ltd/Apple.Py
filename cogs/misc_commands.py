@@ -1,4 +1,5 @@
 import asyncio
+import typing
 
 import discord
 from discord.ext import commands
@@ -47,7 +48,7 @@ class MiscCommands(utils.Cog):
 
         await ctx.send(content, allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
-    @commands.command(aliases=['status'])
+    @commands.command(cls=utils.Command, aliases=['status'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def stats(self, ctx:utils.Context):
         """Gives you the stats for the bot"""
@@ -70,6 +71,24 @@ class MiscCommands(utils.Cog):
             embed.add_field("Coroutines", f"{len([i for i in asyncio.Task.all_tasks() if not i.done()])} running, {len(asyncio.Task.all_tasks())} total.")
 
         # Send it out wew let's go
+        await ctx.send(embed=embed)
+
+    @commands.command(cls=utils.Command, aliases=['color'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def colour(self, ctx:utils.Context, *, colour:typing.Union[discord.Role, discord.Colour, discord.Member]):
+        """Get you a colour"""
+
+        # https://www.htmlcsscolor.com/preview/gallery/5dadec.png
+        if isinstance(colour, discord.Role):
+            colour = colour.colour
+        elif isinstance(colour, discord.Member):
+            try:
+                colour = [i for i in colour.roles if i.colour.value > 0][-1].colour
+            except IndexError:
+                colour = discord.Colour(0)
+        hex_colour = colour.value
+        with utils.Embed(colour=hex_colour,title=f"#{hex_colour:0>6X}") as embed:
+            embed.set_image(url=f"https://www.htmlcsscolor.com/preview/gallery/{hex_colour:0>6X}.png")
         await ctx.send(embed=embed)
 
 
