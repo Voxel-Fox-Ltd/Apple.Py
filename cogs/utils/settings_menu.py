@@ -4,6 +4,12 @@ import typing
 import discord
 from discord.ext import commands
 
+from cogs import utils
+
+
+class SettingsMenuError(commands.CommandError):
+    pass
+
 
 class SettingsMenuOption(object):
     """An option that can be chosen for a settings menu's selectable item,
@@ -50,9 +56,9 @@ class SettingsMenuOption(object):
         returned_data = []
         for i in self.args:
             data = await self.convert_prompted_information(*i)
-            if data is None:
-                return
             returned_data.append(data)
+            if data is None:
+                break
 
         # Do callback
         if isinstance(self.callback, commands.Command):
@@ -62,7 +68,7 @@ class SettingsMenuOption(object):
             if asyncio.iscoroutine(called_data):
                 await called_data
 
-    async def convert_prompted_information(self, prompt:str, asking_for:str, converter:commands.Converter) -> typing.Any:
+    async def convert_prompted_information(self, prompt:str, asking_for:str, converter:commands.Converter, reactions:typing.List[discord.Emoji]=list()) -> typing.Any:
         """Ask the user for some information, convert it, and return that converted value to the user
 
         Params:
@@ -76,28 +82,41 @@ class SettingsMenuOption(object):
 
         # Send prompt
         bot_message = await self.context.send(prompt)
-        check = lambda m: m.channel.id == self.context.channel.id and m.author.id == self.context.author.id
+        if reactions:
+            for r in reactions:
+                await bot_message.add_reaction(r)
         try:
-            user_message = await self.context.bot.wait_for("message", timeout=120, check=check)
+            if reactions:
+                user_message = None
+                check = lambda r, u: r.message.id == bot_message.id and u.id == self.context.author.id and str(r.emoji) in reactions
+                reaction, _ = await self.context.bot.wait_for("reaction_add", timeout=120, check=check)
+                content = str(reaction.emoji)
+            else:
+                check = lambda m: m.channel.id == self.context.channel.id and m.author.id == self.context.author.id
+                user_message = await self.context.bot.wait_for("message", timeout=120, check=check)
+                content = user_message.content
         except asyncio.TimeoutError:
             await self.context.send(f"Timed out asking for {asking_for}.")
-            return None
+            raise utils.errors.InvokedMetaCommand()
 
         # Run converter
+        conversion_failed = False
         if hasattr(converter, 'convert'):
             try:
                 converter = converter()
             except TypeError:
                 pass
             try:
-                value = await converter.convert(self.context, user_message.content)
+                value = await converter.convert(self.context, content)
             except commands.CommandError:
                 value = None
+                conversion_failed = True
         else:
             try:
-                value = converter(user_message.content)
+                value = converter(content)
             except Exception:
                 value = None
+                conversion_failed = True
 
         # Delete prompt messages
         try:
@@ -106,8 +125,12 @@ class SettingsMenuOption(object):
             pass
         try:
             await user_message.delete()
-        except (discord.Forbidden, discord.NotFound):
+        except (discord.Forbidden, discord.NotFound, AttributeError):
             pass
+
+        # Check conversion didn't fail
+        if conversion_failed:
+            raise SettingsMenuError()
 
         # Return converted value
         return value
@@ -131,6 +154,25 @@ class SettingsMenuOption(object):
         # Get mention
         return cls.get_mention(data, default)
 
+    @classmethod
+    def get_user_settings_mention(cls, ctx:commands.Context, attr:str, default:str='none'):
+        """Get an item from the bot's user settings"""
+
+        # Set variables
+        data = None
+        settings = ctx.bot.user_settings[ctx.author.id]
+
+        # Run converters
+        if '_channel' in attr.lower():
+            data = ctx.bot.get_channel(settings[attr])
+        elif '_role' in attr.lower():
+            data = ctx.guild.get_role(settings[attr])
+        else:
+            raise RuntimeError("Can't work out what you want to mention")
+
+        # Get mention
+        return cls.get_mention(data, default)
+
     @staticmethod
     def get_mention(data, default:str):
         """Get the mention of an object"""
@@ -139,7 +181,7 @@ class SettingsMenuOption(object):
         return mention
 
     @staticmethod
-    def get_set_guild_settings_callback(database_key:str):
+    def get_set_guild_settings_callback(database_name:str, database_key:str):
         """Return an async method that takes the data retuend by convert_prompted_information and then
         saves it into the database - should be used for the add_option stuff in the SettingsMenu init"""
 
@@ -150,10 +192,28 @@ class SettingsMenuOption(object):
 
             async with self.context.bot.database() as db:
                 await db(
-                    "INSERT INTO guild_settings (guild_id, {0}) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET {0}=$2".format(database_key),
+                    "INSERT INTO {0} (guild_id, {1}) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET {1}=$2".format(database_name, database_key),
                     self.context.guild.id, data
                 )
             self.context.bot.guild_settings[self.context.guild.id][database_key] = data
+        return callback
+
+    @staticmethod
+    def get_set_user_settings_callback(database_name:str, database_key:str):
+        """Return an async method that takes the data retuend by convert_prompted_information and then
+        saves it into the database - should be used for the add_option stuff in the SettingsMenu init"""
+
+        async def callback(self, *data):
+            data = data[0]  # Since data is returned as a tuple, we just want the first item from it
+            if isinstance(data, (discord.Role, discord.TextChannel)):
+                data = data.id
+
+            async with self.context.bot.database() as db:
+                await db(
+                    "INSERT INTO {0} (user_id, {1}) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET {1}=$2".format(database_name, database_key),
+                    self.context.author.id, data
+                )
+            self.context.bot.user_settings[self.context.author.id][database_key] = data
         return callback
 
     @staticmethod
@@ -177,13 +237,15 @@ class SettingsMenuOption(object):
     @staticmethod
     def get_set_role_list_add_callback(guild_settings_key:str, database_key:str, serialize_function:typing.Callable[[typing.Any], str]=lambda x: x):
         """Return an async method that takes the data retuend by convert_prompted_information and then
-        saves it into the database - should be used for the add_option stuff in the SettingsMenu init"""
+        saves it into the database - should be used for the add_option stuff in the SettingsMenu init
+
+        serialize_function - The function run on the value to make it database-safe"""
 
         async def callback(self, *data):
             # data will either be [role_id], or [role_id, value]
             try:
-                role, value = data
-                value = str(serialize_function(value))
+                role, original_value = data
+                value = str(serialize_function(original_value))
             except ValueError:
                 role, value = data[0], None
             async with self.context.bot.database() as db:
@@ -193,7 +255,7 @@ class SettingsMenuOption(object):
                     self.context.guild.id, role.id, database_key, value
                 )
             if value:
-                self.context.bot.guild_settings[self.context.guild.id][guild_settings_key][role.id] = value
+                self.context.bot.guild_settings[self.context.guild.id][guild_settings_key][role.id] = serialize_function(original_value)
             else:
                 if role.id not in self.context.bot.guild_settings[self.context.guild.id][guild_settings_key]:
                     self.context.bot.guild_settings[self.context.guild.id][guild_settings_key].append(role.id)
@@ -260,7 +322,10 @@ class SettingsMenu(object):
             # Process the picked option
             if picked_option is None:
                 break
-            await picked_option.perform_action()
+            try:
+                await picked_option.perform_action()
+            except SettingsMenuError:
+                pass
 
             # Remove the emoji
             try:
@@ -324,7 +389,7 @@ class SettingsMenuIterable(SettingsMenu):
         self.value_converter = value_converter
         self.key_prompt = key_prompt
         self.value_prompt = value_prompt
-        self.value_serialize_function = value_serialize_function
+        self.value_serialize_function = value_serialize_function or (lambda x: x)
 
     def get_sendable_data(self, ctx:commands.Context):
         """Create a list of mentions from the given guild settings key, creating all relevant callbacks"""

@@ -13,7 +13,7 @@ dm_uncaught_errors = false
 # This data is passed directly over to asyncpg
 [database]
     user = "database_username"
-    password = "DatabasePassword"
+    password = "database_password"
     database = "database_name"
     host = "127.0.0.1"
     port = 5432
@@ -33,3 +33,7 @@ dm_uncaught_errors = false
 [oauth]
     client_id = ""
     client_secret = ""
+
+[paypal_pdt]
+    receiver_email = ""  # The email that the PayPal account is set up with
+    sandbox = true
