@@ -22,9 +22,9 @@ class BotSettings(utils.Cog):
             await db("INSERT INTO guild_settings (guild_id, prefix) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET prefix=excluded.prefix", ctx.guild.id, new_prefix)
         await ctx.send(f"My prefix has been updated to `{new_prefix}`.")
 
-    @commands.group(cls=utils.Group, enabled=False)
+    @commands.group(cls=utils.Group)
     @commands.has_permissions(manage_guild=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
     async def setup(self, ctx:utils.Context):
         """Run the bot setup"""
