@@ -39,6 +39,7 @@ ZALGO_CHARACTERS = [
     '\u0670',
     '\u25ce', '\u20d2',
     '\u06e3', '\u06dc',
+    '\u02de',
 ]
 
 
@@ -46,14 +47,30 @@ class NicknameHandler(utils.Cog):
 
     @utils.Cog.listener()
     async def on_member_join(self, member:discord.Member):
+        """Pings a member nickname update on member join"""
+
         if self.bot.guild_settings[member.guild.id]['automatic_nickname_update']:
             self.logger.info(f"Pinging nickname update for member join (G{member.guild.id}/U{member.id})")
             await self.fix_user_nickname(member)
 
     @utils.Cog.listener()
     async def on_member_update(self, before:discord.Member, member:discord.Member):
+        """Pings a member nickname update on nickname update"""
+
         if self.bot.guild_settings[member.guild.id]['automatic_nickname_update']:
-            if (before.nick or before.name) != (member.nick or member.name):
+            if before.display_name != member.display_name:
+                if member.guild_permissions.manage_nicknames:
+                    self.logger.info(f"Not pinging nickname update for manage_nicknames member (G{member.guild.id}/U{member.id})")
+                    return
+                try:
+                    async for entry in member.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update):
+                        if entry.target.id == member.id:
+                            if entry.user.id != member.id:
+                                self.logger.info(f"Not pinging nickname update for a name changed by moderator (G{member.guild.id}/U{member.id})")
+                                return
+                            break
+                except discord.Forbidden:
+                    pass
                 self.logger.info(f"Pinging nickname update for member update (G{member.guild.id}/U{member.id})")
                 await self.fix_user_nickname(member)
 
