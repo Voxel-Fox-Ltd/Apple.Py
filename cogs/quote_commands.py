@@ -30,6 +30,14 @@ class QuoteCommands(utils.Cog):
         if not messages:
             return await ctx.send("I couldn't find any references to messages in your command call.")
 
+        # Make sure they're all sent as a reasonable time apart
+        messages = sorted(messages, key=lambda m: m.created_at)
+        for i, o in zip(messages, messages[1:]):
+            if o is None:
+                break
+            if (o.created_at - i.created_at).total_seconds() > 3 * 60:
+                return await ctx.send("Those messages are too far apart to quote together.")
+
         # Validate input
         timestamp = messages[0].created_at
         user = messages[0].author
