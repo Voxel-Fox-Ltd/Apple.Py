@@ -1,4 +1,5 @@
 import discord
+from discord.ext import commands
 
 from cogs import utils
 
@@ -15,6 +16,8 @@ class RainbowLineAutodelete(utils.Cog):
             return
         if message.channel.permissions_for(message.author).manage_messages:
             return
+        if not message.attachments:
+            return
         if len(message.attachments) > 1:
             return
         attachment = message.attachments[0]
@@ -24,9 +27,9 @@ class RainbowLineAutodelete(utils.Cog):
             constant = a.read()
         if constant == content:
             try:
-                await message.delete(reason="Rainbow line autodelete")
-            except Exception:
-                pass
+                await message.delete()
+            except discord.HTTPException as e:
+                self.logger.error(e)
 
 def setup(bot:utils.Bot):
     x = RainbowLineAutodelete(bot)
