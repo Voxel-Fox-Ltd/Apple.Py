@@ -2,7 +2,8 @@ CREATE TABLE guild_settings(
     guild_id BIGINT PRIMARY KEY,
     prefix VARCHAR(30),
     quote_channel_id BIGINT,
-    automatic_nickname_update BOOLEAN DEFAULT FALSE
+    automatic_nickname_update BOOLEAN DEFAULT FALSE,
+    rainbow_line_autodelete BOOLEAN DEFAULT FALSE
 );
 
 

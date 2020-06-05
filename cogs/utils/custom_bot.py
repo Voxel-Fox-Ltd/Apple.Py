@@ -49,6 +49,7 @@ class CustomBot(commands.AutoShardedBot):
             'prefix': self.config['default_prefix'],
             'quote_channel_id': None,
             'automatic_nickname_update': False,
+            'rainbow_line_autodelete': False,
         }
         self.DEFAULT_USER_SETTINGS = {
         }

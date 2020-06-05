@@ -48,6 +48,11 @@ class BotSettings(utils.Cog):
                 'converter_args': [("Do you want to enable automatic nickname fixing?", "auto nickname", utils.converters.BooleanConverter)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'automatic_nickname_update'),
             },
+            {
+                'display': lambda c: "Enable rainbow line autodelete (currently {0})".format(c.bot.guild_settings[c.guild.id]['rainbow_line_autodelete']),
+                'converter_args': [("Do you want to enable automatic rainbow line deleting?", "autodelete rainbow line", utils.converters.BooleanConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'rainbow_line_autodelete'),
+            },
         )
         try:
             await menu.start(ctx)
