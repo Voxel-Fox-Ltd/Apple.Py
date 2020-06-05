@@ -40,6 +40,10 @@ class QuoteCommands(utils.Cog):
                 break
             if (o.created_at - i.created_at).total_seconds() > 3 * 60:
                 return await ctx.send("Those messages are too far apart to quote together.")
+            if not i.content or i.attachments:
+                return await ctx.send("Images can't be quoted.")
+        if not messages[0].content or messages[0].attachments:
+            return await ctx.send("Images can't be quoted.")
 
         # Validate input
         timestamp = messages[0].created_at
