@@ -22,6 +22,9 @@ class QuoteCommands(utils.Cog):
     async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
         """Qutoes a user babeyyyyy lets GO"""
 
+        if ctx.author.id in [542862902042951681, 468423441423400960]:
+            return await ctx.send("You're not allowed to run this command.")
+
         # Make sure no subcommand is passed
         if ctx.invoked_subcommand is not None:
             return
@@ -138,15 +141,42 @@ class QuoteCommands(utils.Cog):
     @quote.command(cls=utils.Command)
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def delete(self, ctx:utils.Context, quote_id:str):
+    async def delete(self, ctx:utils.Context, *quote_ids:str):
         """Deletes a quote from your server"""
 
+        quote_ids = [i.lower() for i in quote_ids]
+        quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
+        if quote_channel_id:
+            quote_channel = self.bot.get_channel(quote_channel_id)
+            try:
+                async for message in quote_channel.history(limit=150):
+                    if not message.author.id == ctx.guild.me.id:
+                        continue
+                    if not message.embeds:
+                        continue
+                    embed = message.embeds[0]
+                    if not embed.footer:
+                        continue
+                    footer_text = embed.footer.text
+                    if not footer_text:
+                        continue
+                    if not footer_text.startswith("Quote ID"):
+                        continue
+                    message_quote_id = footer_text.split(' ')[2].lower()
+                    if message_quote_id in quote_ids:
+                        try:
+                            await message.delete()
+                        except discord.HTTPException:
+                            pass
+            except (discord.HTTPException, AttributeError) as e:
+                await ctx.send(e)
+
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
-            if rows:
-                await db("DELETE FROM user_quotes WHERE quote_id=$1", quote_id.lower())
-                return await ctx.send("Deleted quote.")
-            return await ctx.send(f"No quote with ID `{quote_id.upper()}` exists.")
+            await db("DELETE FROM user_quotes WHERE quote_id=ANY($1)", quote_ids)
+            # if rows:
+            #     await db("DELETE FROM user_quotes WHERE quote_id=$1", quote_id.lower())
+        return await ctx.send("Deleted quote(s).")
+        # return await ctx.send(f"No quote with ID `{quote_id.upper()}` exists.")
 
 
 def setup(bot:utils.Bot):
