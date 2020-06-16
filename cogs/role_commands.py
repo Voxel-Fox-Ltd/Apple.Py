@@ -45,6 +45,14 @@ class RoleCommands(utils.Cog):
 
         await ctx.send(f'```\n{message.content}\n```')
 
+    @commands.command(cls=utils.Command)
+    @commands.has_permissions(manage_messages=True)
+    @commands.bot_has_permissions(send_messages=True)
+    async def dumpmessagelist(self, ctx:utils.Context, message:discord.Message):
+        """Dumps a message out into chat"""
+
+        await ctx.send(f'```py\n{[i.encode("unicode_escape").decode() for i in list(message.content)]}\n```')
+
 
 def setup(bot:utils.Bot):
     x = RoleCommands(bot)
