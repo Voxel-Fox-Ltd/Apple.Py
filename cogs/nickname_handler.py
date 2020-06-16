@@ -1,4 +1,6 @@
 import json
+import random
+import string
 
 import discord
 from discord.ext import commands
@@ -42,8 +44,37 @@ ZALGO_CHARACTERS = [
     '\u02de',
 ]
 
+ANIMAL_NAMES = "https://raw.githubusercontent.com/skjorrface/animals.txt/master/animals.txt"
+
 
 class NicknameHandler(utils.Cog):
+
+    LETTER_REPLACEMENT_FILE_PATH = "config/letter_replacements.json"
+    ASCII_CHARACTERS = string.ascii_letters + string.digits
+
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.animal_names = None
+        self.letter_replacements = None
+
+    async def get_animal_names(self):
+        """Grabs all names from the Github page"""
+
+        if self.animal_names:
+            return self.animal_names
+        async with self.bot.session.get(ANIMAL_NAMES) as r:
+            text = await r.text()
+        self.animal_names = text.strip().split('\n')
+        return await self.get_animal_names()
+
+    def get_letter_replacements(self):
+        """Grabs all names from the Github page"""
+
+        if self.letter_replacements:
+            return self.letter_replacements
+        with open(self.LETTER_REPLACEMENT_FILE_PATH) as a:
+            self.letter_replacements = json.load(a)
+        return self.get_letter_replacements()
 
     @utils.Cog.listener()
     async def on_member_join(self, member:discord.Member):
@@ -59,9 +90,13 @@ class NicknameHandler(utils.Cog):
 
         if self.bot.guild_settings[member.guild.id]['automatic_nickname_update']:
             if before.display_name != member.display_name:
+
+                # If the member can change nicknames, don't fix it
                 if member.guild_permissions.manage_nicknames:
                     self.logger.info(f"Not pinging nickname update for manage_nicknames member (G{member.guild.id}/U{member.id})")
                     return
+
+                # See if their name was changed by an admin
                 try:
                     async for entry in member.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update):
                         if entry.target.id == member.id:
@@ -71,21 +106,35 @@ class NicknameHandler(utils.Cog):
                             break
                 except discord.Forbidden:
                     pass
+
+                # Fix their name
                 self.logger.info(f"Pinging nickname update for member update (G{member.guild.id}/U{member.id})")
                 await self.fix_user_nickname(member)
 
     async def fix_user_nickname(self, user:discord.Member) -> str:
         """Fix the nickname of a user"""
 
-        with open("config/letter_replacements.json") as a:
-            replacements = json.load(a)
+        # Read the letter replacements file
+        replacements = self.get_letter_replacements()
+
+        # Make a translator
         translator = str.maketrans(replacements)
+
+        # Try and fix their name
         current_name = user.nick or user.name
         new_name_with_zalgo = current_name.translate(translator)
         new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
+
+        # See if their username has any English characters in it now
+        if not [i for i in new_name if i in self.ASCII_CHARACTERS]:
+            new_name = random.choice(await self.get_animal_names())
+
+        # See if it needs editing
         if current_name == new_name:
             self.logger.info(f"Not updating the nickname '{new_name}' (G{user.guild.id}/U{user.id})")
             return new_name
+
+        # Change their name
         self.logger.info(f"Updating nickname '{current_name}' to '{new_name}' (G{user.guild.id}/U{user.id})")
         await user.edit(nick=new_name)
         return new_name
@@ -108,43 +157,43 @@ class NicknameHandler(utils.Cog):
         """Adds fixable letters to the replacement list"""
 
         try:
-            with open("config/letter_replacements.json") as a:
-                replacements = json.load(a)
+            replacements = self.get_letter_replacements()
         except Exception as e:
             return await ctx.send(f"Could not open letter replacement file - `{e}`.")
         for i, o in zip(phrase1, phrase2):
             replacements[i] = o
         try:
-            with open("config/letter_replacements.json", "w") as a:
+            with open(self.LETTER_REPLACEMENT_FILE_PATH, "w") as a:
                 json.dump(replacements, a)
         except Exception as e:
             return await ctx.send(f"Could not open letter replacement file to write to it - `{e}`.")
+        self.letter_replacements = None
         return await ctx.send("Written to file successfully.")
 
-    @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_nicknames=True)
-    @commands.bot_has_permissions(manage_nicknames=True)
-    async def setpermanentnickname(self, ctx:utils.Context, user:discord.Member, *, name:str=None):
-        """Sets the permanent nickname for a user"""
+    # @commands.command(cls=utils.Command)
+    # @commands.has_permissions(manage_nicknames=True)
+    # @commands.bot_has_permissions(manage_nicknames=True)
+    # async def setpermanentnickname(self, ctx:utils.Context, user:discord.Member, *, name:str=None):
+    #     """Sets the permanent nickname for a user"""
 
-        # Update db
-        async with self.bot.database() as db:
-            if name:
-                await db(
-                    """INSERT INTO permanent_nicknames (guild_id, user_id, nickname)
-                    VALUES ($1, $2, $3)
-                    ON CONFLICT (guild_id, user_id) DO UPDATE SET nickname=$3""",
-                    ctx.guild.id, user.id, name
-                )
-            else:
-                await db("DELETE FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, user.id)
+    #     # Update db
+    #     async with self.bot.database() as db:
+    #         if name:
+    #             await db(
+    #                 """INSERT INTO permanent_nicknames (guild_id, user_id, nickname)
+    #                 VALUES ($1, $2, $3)
+    #                 ON CONFLICT (guild_id, user_id) DO UPDATE SET nickname=$3""",
+    #                 ctx.guild.id, user.id, name
+    #             )
+    #         else:
+    #             await db("DELETE FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, user.id)
 
-        # Edit and respond
-        await user.edit(nick=name)
-        if name:
-            await ctx.send(f"The nickname of {user.mention} has been set to `{name}`.")
-        else:
-            await ctx.send(f"{user.mention} no longer has a permanent nickname.")
+    #     # Edit and respond
+    #     await user.edit(nick=name)
+    #     if name:
+    #         await ctx.send(f"The nickname of {user.mention} has been set to `{name}`.")
+    #     else:
+    #         await ctx.send(f"{user.mention} no longer has a permanent nickname.")
 
 
 def setup(bot:utils.Bot):
