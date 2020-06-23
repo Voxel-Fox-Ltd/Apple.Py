@@ -6,3 +6,4 @@ git+https://github.com/4Kaylum/discord-ext-menus
 # Storage handling
 asyncpg
 
+beautifulsoup4

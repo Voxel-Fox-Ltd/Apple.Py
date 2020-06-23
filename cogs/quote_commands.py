@@ -22,9 +22,6 @@ class QuoteCommands(utils.Cog):
     async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
         """Qutoes a user babeyyyyy lets GO"""
 
-        if ctx.author.id in [542862902042951681, 468423441423400960]:
-            return await ctx.send("You're not allowed to run this command.")
-
         # Make sure no subcommand is passed
         if ctx.invoked_subcommand is not None:
             return
