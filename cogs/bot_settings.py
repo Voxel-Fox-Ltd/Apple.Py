@@ -53,12 +53,30 @@ class BotSettings(utils.Cog):
                 'converter_args': [("Do you want to enable automatic rainbow line deleting?", "autodelete rainbow line", utils.converters.BooleanConverter)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'rainbow_line_autodelete'),
             },
+            {
+                'display': "Set up VC max members",
+                'callback': self.bot.get_command("setup vcmaxmembers"),
+            },
         )
         try:
             await menu.start(ctx)
             await ctx.send("Done setting up!")
         except utils.errors.InvokedMetaCommand:
             pass
+
+    @setup.command(cls=utils.Command)
+    @utils.checks.meta_command()
+    async def vcmaxmembers(self, ctx:utils.Context):
+        """Run the bot setup"""
+
+        # Create settings menu
+        key_display_function = lambda k: getattr(ctx.bot.get_channel(k), 'mention', 'none')
+        menu = utils.SettingsMenuIterable(
+            'channel_list', 'channel_id', 'max_vc_members', 'MaxVCMembers',
+            commands.VoiceChannelConverter, "What voice channel do you want to set the max of?", key_display_function,
+            int, "How many members should be allowed in this VC?"
+        )
+        await menu.start(ctx)
 
     @commands.group(cls=utils.Group, enabled=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)

@@ -14,6 +14,7 @@ from discord.ext import commands
 
 from cogs.utils.custom_context import CustomContext
 from cogs.utils.database import DatabaseConnection
+from cogs.utils.redis import RedisConnection
 
 
 def get_prefix(bot, message:discord.Message):
@@ -50,6 +51,8 @@ class CustomBot(commands.AutoShardedBot):
             'quote_channel_id': None,
             'automatic_nickname_update': False,
             'rainbow_line_autodelete': False,
+            'max_vc_members': dict(),
+            'leaderboard_message_url': None,
         }
         self.DEFAULT_USER_SETTINGS = {
         }
@@ -97,6 +100,11 @@ class CustomBot(commands.AutoShardedBot):
         for row in data:
             for key, value in row.items():
                 self.user_settings[row['user_id']][key] = value
+
+        # Get user settings
+        data = await self.get_list_table_data(db, "channel_list", "MaxVCMembers")
+        for row in data:
+            self.guild_settings[row['guild_id']]['max_vc_members'][key] = int(value)
 
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")

@@ -42,6 +42,7 @@ ZALGO_CHARACTERS = [
     '\u25ce', '\u20d2',
     '\u06e3', '\u06dc',
     '\u02de',
+    '\U0000fdfd',
 ]
 
 ANIMAL_NAMES = "https://raw.githubusercontent.com/skjorrface/animals.txt/master/animals.txt"
