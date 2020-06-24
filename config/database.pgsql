@@ -3,7 +3,8 @@ CREATE TABLE guild_settings(
     prefix VARCHAR(30),
     quote_channel_id BIGINT,
     automatic_nickname_update BOOLEAN DEFAULT FALSE,
-    rainbow_line_autodelete BOOLEAN DEFAULT FALSE
+    rainbow_line_autodelete BOOLEAN DEFAULT FALSE,
+    leaderboard_message_url VARCHAR(150)
 );
 
 
@@ -44,4 +45,12 @@ CREATE TABLE channel_list(
     key VARCHAR(50),
     value VARCHAR(50),
     PRIMARY KEY (guild_id, channel_id, key)
+);
+
+
+CREATE TABLE user_points(
+    guild_id BIGINT,
+    user_id BIGINT,
+    points INTEGER DEFAULT 0,
+    PRIMARY KEY (guild_id, user_id)
 );
