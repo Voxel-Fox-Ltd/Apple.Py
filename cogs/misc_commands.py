@@ -112,6 +112,18 @@ class MiscCommands(utils.Cog):
             return await ctx.send('Output too long to display.')
         await ctx.send(msg)
 
+    @commands.command(cls=utils.Command, cooldown_after_parsing=True)
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_permissions(send_messages=True)
+    @utils.cooldown.cooldown(1, 60, commands.BucketType.guild)
+    async def spam(self, ctx:utils.Context, amount:int, *, text:str):
+        """Spams a message a given amount of times"""
+
+        if amount > 10:
+            return await ctx.send("That's too much to spam.")
+        for _ in range(amount):
+            await ctx.send(text)
+
 
 def setup(bot:utils.Bot):
     x = MiscCommands(bot)

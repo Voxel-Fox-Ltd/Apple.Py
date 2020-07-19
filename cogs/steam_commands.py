@@ -34,8 +34,8 @@ class SteamCommand(utils.Cog):
     def get_valid_name(self, name):
         return ''.join(i for i in name if i.isdigit() or i.isalpha() or i.isspace())
 
-    @commands.command(cls=utils.Command, aliases=['steam'])
-    async def steamsearch(self, ctx:utils.Context, *, app_name:str):
+        @commands.command(cls=utils.Command, aliases=['steam'])
+        async def steamsearch(self, ctx:utils.Context, *, app_name:str):
         """Search Steam for an item"""
 
         # Load cache
@@ -43,7 +43,6 @@ class SteamCommand(utils.Cog):
             await self.load_game_cache()
 
         # Get app
-        # app_name_raw = app_name
         app_object = None
         appid = None
         await ctx.trigger_typing()
@@ -76,7 +75,6 @@ class SteamCommand(utils.Cog):
             appid = app_object['appid']
 
         # Get info
-        # appid = app_object['appid']
         params = {
             "appids": appid
         }
