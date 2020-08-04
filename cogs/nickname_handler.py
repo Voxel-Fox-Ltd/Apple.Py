@@ -150,13 +150,23 @@ class NicknameHandler(utils.Cog):
         new_name = await self.fix_user_nickname(user)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
 
-    @commands.command(ignore_extra=False, cls=utils.Command)
-    @commands.has_permissions(manage_nicknames=True)
+    @commands.command(cls=utils.Command)
     @commands.is_owner()
-    @commands.bot_has_permissions(manage_nicknames=True)
+    @commands.bot_has_permissions(send_messages=True)
+    async def addfixablename(self, ctx:utils.Context, user:discord.Member, *, fixed_name:str):
+        """Adds a given user's name to the fixable letters"""
+
+        await ctx.invoke(self.bot.get_command("addfixableletters"), user.display_name, fixed_name)
+        await ctx.invoke(self.bot.get_command("fixunzalgoname"), user)
+
+    @commands.command(ignore_extra=False, cls=utils.Command)
+    @commands.is_owner()
+    @commands.bot_has_permissions(send_messages=True)
     async def addfixableletters(self, ctx:utils.Context, phrase1:str, phrase2:str):
         """Adds fixable letters to the replacement list"""
 
+        if len(phrase1) != len(phrase2):
+            return await ctx.send("The lengths of the two provided phrases don't match.")
         try:
             replacements = self.get_letter_replacements()
         except Exception as e:

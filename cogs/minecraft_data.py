@@ -9,8 +9,8 @@ class MinecraftData(utils.Cog):
 
     # https://mcapi.us/server/status?ip=149.202.84.162&port=25588
     MINECRAFT_API = "https://mcapi.us/server/status"
-    SERVER_IP = "149.202.84.162"
-    SERVER_PORT = 25588
+    SERVER_IP = "voxelfox.mcserver.at"
+    SERVER_PORT = 25565
     MINECRAFT_MESSAGE = (716321756171862048, 721771100790325321)  # ChannelID, MessageID
 
     def __init__(self, bot:utils.Bot):

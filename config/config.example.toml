@@ -25,6 +25,7 @@ dm_uncaught_errors = false
 [api_keys]
     steam = "steam_api_key"
     cat_api = ""  # https://thecatapi.com
+    omdb = ""
 
 # What the bot is playing
 [presence]
