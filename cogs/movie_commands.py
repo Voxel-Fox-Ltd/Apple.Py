@@ -1,6 +1,3 @@
-import io
-import json
-
 import discord
 from discord.ext import commands
 
@@ -16,6 +13,7 @@ class MovieCommand(utils.Cog):
         """Searches for a movie on the OMDB API"""
 
         # See if we gave a year
+        original_name = name
         if name.split(' ')[-1].isdigit() and int(name.split(' ')[-1]) > 1900:
             *name, year = name.split(' ')
             name = ' '.join(name)
@@ -36,6 +34,8 @@ class MovieCommand(utils.Cog):
             data = await r.json()
 
         # Build an embed
+        if data.get('Title') is None:
+            return await ctx.invoke(self.bot.get_command("movie search"), name=original_name)
         with utils.Embed(use_random_colour=True, title=f"{data['Title']} ({data['Year']})") as embed:
             if data['Plot']:
                 embed.description = data['Plot']
@@ -68,6 +68,7 @@ class MovieCommand(utils.Cog):
         """Searches for a movie on the OMDB API"""
 
         # See if we gave a year
+        original_name = name
         if name.split(' ')[-1].isdigit() and int(name.split(' ')[-1]) > 1900:
             *name, year = name.split(' ')
             name = ' '.join(name)
@@ -86,6 +87,10 @@ class MovieCommand(utils.Cog):
         # Send the request
         async with self.bot.session.get("http://www.omdbapi.com/", params=params) as r:
             data = await r.json()
+
+        # See if we got anything
+        if data.get('Search') is None:
+            return await ctx.send(f"No movie results for `{original_name}` could be found.", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
 
         # Build an embed
         embed = utils.Embed(use_random_colour=True)
