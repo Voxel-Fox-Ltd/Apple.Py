@@ -26,4 +26,3 @@ class UserCommands(utils.Cog):
 def setup(bot:utils.Bot):
     x = UserCommands(bot)
     bot.add_cog(x)
-D
