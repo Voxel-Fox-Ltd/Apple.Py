@@ -75,6 +75,8 @@ class NicknameHandler(utils.Cog):
             return self.letter_replacements
         with open(self.LETTER_REPLACEMENT_FILE_PATH) as a:
             self.letter_replacements = json.load(a)
+        for i in string.ascii_letters + string.punctuation + string.digits + string.whitespace:
+            self.letter_replacements[i] = i
         return self.get_letter_replacements()
 
     @utils.Cog.listener()
