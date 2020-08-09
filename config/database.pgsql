@@ -4,7 +4,8 @@ CREATE TABLE guild_settings(
     quote_channel_id BIGINT,
     automatic_nickname_update BOOLEAN DEFAULT FALSE,
     rainbow_line_autodelete BOOLEAN DEFAULT FALSE,
-    leaderboard_message_url VARCHAR(150)
+    leaderboard_message_url VARCHAR(150),
+    dump_stackoverflow_answers BOOLEAN DEFAULT FALSE
 );
 
 
