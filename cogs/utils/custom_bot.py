@@ -55,6 +55,7 @@ class CustomBot(commands.AutoShardedBot):
             'rainbow_line_autodelete': False,
             'max_vc_members': dict(),
             'leaderboard_message_url': None,
+            'dump_stackoverflow_answers': False,
         }
         self.DEFAULT_USER_SETTINGS = {
         }
@@ -106,7 +107,7 @@ class CustomBot(commands.AutoShardedBot):
         # Get user settings
         data = await self.get_list_table_data(db, "channel_list", "MaxVCMembers")
         for row in data:
-            self.guild_settings[row['guild_id']]['max_vc_members'][key] = int(value)
+            self.guild_settings[row['guild_id']]['max_vc_members'][row['channel_id']] = int(row['value'])
 
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")

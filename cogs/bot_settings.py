@@ -54,6 +54,11 @@ class BotSettings(utils.Cog):
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'rainbow_line_autodelete'),
             },
             {
+                'display': lambda c: "Enable Github answer dumping (currently {0})".format(c.bot.guild_settings[c.guild.id]['dump_stackoverflow_answers']),
+                'converter_args': [("Do you want to enable dumping Stackoverflow answers?", "dump SO answers", utils.converters.BooleanConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'dump_stackoverflow_answers'),
+            },
+            {
                 'display': "Set up VC max members",
                 'callback': self.bot.get_command("setup vcmaxmembers"),
             },
