@@ -10,6 +10,7 @@ CREATE TABLE guild_settings(
 
 CREATE TABLE user_quotes(
     quote_id VARCHAR(5) PRIMARY KEY,
+    alias BIGINT,
     guild_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     text TEXT NOT NULL,
