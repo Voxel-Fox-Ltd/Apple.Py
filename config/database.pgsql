@@ -17,6 +17,12 @@ CREATE TABLE user_quotes(
 );
 
 
+CREATE TABLE quote_aliases(
+    quote_id VARCHAR(5) PRIMARY KEY,
+    alias_name TEXT
+);
+
+
 CREATE TABLE permanent_nicknames(
     guild_id BIGINT,
     user_id BIGINT,
