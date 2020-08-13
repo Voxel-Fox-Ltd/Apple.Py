@@ -88,17 +88,21 @@ class QuoteCommands(utils.Cog):
 
     @quote.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def get(self, ctx:utils.Context, quote_id:commands.clean_content):
+    async def get(self, ctx:utils.Context, identifier):
         """Gets a quote from the database"""
 
-        # Grab data from db
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
-        if not rows:
-            return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
+            aliasRows = await db("SELECT * FROM quote_aliases WHERE alias=$1", identifier.lower())
+            quoteRows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", identifier.lower())
+        if not aliasRows and not quoteRows:
+            return await ctx.send(f"There's no quote with the identifier `{identifier.upper()}`.")
+        if aliasRows and not quoteRows:
+            quote_id = aliasRows[0]['quote_id']
+            async with self.bot.database() as db:
+                quoteRows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
 
         # Format into embed
-        data = rows[0]
+        data = quoteRows[0]
         with utils.Embed(use_random_colour=True) as embed:
             user_id = data['user_id']
             user = self.bot.get_user(user_id)
@@ -112,6 +116,28 @@ class QuoteCommands(utils.Cog):
 
         # Output to user
         return await ctx.send(embed=embed)
+
+    @quote.command(cls=utils.Command)
+    @commands.has_permissions(manage_guild=True)
+    @commands.bot_has_permissions(send_messages=True)
+    async def alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias):
+        """Adds an alias to a quote"""
+
+        # Grab data from db
+        async with self.bot.database() as db:
+            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
+        if not rows:
+            return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
+
+        # Inserts data (alias) into db
+        async with self.bot.database() as db:
+            rows = await db("SELECT * FROM quote_aliases WHERE alias=$1", alias)
+            if not rows: 
+                await db("INSERT into quote_aliases VALUES($1, $2)", quote_id.lower(), alias.lower())
+                await ctx.send(f"Added the alias {alias} to quote ID {quote_id.upper()}")
+            else:
+                await ctx.send("That alias is already being used.")
+
 
     @quote.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
