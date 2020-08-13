@@ -19,8 +19,8 @@ CREATE TABLE user_quotes(
 
 
 CREATE TABLE quote_aliases(
-    quote_id VARCHAR(5) PRIMARY KEY,
-    alias_name TEXT
+    alias VARCHAR(2000) PRIMARY KEY,
+    quote_id VARCHAR(5) REFERENCES user_quotes(quote_id) ON DELETE CASCADE
 );
 
 

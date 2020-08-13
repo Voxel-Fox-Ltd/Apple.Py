@@ -16,7 +16,7 @@ def create_id(n:int=5):
 
 class QuoteCommands(utils.Cog):
 
-    @commands.group(cls=utils.Group)
+    @commands.group(cls=utils.Group, invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
@@ -88,7 +88,7 @@ class QuoteCommands(utils.Cog):
 
     @quote.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def get(self, ctx:utils.Context, identifier):
+    async def get(self, ctx:utils.Context, identifier:commands.clean_content):
         """Gets a quote from the database"""
 
         async with self.bot.database() as db:
@@ -111,16 +111,16 @@ class QuoteCommands(utils.Cog):
             else:
                 embed.set_author_to_user(user)
             embed.description = data['text']
-            embed.set_footer(text=f"Quote ID {quote_id.upper()}")
+            embed.set_footer(text=f"Quote ID {data['quote_id'].upper()}")
             embed.timestamp = data['timestamp']
 
         # Output to user
         return await ctx.send(embed=embed)
 
-    @quote.command(cls=utils.Command)
+    @quote.group(cls=utils.Group, invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias):
+    async def alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias:commands.clean_content):
         """Adds an alias to a quote"""
 
         # Grab data from db
@@ -129,14 +129,13 @@ class QuoteCommands(utils.Cog):
         if not rows:
             return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
 
-        # Inserts data (alias) into db
+        # Insert alias into db
         async with self.bot.database() as db:
             rows = await db("SELECT * FROM quote_aliases WHERE alias=$1", alias)
-            if not rows: 
-                await db("INSERT into quote_aliases VALUES($1, $2)", quote_id.lower(), alias.lower())
-                await ctx.send(f"Added the alias {alias} to quote ID {quote_id.upper()}")
-            else:
-                await ctx.send("That alias is already being used.")
+            if rows:
+                return await ctx.send(f"The alias `{alias}` is already being used.")
+            await db("INSERT INTO quote_aliases (quote_id, alias) VALUES ($1, $2)", quote_id.lower(), alias.lower())
+        await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
 
     @quote.command(cls=utils.Command)
