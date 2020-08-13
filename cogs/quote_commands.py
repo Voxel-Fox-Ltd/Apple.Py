@@ -137,6 +137,16 @@ class QuoteCommands(utils.Cog):
             await db("INSERT INTO quote_aliases (quote_id, alias) VALUES ($1, $2)", quote_id.lower(), alias.lower())
         await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
+    @alias.command(cls=utils.Command, name='remove', aliases=['delete'])
+    @commands.has_permissions(manage_guild=True)
+    @commands.bot_has_permissions(send_messages=True)
+    async def alias_remove(self, ctx:utils.Context, alias:commands.clean_content):
+        """Deletes an alias from a quote"""
+
+        # Grab data from db
+        async with self.bot.database() as db:
+            await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
+        return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
     @quote.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
