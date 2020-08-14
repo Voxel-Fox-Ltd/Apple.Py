@@ -124,6 +124,23 @@ class MiscCommands(utils.Cog):
         for _ in range(amount):
             await ctx.send(text)
 
+    @commands.command(cls=utils.Command, aliases=['disconnectvc', 'clearvc'])
+    @commands.has_permissions(move_members=True)
+    @commands.bot_has_guild_permissions(move_members=True)
+    @commands.bot_has_permissions(send_messages=True)
+    async def emptyvc(self, ctx:utils.Context, channel:discord.VoiceChannel):
+        """Removes all the people from a given VC"""
+
+        if not channel.members:
+            return await ctx.send("There are no people in that VC for me to remove.")
+        member_count = len(channel.members)
+        for member in channel.members:
+            try:
+                await member.edit(voice_channel=None)
+            except discord.Forbidden:
+                return await ctx.send("I don't have permission to remove members from that channel.")
+        return await ctx.send(f"Dropped {member_count} members from the VC.")
+
 
 def setup(bot:utils.Bot):
     x = MiscCommands(bot)
