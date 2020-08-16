@@ -1,6 +1,7 @@
 import string
 import random
 import typing
+import re
 
 import discord
 from discord.ext import commands
@@ -15,6 +16,8 @@ def create_id(n:int=5):
 
 
 class QuoteCommands(utils.Cog):
+
+    IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
 
     @commands.group(cls=utils.Group, invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
@@ -31,6 +34,7 @@ class QuoteCommands(utils.Cog):
             return await ctx.send("I couldn't find any references to messages in your command call.")
 
         # Make sure they're all sent as a reasonable time apart
+        quote_is_url = False
         messages = sorted(messages, key=lambda m: m.created_at)
         for i, o in zip(messages, messages[1:]):
             if o is None:
@@ -38,9 +42,22 @@ class QuoteCommands(utils.Cog):
             if (o.created_at - i.created_at).total_seconds() > 3 * 60:
                 return await ctx.send("Those messages are too far apart to quote together.")
             if not i.content or i.attachments:
-                return await ctx.send("Images can't be quoted.")
-        if not messages[0].content or messages[0].attachments:
-            return await ctx.send("Images can't be quoted.")
+                if len(i.attachments) == 0:
+                    return await ctx.send("Embeds can't be quoted.")
+                if i.attachments:
+                    return await ctx.send("You can't quote multiple messages when quoting images.")
+        else:
+            if messages[0].content and messages[0].attachments:
+                return await ctx.send("You can't quote both messages and images.")
+            elif messages[0].embeds:
+                return await ctx.send("You can't quote embeds.")
+            elif len(messages[0].attachments) > 1:
+                return await ctx.send("Multiple images can't be quoted.")
+            else:
+                if self.IMAGE_URL_REGEX.search(messages[0].attachments[0].url) is None:
+                    return await ctx.send("The attachment in that image isn't a valid image URL.")
+                messages[0].content = messages[0].attachments[0].url
+                quote_is_url = True
 
         # Validate input
         timestamp = messages[0].created_at
@@ -50,7 +67,7 @@ class QuoteCommands(utils.Cog):
             return await ctx.send("You can only quote one person at a time.")
 
         # Make sure they're not quoting themself
-        if ctx.author.id in [i.author.id for i in messages]:
+        if ctx.author.id in [i.author.id for i in messages] and ctx.author.id not in self.bot.owner_ids:
             return await ctx.send("You can't quote yourself :/")
 
         # Save to db
@@ -70,7 +87,10 @@ class QuoteCommands(utils.Cog):
         # Make embed
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
-            embed.description = text
+            if quote_is_url:
+                embed.set_image(text)
+            else:
+                embed.description = text
             embed.set_footer(text=f"Quote ID {quote_id.upper()}")
             embed.timestamp = timestamp
 
@@ -111,7 +131,10 @@ class QuoteCommands(utils.Cog):
                 embed.set_author(name=f"User ID {user_id}")
             else:
                 embed.set_author_to_user(user)
-            embed.description = data['text']
+            if self.IMAGE_URL_REGEX.search(data['text']):
+                embed.set_image(data['text'])
+            else:
+                embed.description = data['text']
             embed.set_footer(text=f"Quote ID {data['quote_id'].upper()}")
             embed.timestamp = data['timestamp']
 
