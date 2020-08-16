@@ -141,6 +141,21 @@ class MiscCommands(utils.Cog):
                 return await ctx.send("I don't have permission to remove members from that channel.")
         return await ctx.send(f"Dropped {member_count} members from the VC.")
 
+    @commands.command(cls=utils.Command)
+    async def square(self, ctx:utils.Context, *, text:commands.clean_content):
+        """Makes your input into a sexy lil square"""
+
+        builder = [' '.join(text)]
+        space_count = ((len(text) - 2) * 2) + 1
+        for index, (i, o) in enumerate(zip(text[1:-1], text[1:-1][::-1])):
+            builder.append(f"{i}{' ' * space_count}{o}")
+        builder.append(' '.join(text[::-1]))
+        output = '\n'.join(builder)
+        returned_string = f"```\n{output}```"
+        if len(returned_string) > 2000:
+            return await ctx.send("your shits too fucked yo")
+        return await ctx.send(returned_string)
+
 
 def setup(bot:utils.Bot):
     x = MiscCommands(bot)
