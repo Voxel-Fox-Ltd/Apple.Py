@@ -91,18 +91,19 @@ class QuoteCommands(utils.Cog):
     async def get(self, ctx:utils.Context, identifier:commands.clean_content):
         """Gets a quote from the database"""
 
+        # Get quote from database
         async with self.bot.database() as db:
-            aliasRows = await db("SELECT * FROM quote_aliases WHERE alias=$1", identifier.lower())
-            quoteRows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", identifier.lower())
-        if not aliasRows and not quoteRows:
+            quote_rows = await db(
+                """SELECT user_quotes.quote_id as quote_id, user_id, text, timestamp FROM user_quotes LEFT JOIN
+                quote_aliases ON user_quotes.quote_id=quote_aliases.quote_id
+                WHERE user_quotes.quote_id=$1 OR quote_aliases.alias=$1""",
+                identifier.lower(),
+            )
+        if not quote_rows:
             return await ctx.send(f"There's no quote with the identifier `{identifier.upper()}`.")
-        if aliasRows and not quoteRows:
-            quote_id = aliasRows[0]['quote_id']
-            async with self.bot.database() as db:
-                quoteRows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
 
         # Format into embed
-        data = quoteRows[0]
+        data = quote_rows[0]
         with utils.Embed(use_random_colour=True) as embed:
             user_id = data['user_id']
             user = self.bot.get_user(user_id)
