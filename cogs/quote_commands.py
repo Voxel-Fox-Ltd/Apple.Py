@@ -99,7 +99,7 @@ class QuoteCommands(utils.Cog):
         if aliasRows and not quoteRows:
             quote_id = aliasRows[0]['quote_id']
             async with self.bot.database() as db:
-                quoteRows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
+                quoteRows = await db("SELECT * FROM user_quotes WHERE user_quotes.quote_id=$1", quote_id.lower())
 
         # Format into embed
         data = quoteRows[0]
