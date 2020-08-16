@@ -51,6 +51,8 @@ class EmojiCommands(utils.Cog):
             e = await ctx.guild.create_custom_emoji(name=name, image=data)
         except discord.HTTPException as e:
             return await ctx.send(f"I couldn't create that emoji - {e}")
+        except discord.InvalidArgument:
+            return await ctx.send("Unsupported image type - make sure you're providing the correct argument for the image's animation state.")
         await ctx.send(f"Emoji added - {e!s}")
 
 
