@@ -85,7 +85,7 @@ class NicknameHandler(utils.Cog):
 
         async with self.bot.database() as db:
             data = await db(
-                """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1, user_id=$2""",
+                """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2""",
                 member.guild.id, member.id
             )
         if data:
@@ -111,19 +111,35 @@ class NicknameHandler(utils.Cog):
         # See if they have a permanent nickname
         async with self.bot.database() as db:
             data = await db(
-                """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1, user_id=$2""",
+                """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2""",
                 member.guild.id, member.id
             )
         if data:
+            new_nickname = data[0]["nickname"]
+            if member.nick == new_nickname:
+                return
             try:
-                await member.edit(nick=data[0]["nickname"])
-                self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} from member join")
+                await member.edit(nick=new_nickname)
+                self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} to '{new_nickname}' from member update")
             except discord.Forbidden as e:
                 self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
             return
 
         # See if they're nickname banned
         if self.bot.guild_settings[member.guild.id]['nickname_banned_role_id'] in member._roles:
+
+            # See if their name was changed by an admin
+            try:
+                async for entry in member.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update):
+                    if entry.target.id == member.id:
+                        if entry.user.id != member.id:
+                            self.logger.info(f"Not pinging nickname update for a name changed by moderator (G{member.guild.id}/U{member.id})")
+                            return
+                        break
+            except discord.Forbidden:
+                return
+
+            # Change nickname back
             try:
                 await member.edit(nick=before.nick or before.name)
                 self.logger.info(f"User {member.id} on guild {member.guild.id} changed nickname - changing back due to nickname ban role")
