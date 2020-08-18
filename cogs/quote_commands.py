@@ -47,13 +47,13 @@ class QuoteCommands(utils.Cog):
                 if i.attachments:
                     return await ctx.send("You can't quote multiple messages when quoting images.")
         else:
-            if messages[0].content and messages[0].attachments:
+            if messages[0].content and messages[0].attachments and messages[0].content != messages[0].attachments[0].url:
                 return await ctx.send("You can't quote both messages and images.")
             elif messages[0].embeds:
                 return await ctx.send("You can't quote embeds.")
             elif len(messages[0].attachments) > 1:
                 return await ctx.send("Multiple images can't be quoted.")
-            else:
+            elif messages[0].attachments:
                 if self.IMAGE_URL_REGEX.search(messages[0].attachments[0].url) is None:
                     return await ctx.send("The attachment in that image isn't a valid image URL.")
                 messages[0].content = messages[0].attachments[0].url
