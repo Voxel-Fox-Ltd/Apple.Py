@@ -56,6 +56,7 @@ class CustomBot(commands.AutoShardedBot):
             'max_vc_members': dict(),
             'leaderboard_message_url': None,
             'dump_stackoverflow_answers': False,
+            'nickname_banned_role_id': None,
         }
         self.DEFAULT_USER_SETTINGS = {
         }

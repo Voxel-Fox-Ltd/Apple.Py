@@ -5,7 +5,8 @@ CREATE TABLE guild_settings(
     automatic_nickname_update BOOLEAN DEFAULT FALSE,
     rainbow_line_autodelete BOOLEAN DEFAULT FALSE,
     leaderboard_message_url VARCHAR(150),
-    dump_stackoverflow_answers BOOLEAN DEFAULT FALSE
+    dump_stackoverflow_answers BOOLEAN DEFAULT FALSE,
+    nickname_banned_role_id BIGINT
 );
 
 

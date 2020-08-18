@@ -83,6 +83,18 @@ class NicknameHandler(utils.Cog):
     async def on_member_join(self, member:discord.Member):
         """Pings a member nickname update on member join"""
 
+        async with self.bot.database() as db:
+            data = await db(
+                """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1, user_id=$2""",
+                member.guild.id, member.id
+            )
+        if data:
+            try:
+                await member.edit(nick=data[0]["nickname"])
+                self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} from member join")
+            except discord.Forbidden as e:
+                self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
+            return
         if self.bot.guild_settings[member.guild.id]['automatic_nickname_update']:
             self.logger.info(f"Pinging nickname update for member join (G{member.guild.id}/U{member.id})")
             await self.fix_user_nickname(member)
@@ -91,28 +103,51 @@ class NicknameHandler(utils.Cog):
     async def on_member_update(self, before:discord.Member, member:discord.Member):
         """Pings a member nickname update on nickname update"""
 
+        if before.display_name == member.display_name:
+            return
+        if member.guild_permissions.manage_nicknames:
+            return
+
+        # See if they have a permanent nickname
+        async with self.bot.database() as db:
+            data = await db(
+                """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1, user_id=$2""",
+                member.guild.id, member.id
+            )
+        if data:
+            try:
+                await member.edit(nick=data[0]["nickname"])
+                self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} from member join")
+            except discord.Forbidden as e:
+                self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
+            return
+
+        # See if they're nickname banned
+        if self.bot.guild_settings[member.guild.id]['nickname_banned_role_id'] in member._roles:
+            try:
+                await member.edit(nick=before.nick or before.name)
+                self.logger.info(f"User {member.id} on guild {member.guild.id} changed nickname - changing back due to nickname ban role")
+            except discord.Forbidden as e:
+                self.logger.error(f"Can't change user {member.id}'s nickname on guild {member.guild.id} - {e}")
+            return
+
+        # See if we want to update their nickname
         if self.bot.guild_settings[member.guild.id]['automatic_nickname_update']:
-            if before.display_name != member.display_name:
 
-                # If the member can change nicknames, don't fix it
-                if member.guild_permissions.manage_nicknames:
-                    self.logger.info(f"Not pinging nickname update for manage_nicknames member (G{member.guild.id}/U{member.id})")
-                    return
+            # See if their name was changed by an admin
+            try:
+                async for entry in member.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update):
+                    if entry.target.id == member.id:
+                        if entry.user.id != member.id:
+                            self.logger.info(f"Not pinging nickname update for a name changed by moderator (G{member.guild.id}/U{member.id})")
+                            return
+                        break
+            except discord.Forbidden:
+                pass
 
-                # See if their name was changed by an admin
-                try:
-                    async for entry in member.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update):
-                        if entry.target.id == member.id:
-                            if entry.user.id != member.id:
-                                self.logger.info(f"Not pinging nickname update for a name changed by moderator (G{member.guild.id}/U{member.id})")
-                                return
-                            break
-                except discord.Forbidden:
-                    pass
-
-                # Fix their name
-                self.logger.info(f"Pinging nickname update for member update (G{member.guild.id}/U{member.id})")
-                await self.fix_user_nickname(member)
+            # Fix their name
+            self.logger.info(f"Pinging nickname update for member update (G{member.guild.id}/U{member.id})")
+            await self.fix_user_nickname(member)
 
     async def fix_user_nickname(self, user:discord.Member) -> str:
         """Fix the nickname of a user"""

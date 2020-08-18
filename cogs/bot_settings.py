@@ -49,9 +49,9 @@ class BotSettings(utils.Cog):
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'automatic_nickname_update'),
             },
             {
-                'display': lambda c: "Enable rainbow line autodelete (currently {0})".format(c.bot.guild_settings[c.guild.id]['rainbow_line_autodelete']),
-                'converter_args': [("Do you want to enable automatic rainbow line deleting?", "autodelete rainbow line", utils.converters.BooleanConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'rainbow_line_autodelete'),
+                'display': lambda c: "Set nickname change ban role (currently {0})".format(settings_mention(c, 'nickname_banned_role_id')),
+                'converter_args': [("Which role should be set to stop users changing their nickname?", "nickname change ban role", commands.RoleConverter)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'nickname_banned_role_id'),
             },
             {
                 'display': lambda c: "Enable Github answer dumping (currently {0})".format(c.bot.guild_settings[c.guild.id]['dump_stackoverflow_answers']),
