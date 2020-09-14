@@ -156,6 +156,13 @@ class MiscCommands(utils.Cog):
             return await ctx.send("your shits too fucked yo")
         return await ctx.send(returned_string)
 
+    @commands.command(cls=utils.Command)
+    async def getinterval(self, ctx:utils.Context, message1:int, message2:int):
+        """Get the interval between two messages"""
+
+        timestamps = sorted([discord.Object(message1).created_at, discord.Object(message2).created_at], reverse=True)
+        return await ctx.send(timestamps[0] - timestamps[1])
+
 
 def setup(bot:utils.Bot):
     x = MiscCommands(bot)
