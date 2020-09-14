@@ -1,6 +1,7 @@
 import json
 import random
 import string
+import re
 
 import discord
 from discord.ext import commands
@@ -42,7 +43,7 @@ ZALGO_CHARACTERS = [
     '\u25ce', '\u20d2',
     '\u06e3', '\u06dc',
     '\u02de',
-    '\U0000fdfd', '\u0488',
+    '\U0000fdfd', '\u0488', '\u20df',
 ]
 
 ANIMAL_NAMES = "https://raw.githubusercontent.com/skjorrface/animals.txt/master/animals.txt"
@@ -51,12 +52,14 @@ ANIMAL_NAMES = "https://raw.githubusercontent.com/skjorrface/animals.txt/master/
 class NicknameHandler(utils.Cog):
 
     LETTER_REPLACEMENT_FILE_PATH = "config/letter_replacements.json"
-    ASCII_CHARACTERS = string.ascii_letters + string.digits
+    # ZALGO_FILE_PATH = "config/zalgo_characters.json"
+    ASCII_CHARACTERS = string.ascii_letters + string.digits + string.punctuation
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.animal_names = None
         self.letter_replacements = None
+        self.consecutive_character_regex = None
 
     async def get_animal_names(self):
         """Grabs all names from the Github page"""
@@ -179,8 +182,11 @@ class NicknameHandler(utils.Cog):
         new_name_with_zalgo = current_name.translate(translator)
         new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
 
-        # See if their username has any English characters in it now
-        if not [i for i in new_name if i in self.ASCII_CHARACTERS]:
+        # See if they have enough valid characters
+        if not self.consecutive_character_regex:
+            chars = [i if i not in string.punctuation else f"\\{i}" for i in self.ASCII_CHARACTERS]
+            self.consecutive_character_regex = re.compile(f"[{''.join(chars)}]{{3,}}")
+        if self.consecutive_character_regex.search(new_name) is None:
             new_name = random.choice(await self.get_animal_names())
 
         # See if it needs editing
