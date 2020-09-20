@@ -1,5 +1,6 @@
 import asyncio
 import typing
+import random
 
 import discord
 from discord.ext import commands
@@ -9,6 +10,25 @@ from cogs import utils
 
 
 class MiscCommands(utils.Cog):
+
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.topics = None
+
+    def get_topics(self):
+        if self.topics is not None:
+            return self.topics
+        with open("config/topics.txt") as a:
+            lines = a.read().strip()
+        self.topics = lines.split('\n')
+        return self.get_topics()
+
+    @commands.command(cls=utils.Command)
+    @commands.bot_has_permissions(send_messages=True)
+    async def topic(self, ctx:utils.Context):
+        """Gives you a conversation topic"""
+
+        return await ctx.send(random.choice(self.get_topics()))
 
     @commands.command(aliases=['git', 'code'], cls=utils.Command)
     @utils.checks.is_config_set('command_data', 'github')
