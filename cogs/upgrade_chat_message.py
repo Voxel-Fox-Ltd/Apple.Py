@@ -1,12 +1,13 @@
 import re
 
 import discord
-from discord.ext import commands
 
 from cogs import utils
 
 
 class DonatorMessage(utils.Cog):
+
+    GUILD_ID = 208895639164026880
 
     UPGRADE_CHAT_MATCHER = re.compile(r"^<@(?P<userid>\d+)> just purchased the role \*\*(?P<rolename>.+)\*\*\.$")
 
@@ -18,6 +19,8 @@ class DonatorMessage(utils.Cog):
     async def on_message(self, message:discord.Message):
         """Send a message to people who subscribe via Upgrade.chat"""
 
+        if message.guild is None or message.guild.id != self.GUILD_ID:
+            return
         if message.channel.id == self.UPGRADE_CHAT_CHANNEL_ID and message.author.id == self.UPGRADE_CHAT_USER_ID:
             pass
         else:
