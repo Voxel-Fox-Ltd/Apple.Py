@@ -9,7 +9,7 @@ class DonatorMessage(utils.Cog):
 
     GUILD_ID = 208895639164026880
 
-    UPGRADE_CHAT_MATCHER = re.compile(r"^<@(?P<userid>\d+)> just purchased the role \*\*(?P<rolename>.+)\*\*\.$")
+    UPGRADE_CHAT_MATCHER = re.compile(r"^<@!?(?P<userid>\d+)> just (purchased the role|Upgraded to) (?:\*\*)?(?P<rolename>.+)(?:\*\*)?(\.|!)$")
 
     UPGRADE_CHAT_USER_ID = 543974987795791872
     UPGRADE_CHAT_CHANNEL_ID = 743346070368813106
