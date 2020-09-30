@@ -8,19 +8,19 @@ from cogs import utils
 
 class DiscordDatamining(utils.Cog):
 
-    DISCORD_DOCS_API_REPO_URL = "https://api.github.com/discord/discord-api-docs/tree/feature/api-gateway-v8/commits"
-    DISCORD_DOCS_REPO_URL = "https://github.com/discord/discord-api-docs/tree/feature/api-gateway-v8/"
+    DISCORD_DOCS_API_REPO_URL = "https://api.github.com/repos/discord/discord-api-docs/commits"
+    DISCORD_DOCS_REPO_URL = "https://github.com/discord/discord-api-docs/"
 
     DISCORD_DATAMINING_API_REPO_URL = "https://api.github.com/repos/DJScias/Discord-Datamining/commits"
     DISCORD_DATAMINING_REPO_URL = "https://github.com/DJScias/Discord-Datamining/"
 
-    VFL_CODING_CHANNEL_ID = 636085718002958336
+    VFL_CODING_CHANNEL_ID = 760664929593851925
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.last_posted_commit = collections.defaultdict(lambda: None)
-        self.datamining_commit_poster_loop.start(self.DISCORD_DATAMINING_API_REPO_URL, self.DISCORD_DATAMINING_REPO_URL)
         self.docs_commit_poster_loop.start(self.DISCORD_DOCS_API_REPO_URL, self.DISCORD_DOCS_REPO_URL)
+        self.datamining_commit_poster_loop.start(self.DISCORD_DATAMINING_API_REPO_URL, self.DISCORD_DATAMINING_REPO_URL)
 
     def cog_unload(self):
         self.datamining_commit_poster_loop.stop()
@@ -79,13 +79,14 @@ class DiscordDatamining(utils.Cog):
         # Format it all into an embed
         with utils.Embed(use_random_colour=True) as embed:
             embed.title = "New Discord Client Data"
-            embed.description = '\n'.join([f"{i['commit']['message']} - [Link]({repo_url}/commit/{i['sha']})" for i in new_commits])
+            embed.description = '\n'.join([f"{i['commit']['message']} - [Link]({repo_url}commit/{i['sha']})" for i in new_commits])
             for sha, body in comment_text:
                 embed.add_field(sha, body, inline=False)
 
         # And send
         channel = self.bot.get_channel(self.VFL_CODING_CHANNEL_ID)
-        await channel.send(embed=embed)
+        m = await channel.send(embed=embed)
+        await m.publish()
         self.logger.info("Sent data to channel")
         self.last_posted_commit[repo_url] = new_commits[0]['sha']
 
