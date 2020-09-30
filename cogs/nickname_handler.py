@@ -86,6 +86,7 @@ class NicknameHandler(utils.Cog):
     async def on_member_join(self, member:discord.Member):
         """Pings a member nickname update on member join"""
 
+        # See if they have a permanent nickname set
         async with self.bot.database() as db:
             data = await db(
                 """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2""",
@@ -98,6 +99,8 @@ class NicknameHandler(utils.Cog):
             except discord.Forbidden as e:
                 self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
             return
+
+        # See if we want to fun their name
         if self.bot.guild_settings[member.guild.id]['automatic_nickname_update']:
             self.logger.info(f"Pinging nickname update for member join (G{member.guild.id}/U{member.id})")
             await self.fix_user_nickname(member)
@@ -106,8 +109,11 @@ class NicknameHandler(utils.Cog):
     async def on_member_update(self, before:discord.Member, member:discord.Member):
         """Pings a member nickname update on nickname update"""
 
+        # Only ping if they've change nicknames/usernames
         if before.display_name == member.display_name:
             return
+
+        # Only ping for non-moderators
         if member.guild_permissions.manage_nicknames:
             return
 
