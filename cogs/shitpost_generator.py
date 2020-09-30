@@ -23,6 +23,8 @@ class ShitpostGenerator(utils.Cog):
             random.choice(arr3),
             random.choice(arr4),
         ])
+        if text.endswith(' ?'):
+            text = text[:-2] + '?'
         return await ctx.send(text.strip())
 
 
