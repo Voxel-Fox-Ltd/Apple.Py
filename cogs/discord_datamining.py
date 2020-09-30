@@ -19,30 +19,30 @@ class DiscordDatamining(utils.Cog):
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.last_posted_commit = collections.defaultdict(lambda: None)
-        self.docs_commit_poster_loop.start(self.DISCORD_DOCS_API_REPO_URL, self.DISCORD_DOCS_REPO_URL)
-        self.datamining_commit_poster_loop.start(self.DISCORD_DATAMINING_API_REPO_URL, self.DISCORD_DATAMINING_REPO_URL)
+        self.docs_commit_poster_loop.start("New Discord Client Data", self.DISCORD_DOCS_API_REPO_URL, self.DISCORD_DOCS_REPO_URL)
+        self.datamining_commit_poster_loop.start("New Discord Docs Info", self.DISCORD_DATAMINING_API_REPO_URL, self.DISCORD_DATAMINING_REPO_URL)
 
     def cog_unload(self):
         self.datamining_commit_poster_loop.stop()
         self.docs_commit_poster_loop.stop()
 
     @tasks.loop(minutes=15)
-    async def datamining_commit_poster_loop(self, api_url:str, repo_url:str):
-        await self.commit_poster_loop(api_url, repo_url)
+    async def datamining_commit_poster_loop(self, embed_title:str, api_url:str, repo_url:str):
+        await self.commit_poster_loop(embed_title, api_url, repo_url)
 
     @datamining_commit_poster_loop.before_loop
     async def before_datamining_commit_poster_loop(self):
         await self.bot.wait_until_ready()
 
     @tasks.loop(minutes=15)
-    async def docs_commit_poster_loop(self, api_url:str, repo_url:str):
-        await self.commit_poster_loop(api_url, repo_url)
+    async def docs_commit_poster_loop(self, embed_title:str, api_url:str, repo_url:str):
+        await self.commit_poster_loop(embed_title, api_url, repo_url)
 
     @docs_commit_poster_loop.before_loop
     async def before_docs_commit_poster_loop(self):
         await self.bot.wait_until_ready()
 
-    async def commit_poster_loop(self, api_url:str, repo_url:str):
+    async def commit_poster_loop(self, embed_title:str, api_url:str, repo_url:str):
         """Grab the data from the Discord datamining repo and post it to the coding channel of VFL"""
 
         # Grab the data
@@ -78,7 +78,7 @@ class DiscordDatamining(utils.Cog):
 
         # Format it all into an embed
         with utils.Embed(use_random_colour=True) as embed:
-            embed.title = "New Discord Client Data"
+            embed.title = embed_title
             embed.description = '\n'.join([f"{i['commit']['message']} - [Link]({repo_url}commit/{i['sha']})" for i in new_commits])
             for sha, body in comment_text:
                 embed.add_field(sha, body, inline=False)
