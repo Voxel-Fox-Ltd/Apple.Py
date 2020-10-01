@@ -10,6 +10,15 @@ CREATE TABLE guild_settings(
 );
 
 
+CREATE TABLE user_settings(
+    user_id BIGINT PRIMARY KEY,
+    twitch_user_id VARCHAR(16),
+    twitch_username VARCHAR(32),
+    twitch_bearer_token VARCHAR(30),
+    twitch_cursor VARCHAR(100)
+);
+
+
 CREATE TABLE user_quotes(
     quote_id VARCHAR(5) PRIMARY KEY,
     guild_id BIGINT NOT NULL,
@@ -30,11 +39,6 @@ CREATE TABLE permanent_nicknames(
     user_id BIGINT,
     nickname VARCHAR(32),
     PRIMARY KEY (guild_id, user_id)
-);
-
-
-CREATE TABLE user_settings(
-    user_id BIGINT PRIMARY KEY
 );
 
 
