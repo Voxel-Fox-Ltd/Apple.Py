@@ -19,8 +19,8 @@ class DiscordDatamining(utils.Cog):
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.last_posted_commit = collections.defaultdict(lambda: None)
-        self.docs_commit_poster_loop.start("New Discord Client Data", self.DISCORD_DOCS_API_REPO_URL, self.DISCORD_DOCS_REPO_URL)
-        self.datamining_commit_poster_loop.start("New Discord Docs Info", self.DISCORD_DATAMINING_API_REPO_URL, self.DISCORD_DATAMINING_REPO_URL)
+        self.docs_commit_poster_loop.start("New Discord Docs Info", self.DISCORD_DOCS_API_REPO_URL, self.DISCORD_DOCS_REPO_URL)
+        self.datamining_commit_poster_loop.start("New Discord Client Data", self.DISCORD_DATAMINING_API_REPO_URL, self.DISCORD_DATAMINING_REPO_URL)
 
     def cog_unload(self):
         self.datamining_commit_poster_loop.stop()
