@@ -30,6 +30,19 @@ class MiscCommands(utils.Cog):
 
         return await ctx.send(random.choice(self.get_topics()))
 
+    @commands.command(cls=utils.Command)
+    @commands.bot_has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_channels=True)
+    @commands.guild_only()
+    async def slowmode(self, ctx:utils.Context, seconds:int):
+        """Sets slowmode for a channel"""
+
+        try:
+            await ctx.channel.edit(slowmode_delay=seconds)
+        except discord.HTTPException as e:
+            return await ctx.send(str(e))
+        await ctx.okay()
+
     @commands.command(aliases=['git', 'code'], cls=utils.Command)
     @utils.checks.is_config_set('command_data', 'github')
     @commands.bot_has_permissions(send_messages=True)
