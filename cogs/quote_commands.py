@@ -62,6 +62,7 @@ class QuoteCommands(utils.Cog):
         # Validate input
         timestamp = messages[0].created_at
         user = messages[0].author
+        messages = set(messages)
         text = '\n'.join([m.content for m in messages])
         if len(set([i.author.id for i in messages])) != 1:
             return await ctx.send("You can only quote one person at a time.")
