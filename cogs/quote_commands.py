@@ -32,6 +32,9 @@ class QuoteCommands(utils.Cog):
         # Make sure a message was passed
         if not messages:
             return await ctx.send("I couldn't find any references to messages in your command call.")
+        
+        # Recreate the message list without duplicates
+        messages = list(set(messages))
 
         # Make sure they're all sent as a reasonable time apart
         quote_is_url = False
