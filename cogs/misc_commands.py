@@ -43,6 +43,24 @@ class MiscCommands(utils.Cog):
             return await ctx.send(str(e))
         await ctx.okay()
 
+    @commands.command(cls=utils.Command, aliases=['pip'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def pypi(self, ctx:utils.Context, module:commands.clean_content):
+        """Grab data from PyPi"""
+
+        # Get data
+        async with self.bot.session.get(f"https://pypi.org/pypi/{module}/json") as r:
+            if r.status != 200:
+                await ctx.send(f"Module `{module}` not found.", )
+                return
+            data = await r.json()
+
+        # Format into an embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author(name=data['info']['name'], url=data['info']['home_page'])
+            embed.description = data['info']['summary']
+        return await ctx.send(embed=embed)
+
     @commands.command(aliases=['git', 'code'], cls=utils.Command)
     @utils.checks.is_config_set('command_data', 'github')
     @commands.bot_has_permissions(send_messages=True)
