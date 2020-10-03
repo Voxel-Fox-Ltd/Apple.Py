@@ -1,6 +1,7 @@
 import asyncio
 import typing
 import random
+from urllib.parse import urlencode
 
 import discord
 from discord.ext import commands
@@ -22,6 +23,30 @@ class MiscCommands(utils.Cog):
             lines = a.read().strip()
         self.topics = lines.split('\n')
         return self.get_topics()
+
+    @commands.command(cls=utils.Command)
+    async def fpf(self, ctx:utils.Context, *, text:commands.clean_content):
+        """"""
+
+        if len(text) > 50:
+            return await ctx.send("Your text input is too long.")
+        base_url = "https://flamingtext.com/net-fu/proxy_form.cgi"
+        params = {
+            "script": "fluffy-logo",
+            "fillTextColor": "#fde",
+            "outlineSize": "3",
+            "fillOutlineColor": "#ffcdcd",
+            "shadowType": "0",
+            "shadowXOffset": "-20",
+            "shadowBlur": "0",
+            "backgroundRadio": "0",
+            "text": text,
+            "_loc": "generate",
+            "imageoutput": "true",
+        }
+        url = base_url + '?' + urlencode(params)
+        embed = utils.Embed(use_random_colour=True).set_image(url)
+        return await ctx.send(embed=embed)
 
     @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
