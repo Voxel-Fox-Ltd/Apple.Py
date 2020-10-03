@@ -7,3 +7,4 @@ git+https://github.com/4Kaylum/discord-ext-menus
 asyncpg
 
 beautifulsoup4
+pillow
