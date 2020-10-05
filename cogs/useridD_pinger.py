@@ -26,7 +26,7 @@ class UserIDPinger(utils.Cog):
         m = self.ID_IN_MESSAGE_MATCHER.search(message.content)
         if m is None:
             return
-        userid = m.group("userid")
+        userid = m.group()
 
         # Send the ping-y boi
         try:
