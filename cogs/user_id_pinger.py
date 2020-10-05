@@ -27,7 +27,7 @@ class UserIDPinger(utils.Cog):
         user_id = m.group("uid")
 
         # Send the ping-y boi
-        await ctx.send(f"<@{user_id}>")
+        await message.channel.send(f"<@{user_id}>")
 
 
 def setup(bot:utils.Bot):
