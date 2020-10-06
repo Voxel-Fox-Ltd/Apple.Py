@@ -184,7 +184,7 @@ class QuoteCommands(utils.Cog):
         return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
     @quote.command(cls=utils.Command)
-    @commands.bot_has_permissions(send_messages=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def search(self, ctx:utils.Context, user:typing.Optional[discord.Member]=None, *, search_term:str=""):
         """Searches the datbase for a quote with some text in it babeyeyeyey"""
 
@@ -201,13 +201,14 @@ class QuoteCommands(utils.Cog):
 
         # Format output
         rows = rows[:10]
-        text_rows = []
+        embed = utils.Embed(use_random_colour=True)
         for row in rows:
-            if len(row['text']) <= 50:
-                text_rows.append(f"`{row['quote_id'].upper()}` - {row['text']}")
+            if len(row['text']) <= self.QUOTE_SEARCH_CHARACTER_CUTOFF:
+                text = row['text']
             else:
-                text_rows.append(f"`{row['quote_id'].upper()}` - {row['text'][:100]}...")
-        return await ctx.send('\n'.join(text_rows), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
+                text = f"{row['text'][:self.QUOTE_SEARCH_CHARACTER_CUTOFF]}..."
+            embed.add_field(name=row['quote_id'].upper(), value=text, inline=len(text) < 100)
+        return await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
     @quote.command(cls=utils.Command)
     @commands.has_permissions(manage_messages=True)
