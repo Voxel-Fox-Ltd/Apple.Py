@@ -55,17 +55,19 @@ class QuoteCommands(utils.Cog):
                     return await ctx.send("Embeds can't be quoted.")
                 if i.attachments:
                     return await ctx.send("You can't quote multiple messages when quoting images.")
-        else:
-            if messages[0].content and messages[0].attachments and messages[0].content != messages[0].attachments[0].url:
+
+        # Validate the message content
+        for message in messages:
+            if (quote_is_url and message.content) or (message.content and message.attachments and message.content != message.attachments[0].url):
                 return await ctx.send("You can't quote both messages and images.")
-            elif messages[0].embeds:
+            elif message.embeds:
                 return await ctx.send("You can't quote embeds.")
-            elif len(messages[0].attachments) > 1:
+            elif len(message.attachments) > 1:
                 return await ctx.send("Multiple images can't be quoted.")
-            elif messages[0].attachments:
-                if self.IMAGE_URL_REGEX.search(messages[0].attachments[0].url) is None:
+            elif message.attachments:
+                if self.IMAGE_URL_REGEX.search(message.attachments[0].url) is None:
                     return await ctx.send("The attachment in that image isn't a valid image URL.")
-                messages[0].content = messages[0].attachments[0].url
+                message.content = message.attachments[0].url
                 quote_is_url = True
 
         # Validate input
