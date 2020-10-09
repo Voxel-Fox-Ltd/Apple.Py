@@ -244,7 +244,7 @@ class MiscCommands(utils.Cog):
             await ctx.send(text)
 
     @commands.command(cls=utils.Command, aliases=['disconnectvc', 'clearvc'])
-    @commands.has_permissions(move_members=True)
+    @commands.has_guild_permissions(move_members=True)
     @commands.bot_has_guild_permissions(move_members=True)
     @commands.bot_has_permissions(send_messages=True)
     async def emptyvc(self, ctx:utils.Context, channel:discord.VoiceChannel):
