@@ -2,6 +2,7 @@ import string
 import random
 import typing
 import re
+import asyncio
 
 import discord
 from discord.ext import commands
@@ -20,7 +21,7 @@ class QuoteCommands(utils.Cog):
     IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
 
     @commands.group(cls=utils.Group, invoke_without_command=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
     async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
         """Qutoes a user babeyyyyy lets GO"""
@@ -81,7 +82,49 @@ class QuoteCommands(utils.Cog):
         if ctx.author.id in [i.author.id for i in messages] and ctx.author.id not in self.bot.owner_ids:
             return await ctx.send("You can't quote yourself :/")
 
-        # Save to db
+        # See if it'salready been saved
+        async with self.bot.database() as db:
+            rows = await db(
+                "SELECT * FROM user_quotes WHERE guild_id=$1 AND user_id=$2 AND timestamp=$3 AND text=$4",
+                ctx.guild.id, user.id, timestamp, text
+            )
+            if rows:
+                return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
+
+        # Make embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author_to_user(user)
+            if quote_is_url:
+                embed.set_image(text)
+            else:
+                embed.description = text
+            # embed.set_footer(text=f"Quote ID {quote_id.upper()}")
+            embed.timestamp = timestamp
+
+        # See if we should bother saving it
+        ask_to_save_message = await ctx.send(
+            "Should I save this quote? If I receive 3x\N{THUMBS UP SIGN} reactions in the next 60 seconds, the quote will be saved.",
+            embed=embed,
+        )
+        await ask_to_save_message.add_reaction("\N{THUMBS UP SIGN}")
+        try:
+            await self.bot.wait_for(
+                "reaction_add",
+                check=lambda r, _: r.message.id == ask_to_save_message.id and str(r.emoji) == "\N{THUMBS UP SIGN}" and r.count >= 4,
+                timeout=60,
+            )
+        except asyncio.TimeoutError:
+            try:
+                await ask_to_save_message.delete()
+            except discord.HTTPException:
+                pass
+            return await ctx.send(f"_Not_ saving the quote asked by {ctx.author.mention} - not enough reactions received.", ignore_error=True)
+
+        # If we get here, we can save to db
+        try:
+            await ask_to_save_message.delete()
+        except discord.HTTPException:
+            pass
         quote_id = create_id()
         async with self.bot.database() as db:
             rows = await db(
@@ -95,18 +138,9 @@ class QuoteCommands(utils.Cog):
                 quote_id, ctx.guild.id, user.id, text, timestamp
             )
 
-        # Make embed
-        with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author_to_user(user)
-            if quote_is_url:
-                embed.set_image(text)
-            else:
-                embed.description = text
-            embed.set_footer(text=f"Quote ID {quote_id.upper()}")
-            embed.timestamp = timestamp
-
         # See if they have a quotes channel
         quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
+        embed.set_footer(text=f"Quote ID {quote_id.upper()}")
         if quote_channel_id:
             channel = self.bot.get_channel(quote_channel_id) or await self.bot.fetch_channel(quote_channel_id)
             try:
@@ -115,7 +149,7 @@ class QuoteCommands(utils.Cog):
                 pass
 
         # Output to user
-        await ctx.send(f"Quote saved with ID `{quote_id.upper()}`", embed=embed)
+        await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
 
     @quote.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
