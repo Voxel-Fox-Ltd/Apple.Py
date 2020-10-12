@@ -24,7 +24,8 @@ CREATE TABLE user_quotes(
     guild_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     text TEXT NOT NULL,
-    timestamp TIMESTAMP NOT NULL
+    timestamp TIMESTAMP NOT NULL,
+    message_link TEXT
 );
 
 
