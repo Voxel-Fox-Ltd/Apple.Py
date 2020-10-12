@@ -92,8 +92,8 @@ class QuoteCommands(utils.Cog):
             if rows:
                 return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
             await db(
-                "INSERT INTO user_quotes (quote_id, guild_id, user_id, text, timestamp) VALUES ($1, $2, $3, $4, $5)",
-                quote_id, ctx.guild.id, user.id, text, timestamp
+                "INSERT INTO user_quotes (quote_id, guild_id, user_id, text, timestamp, message_link) VALUES ($1, $2, $3, $4, $5, $6)",
+                quote_id, ctx.guild.id, user.id, text, timestamp, link
             )
 
         # Make embed
@@ -147,7 +147,7 @@ class QuoteCommands(utils.Cog):
                 embed.set_image(data['text'])
             else:
                 embed.description = data['text']
-            embed.set_footer(text=f"Quote ID {data['quote_id'].upper()}")
+            embed.set_footer(text=f"Quote ID ({data['quote_id'].upper()})[{}]")
             embed.timestamp = data['timestamp']
 
         # Output to user
