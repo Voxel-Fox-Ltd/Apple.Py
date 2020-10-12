@@ -73,6 +73,7 @@ class QuoteCommands(utils.Cog):
         # Validate input
         timestamp = messages[0].created_at
         user = messages[0].author
+        link = messages[0].jump_url
         text = '\n'.join([m.content for m in messages])
         if len(set([i.author.id for i in messages])) != 1:
             return await ctx.send("You can only quote one person at a time.")
@@ -102,7 +103,7 @@ class QuoteCommands(utils.Cog):
                 embed.set_image(text)
             else:
                 embed.description = text
-            embed.set_footer(text=f"Quote ID {quote_id.upper()}")
+            embed.set_footer(text=f"Quote ID [{quote_id.upper()}]({link})")
             embed.timestamp = timestamp
 
         # See if they have a quotes channel
