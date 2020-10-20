@@ -19,6 +19,7 @@ def create_id(n:int=5):
 class QuoteCommands(utils.Cog):
 
     IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
+    QUOTE_SEARCH_CHARACTER_CUTOFF = 100
 
     @commands.group(cls=utils.Group, invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)

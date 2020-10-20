@@ -53,7 +53,7 @@ class MiscCommands(utils.Cog):
     @commands.command(cls=utils.Command, ignore_extra=False, aliases=['imposter', 'crewmate', 'amongus'])
     @commands.bot_has_permissions(send_messages=True, attach_files=True)
     async def impostor(self, ctx:utils.Context, user1:discord.User, user2:discord.User, user3:discord.User, user4:discord.User, user5:discord.User=None):
-        """Puts you and your friends into an imposter image"""
+        """Puts you and your friends into an impostor image"""
 
         # Fix up input args
         if user5 is None:
@@ -281,6 +281,22 @@ class MiscCommands(utils.Cog):
 
         timestamps = sorted([discord.Object(message1).created_at, discord.Object(message2).created_at], reverse=True)
         return await ctx.send(timestamps[0] - timestamps[1])
+
+    @commands.command(cls=utils.Command)
+    @commands.bot_has_permissions(send_messages=True, attach_files=True)
+    async def randompicture(self, ctx:utils.Context):
+        """Let's make a random picture why not"""
+
+        await ctx.trigger_typing()
+        x = Image.new("RGB", (256, 256))
+        for i in range(0, x.size[0]):
+            for o in range(0, x.size[1]):
+                x.putpixel((i, o), (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+        y = x.resize((x.size[0] * 5, x.size[1] * 5), Image.NEAREST)
+        handle = io.BytesIO()
+        y.save(handle, format="PNG")
+        handle.seek(0)
+        return await ctx.send(file=discord.File(handle, filename="Wowowowowowow.png"))
 
 
 def setup(bot:utils.Bot):
