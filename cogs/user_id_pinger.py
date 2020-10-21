@@ -8,7 +8,7 @@ from cogs import utils
 class UserIDPinger(utils.Cog):
 
     GUILD_ID = 208895639164026880
-    STAFF_COMMANDS_CHANNEL_ID = 528827626907762689
+    STAFF_CHANNELS_LIST = [528827626907762689, 739197834145824880]
     ID_IN_MESSAGE_MATCHER = re.compile(r"(?<!<@)(?P<uid>[0-9]{15,23})(?!>)$")
 
     @utils.Cog.listener()
@@ -17,7 +17,7 @@ class UserIDPinger(utils.Cog):
 
         if message.guild is None or message.guild.id != self.GUILD_ID:
             return
-        if message.channel.id != self.STAFF_COMMANDS_CHANNEL_ID:
+        if message.channel.id not in self.STAFF_CHANNELS_LIST:
             return
 
         # Regex Match
