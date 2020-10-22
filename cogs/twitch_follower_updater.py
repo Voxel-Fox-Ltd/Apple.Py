@@ -126,7 +126,9 @@ class TwitchFollowerUpdater(utils.Cog):
         # Store that
         async with self.bot.database() as db:
             await db(
-                "INSERT INTO user_settings (user_id, twitch_user_id, twitch_username, twitch_bearer_token) VALUES ($1, $2, $3, $4)",
+                """INSERT INTO user_settings (user_id, twitch_user_id, twitch_username, twitch_bearer_token) VALUES ($1, $2, $3, $4)
+                ON CONFLICT (user_id) DO UPDATE SET twitch_user_id=excluded.twitch_user_id, twitch_username=excluded.twitch_username,
+                twitch_bearer_token=excluded.twitch_bearer_token""",
                 ctx.author.id, data['user_id'], data['login'], query_params['access_token'],
             )
 
