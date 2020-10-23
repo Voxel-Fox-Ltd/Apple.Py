@@ -30,6 +30,10 @@ class QuoteCommands(utils.Cog):
         if ctx.invoked_subcommand is not None:
             return
 
+        # Make sure they have a quote channel
+        if self.bot.guild_settings[ctx.guild.id].get('quote_channel_id') is None:
+            return await ctx.send("You don't have a quote channel set!")
+
         # Make sure a message was passed
         if not messages:
             return await ctx.send("I couldn't find any references to messages in your command call.")
@@ -126,6 +130,20 @@ class QuoteCommands(utils.Cog):
         except discord.HTTPException:
             pass
         quote_id = create_id()
+
+        # See if they have a quotes channel
+        quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
+        embed.set_footer(text=f"Quote ID {quote_id.upper()}")
+        posted_message = None
+        if quote_channel_id:
+            channel = self.bot.get_channel(quote_channel_id)
+            try:
+                posted_message = await channel.send(embed=embed)
+            except (discord.Forbidden, AttributeError):
+                pass
+        if quote_channel_id is None or posted_message is None:
+            return await ctx.send("I couldn't send your quote into the quote channel.")
+
         async with self.bot.database() as db:
             rows = await db(
                 "SELECT * FROM user_quotes WHERE guild_id=$1 AND user_id=$2 AND timestamp=$3 AND text=$4",
@@ -134,19 +152,9 @@ class QuoteCommands(utils.Cog):
             if rows:
                 return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
             await db(
-                "INSERT INTO user_quotes (quote_id, guild_id, user_id, text, timestamp) VALUES ($1, $2, $3, $4, $5)",
-                quote_id, ctx.guild.id, user.id, text, timestamp
+                "INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp) VALUES ($1, $2, $3, $4, $5, $6)",
+                quote_id, ctx.guild.id, posted_message.channel.id, posted_message.id, user.id, timestamp
             )
-
-        # See if they have a quotes channel
-        quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
-        embed.set_footer(text=f"Quote ID {quote_id.upper()}")
-        if quote_channel_id:
-            channel = self.bot.get_channel(quote_channel_id) or await self.bot.fetch_channel(quote_channel_id)
-            try:
-                await channel.send(embed=embed)
-            except (discord.Forbidden, AttributeError):
-                pass
 
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
@@ -159,7 +167,7 @@ class QuoteCommands(utils.Cog):
         # Get quote from database
         async with self.bot.database() as db:
             quote_rows = await db(
-                """SELECT user_quotes.quote_id as quote_id, user_id, text, timestamp FROM user_quotes LEFT JOIN
+                """SELECT user_quotes.quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes LEFT JOIN
                 quote_aliases ON user_quotes.quote_id=quote_aliases.quote_id
                 WHERE user_quotes.quote_id=$1 OR quote_aliases.alias=$1""",
                 identifier.lower(),
@@ -167,24 +175,21 @@ class QuoteCommands(utils.Cog):
         if not quote_rows:
             return await ctx.send(f"There's no quote with the identifier `{identifier.upper()}`.")
 
-        # Format into embed
+        # Get the message
         data = quote_rows[0]
-        with utils.Embed(use_random_colour=True) as embed:
-            user_id = data['user_id']
-            user = self.bot.get_user(user_id)
-            if user is None:
-                embed.set_author(name=f"User ID {user_id}")
-            else:
-                embed.set_author_to_user(user)
-            if self.IMAGE_URL_REGEX.search(data['text']):
-                embed.set_image(data['text'])
-            else:
-                embed.description = data['text']
-            embed.set_footer(text=f"Quote ID {data['quote_id'].upper()}")
-            embed.timestamp = data['timestamp']
+        if data['channel_id'] is None:
+            return await ctx.send("There's no quote channel set for that quote.")
+        channel = self.bot.get_channel(data['channel_id'])
+        if channel is None:
+            return await ctx.send("I wasn't able to get your quote channel.")
+        try:
+            message = await channel.fetch_message(data['message_id'])
+            assert message is not None
+        except (AssertionError, discord.HTTPException):
+            return await ctx.send("I wasn't able to get your quote message.")
 
         # Output to user
-        return await ctx.send(embed=embed)
+        return await ctx.send(embed=message.embeds[0])
 
     @quote.group(invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
@@ -217,7 +222,7 @@ class QuoteCommands(utils.Cog):
             await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
         return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
-    @quote.command()
+    @quote.command(enabled=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def search(self, ctx:utils.Context, user:typing.Optional[discord.Member]=None, *, search_term:str=""):
         """Searches the datbase for a quote with some text in it babeyeyeyey"""
