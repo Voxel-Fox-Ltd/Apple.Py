@@ -8,10 +8,10 @@ import voxelbotutils as utils
 class VcChatUpdate(utils.Cog):
 
     NO_MIC_CHANNEL = 646155412692926475
-    PART1 = ['voice', 'voiced', 'vocal', 'voiceable'] # the first word 
-    PART2 = ['chat', 'cat', 'c', 'cats', 'chatting']  # the second word
-    PART3 = ['no', 'n', 'negative', 'none']  # the third word
-    PART4 = ['mic', 'microphone', 'mitchell', 'michelle'] # the fourth word
+    PART1 = ['voice', 'voiced', 'vocal', 'voiceable', 'vixen', 'vc']
+    PART2 = ['chat', 'cat', 'c', 'cats', 'chatting']
+    PART3 = ['no', 'n', 'negative', 'nine', 'none']
+    PART4 = ['mic', 'microphone', 'mitchell', 'michelle', 'michael', 'mikey', 'monkey', 'schlopp']
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
@@ -46,4 +46,4 @@ class VcChatUpdate(utils.Cog):
 
 def setup(bot:utils.Bot):
     x = VcChatUpdate(bot)
-    bot.add_cog(x)  
+    bot.add_cog(x)

@@ -21,7 +21,7 @@ event_webhook_url = ""  # Some events will be posted via webhook to this url
     # Invites - recommended: false. Used for invite create/delete.
     invites = false
     # Voice states - recommended: false. Used for voice state update, VoiceChannel.members, Member.voice.
-    voice_states = false
+    voice_states = true
     # Presences - recommended: false (privileged intent). Used for member update (for activities and status), Member.status.
     presences = false
     # Guild messages - recommended: true. Used for message events in guilds.
