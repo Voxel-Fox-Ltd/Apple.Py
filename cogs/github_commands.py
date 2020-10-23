@@ -2,8 +2,7 @@ import re
 
 from bs4 import BeautifulSoup, NavigableString
 import discord
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class GithubCommands(utils.Cog):

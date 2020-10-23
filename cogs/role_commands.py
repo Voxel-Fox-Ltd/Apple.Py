@@ -2,13 +2,12 @@ import typing
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class RoleCommands(utils.Cog):
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
     async def copyrolepermissions(self, ctx:utils.Context, copy_role:discord.Role, paste_role:discord.Role):
@@ -20,7 +19,7 @@ class RoleCommands(utils.Cog):
             return await ctx.send("Unable to edit role.")
         return await ctx.send("Edited.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def permissions(self, ctx:utils.Context, user:discord.Member, channel:typing.Optional[discord.TextChannel]):
@@ -48,7 +47,7 @@ class RoleCommands(utils.Cog):
                     output.append(f"Guild({green_circle if gp else red_circle}) Channel({green_circle if cp else red_circle}) - **{permission_name}**")
         await ctx.send('\n'.join(output))
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def dumpmessage(self, ctx:utils.Context, message:discord.Message):

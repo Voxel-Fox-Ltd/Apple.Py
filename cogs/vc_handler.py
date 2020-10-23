@@ -1,6 +1,5 @@
 import discord
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class VCHandler(utils.Cog):

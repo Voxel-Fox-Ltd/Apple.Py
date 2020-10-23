@@ -6,8 +6,7 @@ import asyncio
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 def create_id(n:int=5):
@@ -21,7 +20,7 @@ class QuoteCommands(utils.Cog):
     IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
     QUOTE_SEARCH_CHARACTER_CUTOFF = 100
 
-    @commands.group(cls=utils.Group, invoke_without_command=True)
+    @utils.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
     async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
@@ -152,7 +151,7 @@ class QuoteCommands(utils.Cog):
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
 
-    @quote.command(cls=utils.Command)
+    @quote.command()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def get(self, ctx:utils.Context, identifier:commands.clean_content):
         """Gets a quote from the database"""
@@ -187,7 +186,7 @@ class QuoteCommands(utils.Cog):
         # Output to user
         return await ctx.send(embed=embed)
 
-    @quote.group(cls=utils.Group, invoke_without_command=True)
+    @quote.group(invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
     async def alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias:commands.clean_content):
@@ -207,7 +206,7 @@ class QuoteCommands(utils.Cog):
             await db("INSERT INTO quote_aliases (quote_id, alias) VALUES ($1, $2)", quote_id.lower(), alias.lower())
         await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
-    @alias.command(cls=utils.Command, name='remove', aliases=['delete'])
+    @alias.command(name='remove', aliases=['delete'])
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
     async def alias_remove(self, ctx:utils.Context, alias:commands.clean_content):
@@ -218,7 +217,7 @@ class QuoteCommands(utils.Cog):
             await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
         return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
-    @quote.command(cls=utils.Command)
+    @quote.command()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def search(self, ctx:utils.Context, user:typing.Optional[discord.Member]=None, *, search_term:str=""):
         """Searches the datbase for a quote with some text in it babeyeyeyey"""
@@ -245,7 +244,7 @@ class QuoteCommands(utils.Cog):
             embed.add_field(name=row['quote_id'].upper(), value=text, inline=len(text) < 100)
         return await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
-    @quote.command(cls=utils.Command)
+    @quote.command()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def delete(self, ctx:utils.Context, *quote_ids:str):

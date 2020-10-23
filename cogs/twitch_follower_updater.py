@@ -5,8 +5,7 @@ import collections
 
 import discord
 from discord.ext import commands, tasks
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class TwitchFollowerUpdater(utils.Cog):
@@ -87,7 +86,7 @@ class TwitchFollowerUpdater(utils.Cog):
             params['after'] = data.get('pagination', {}).get('cursor', None)
         return output, data.get('pagination', {}).get('cursor', None)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     async def linktwitch(self, ctx:utils.Context):
         """lorem ipsum"""

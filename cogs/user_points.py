@@ -2,13 +2,12 @@ import typing
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class UserPoints(utils.Cog):
 
-    @commands.group(cls=utils.Group, invoke_without_command=True)
+    @utils.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def points(self, ctx:utils.Context, user:discord.Member=None):
@@ -28,7 +27,7 @@ class UserPoints(utils.Cog):
             return await ctx.send(f"{user.mention} has {rows[0]['points']} points.")
         await ctx.send(f"{user.mention} has 0 points.", allowed_mentions=discord.AllowedMentions(users=False))
 
-    @points.command(cls=utils.Command)
+    @points.command()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
@@ -48,7 +47,7 @@ class UserPoints(utils.Cog):
         await ctx.send(f"Added {points} points to {user.mention}.", allowed_mentions=discord.AllowedMentions(users=False))
         self.bot.dispatch("leaderboard_update", ctx.guild)
 
-    @points.command(cls=utils.Command)
+    @points.command()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
@@ -68,7 +67,7 @@ class UserPoints(utils.Cog):
         await ctx.send(f"Removed {points} points from {user.mention}.", allowed_mentions=discord.AllowedMentions(users=False))
         self.bot.dispatch("leaderboard_update", ctx.guild)
 
-    @points.group(cls=utils.Group, invoke_without_command=True)
+    @points.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def leaderboard(self, ctx:utils.Context):
@@ -97,7 +96,7 @@ class UserPoints(utils.Cog):
         # Output
         await ctx.send(embed=embed)
 
-    @leaderboard.command(cls=utils.Command)
+    @leaderboard.command()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()

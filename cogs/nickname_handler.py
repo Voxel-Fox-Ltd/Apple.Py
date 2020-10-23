@@ -5,8 +5,7 @@ import re
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 ZALGO_CHARACTERS = [
@@ -205,7 +204,7 @@ class NicknameHandler(utils.Cog):
         await user.edit(nick=new_name)
         return new_name
 
-    @commands.command(cls=utils.Command, aliases=['fun'])
+    @utils.command(aliases=['fun'])
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     async def fixunzalgoname(self, ctx:utils.Context, user:discord.Member):
@@ -215,7 +214,7 @@ class NicknameHandler(utils.Cog):
         new_name = await self.fix_user_nickname(user)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     async def addfixablename(self, ctx:utils.Context, user:discord.Member, *, fixed_name:str):
@@ -224,7 +223,7 @@ class NicknameHandler(utils.Cog):
         await ctx.invoke(self.bot.get_command("addfixableletters"), user.display_name, fixed_name)
         await ctx.invoke(self.bot.get_command("fixunzalgoname"), user)
 
-    @commands.command(ignore_extra=False, cls=utils.Command)
+    @utils.command(ignore_extra=False)
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     async def addfixableletters(self, ctx:utils.Context, phrase1:str, phrase2:str):

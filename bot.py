@@ -6,8 +6,7 @@ import sys
 import warnings
 
 import discord
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 # Set up the loggers

@@ -1,11 +1,10 @@
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class AnimalCommands(utils.Cog):
 
-    @commands.command(cls=utils.Command, aliases=['kitty'])
+    @utils.command(aliases=['kitty'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def cat(self, ctx:utils.Context, *, breed:str=None):
         """Gives you some kitty pictures"""
@@ -28,7 +27,7 @@ class AnimalCommands(utils.Cog):
             embed.set_image(url=data[0]['url'])
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command, aliases=['doggo', 'puppy', 'pupper'])
+    @utils.command(aliases=['doggo', 'puppy', 'pupper'])
     @utils.cooldown.cooldown(1, 2, commands.BucketType.channel)
     async def dog(self, ctx:utils.Context, *, breed:str=None):
         """Gives you some dog pictures"""
@@ -47,7 +46,7 @@ class AnimalCommands(utils.Cog):
             embed.set_image(url=data['message'])
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command, aliases=['foxo', 'foxxo'])
+    @utils.command(aliases=['foxo', 'foxxo'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def fox(self, ctx:utils.Context):
         """Gives you some fox pictures"""
@@ -60,7 +59,7 @@ class AnimalCommands(utils.Cog):
             embed.set_image(url=data['image'])
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command, aliases=['birb'])
+    @utils.command(aliases=['birb'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def bird(self, ctx:utils.Context):
         """Gives you some bird pictures"""
@@ -73,7 +72,7 @@ class AnimalCommands(utils.Cog):
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def panda(self, ctx:utils.Context):
         """Gives you some panda pictures"""
@@ -86,7 +85,7 @@ class AnimalCommands(utils.Cog):
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def redpanda(self, ctx:utils.Context):
         """Gives you some red panda pictures"""
@@ -99,7 +98,7 @@ class AnimalCommands(utils.Cog):
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def koala(self, ctx:utils.Context):
         """Gives you some koala pictures"""

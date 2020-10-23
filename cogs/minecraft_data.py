@@ -1,8 +1,7 @@
 from datetime import datetime as dt
 
 from discord.ext import tasks
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class MinecraftData(utils.Cog):

@@ -3,8 +3,7 @@ import re
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class ImageUrl(commands.Converter):
@@ -22,7 +21,7 @@ class ImageUrl(commands.Converter):
 
 class EmojiCommands(utils.Cog):
 
-    @commands.command(cls=utils.Command, aliases=['addemoji'])
+    @utils.command(aliases=['addemoji'])
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.guild_only()

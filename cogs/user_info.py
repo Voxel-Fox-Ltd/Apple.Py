@@ -2,13 +2,12 @@ import io
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class UserInfo(utils.Cog):
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     async def avatar(self, ctx:utils.Context, user:discord.User=None):
         """Shows you the avatar of a given user"""
 
@@ -18,7 +17,7 @@ class UserInfo(utils.Cog):
             embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.guild_only()
     async def createlog(self, ctx:utils.Context, amount:int=100):
         """Create a log of chat"""

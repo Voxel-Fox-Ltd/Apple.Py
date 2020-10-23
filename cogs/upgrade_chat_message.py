@@ -1,8 +1,7 @@
 import re
 
 import discord
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class DonatorMessage(utils.Cog):
