@@ -6,6 +6,7 @@ class AnimalCommands(utils.Cog):
 
     @utils.command(aliases=['kitty'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    @utils.checks.is_config_set('api_keys', 'cat_api')
     async def cat(self, ctx:utils.Context, *, breed:str=None):
         """Gives you some kitty pictures"""
 

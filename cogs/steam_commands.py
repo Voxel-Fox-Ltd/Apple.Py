@@ -34,6 +34,7 @@ class SteamCommand(utils.Cog):
         return ''.join(i for i in name if i.isdigit() or i.isalpha() or i.isspace())
 
     @utils.command(aliases=['steam'])
+    @utils.checks.is_config_set('api_keys', 'steam')
     async def steamsearch(self, ctx:utils.Context, *, app_name:str):
         """Search Steam for an item"""
 
