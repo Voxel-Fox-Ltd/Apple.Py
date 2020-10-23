@@ -173,25 +173,29 @@ class NicknameHandler(utils.Cog):
             self.logger.info(f"Pinging nickname update for member update (G{member.guild.id}/U{member.id})")
             await self.fix_user_nickname(member)
 
-    async def fix_user_nickname(self, user:discord.Member) -> str:
+    async def fix_user_nickname(self, user:discord.Member, *, force_to_animal:bool=False) -> str:
         """Fix the nickname of a user"""
 
-        # Read the letter replacements file
-        replacements = self.get_letter_replacements()
+        # See if we should even bother trying to translate it
+        if force_to_animal is False:
 
-        # Make a translator
-        translator = str.maketrans(replacements)
+            # Read the letter replacements file
+            replacements = self.get_letter_replacements()
 
-        # Try and fix their name
-        current_name = user.nick or user.name
-        new_name_with_zalgo = current_name.translate(translator)
-        new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
+            # Make a translator
+            translator = str.maketrans(replacements)
 
-        # See if they have enough valid characters
-        if not self.consecutive_character_regex:
-            chars = [i if i not in string.punctuation else f"\\{i}" for i in self.ASCII_CHARACTERS]
-            self.consecutive_character_regex = re.compile(f"[{''.join(chars)}]{{3,}}")
-        if self.consecutive_character_regex.search(new_name) is None:
+            # Try and fix their name
+            current_name = user.nick or user.name
+            new_name_with_zalgo = current_name.translate(translator)
+            new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
+
+            # See if they have enough valid characters
+            if not self.consecutive_character_regex:
+                chars = [i if i not in string.punctuation else f"\\{i}" for i in self.ASCII_CHARACTERS]
+                self.consecutive_character_regex = re.compile(f"[{''.join(chars)}]{{3,}}")
+
+        if force_to_animal or self.consecutive_character_regex.search(new_name) is None:
             new_name = random.choice(await self.get_animal_names())
 
         # See if it needs editing
@@ -207,11 +211,12 @@ class NicknameHandler(utils.Cog):
     @utils.command(aliases=['fun'])
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
-    async def fixunzalgoname(self, ctx:utils.Context, user:discord.Member):
+    async def fixunzalgoname(self, ctx:utils.Context, user:discord.Member, force_to_animal:bool=False):
         """Fixes a user's nickname to remove dumbass characters"""
 
+        user = await ctx.guild.fetch_member(user.id)
         current_name = user.nick or user.name
-        new_name = await self.fix_user_nickname(user)
+        new_name = await self.fix_user_nickname(user, force_to_animal=force_to_animal)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
 
     @utils.command()
