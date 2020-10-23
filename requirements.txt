@@ -1,10 +1,3 @@
-# Discord and config handling
-git+https://github.com/4Kaylum/discord.py@master
-toml
-git+https://github.com/4Kaylum/discord-ext-menus
-
-# Storage handling
-asyncpg
-
+voxelbotutils
 beautifulsoup4
 pillow
