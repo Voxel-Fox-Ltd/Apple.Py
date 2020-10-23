@@ -7,8 +7,7 @@ import voxelbotutils as utils
 
 class VcChatUpdate(utils.Cog):
 
-    NO_MIC_CHANNEL = 769083687274676256 # what channel do we update
-    # 646155412692926475 -- actual channel for later
+    NO_MIC_CHANNEL = 646155412692926475
     PART1 = ['voice', 'voiced', 'vocal', 'voiceable'] # the first word 
     PART2 = ['chat', 'cat', 'c', 'cats', 'chatting']  # the second word
     PART3 = ['no', 'n', 'negative', 'none']  # the third word
