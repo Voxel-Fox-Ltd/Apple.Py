@@ -11,6 +11,7 @@ from PIL import Image
 
 from cogs import utils
 
+#schlopp loves u
 
 class MiscCommands(utils.Cog):
 
