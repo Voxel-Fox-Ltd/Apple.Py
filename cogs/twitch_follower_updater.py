@@ -49,9 +49,9 @@ class TwitchFollowerUpdater(utils.Cog):
             new_followers[row['twitch_user_id']] = new_follower_list
 
             # Update the follower timestamps into real timestamps
-            self.logger.info(new_follower_list)
+            # self.logger.info(new_follower_list)
             filtered_new_follower_list = [i for i in new_follower_list if dt.strptime(i['followed_at'], "%Y-%m-%dT%H:%M:%SZ") > self.last_twitch_checked]
-            self.logger.info(filtered_new_follower_list)
+            # self.logger.info(filtered_new_follower_list)
 
             # Send DM to the user
             if filtered_new_follower_list:
@@ -80,8 +80,8 @@ class TwitchFollowerUpdater(utils.Cog):
             async with self.bot.session.get(self.TWITCH_USER_FOLLOWS_URL, params=params, headers=headers) as r:
                 data = await r.json()
                 self.logger.info(data)
-            output.extend(data['data'])
-            if len(data['data']) < 100:
+            output.extend(data.get('data', list()))
+            if len(data.get('data', list())) < 100:
                 break
             params['after'] = data.get('pagination', {}).get('cursor', None)
         return output, data.get('pagination', {}).get('cursor', None)
