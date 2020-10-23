@@ -79,7 +79,7 @@ class TwitchFollowerUpdater(utils.Cog):
         while True:
             async with self.bot.session.get(self.TWITCH_USER_FOLLOWS_URL, params=params, headers=headers) as r:
                 data = await r.json()
-                self.logger.info(data)
+                # self.logger.info(data)
             output.extend(data.get('data', list()))
             if len(data.get('data', list())) < 100:
                 break
