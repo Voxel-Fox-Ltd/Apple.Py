@@ -1,28 +1,10 @@
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class BotSettings(utils.Cog):
 
-    @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_guild=True)
-    @commands.bot_has_permissions(send_messages=True)
-    @commands.guild_only()
-    async def prefix(self, ctx:utils.Context, *, new_prefix:str):
-        """Changes the prefix that the bot uses"""
-
-        # Validate prefix
-        if len(new_prefix) > 30:
-            return await ctx.send("The maximum length a prefix can be is 30 characters.")
-
-        # Store setting
-        self.bot.guild_settings[ctx.guild.id]['prefix'] = new_prefix
-        async with self.bot.database() as db:
-            await db("INSERT INTO guild_settings (guild_id, prefix) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET prefix=excluded.prefix", ctx.guild.id, new_prefix)
-        await ctx.send(f"My prefix has been updated to `{new_prefix}`.")
-
-    @commands.group(cls=utils.Group)
+    @utils.group()
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
@@ -69,7 +51,7 @@ class BotSettings(utils.Cog):
         except utils.errors.InvokedMetaCommand:
             pass
 
-    @setup.command(cls=utils.Command)
+    @setup.command()
     @utils.checks.meta_command()
     async def vcmaxmembers(self, ctx:utils.Context):
         """Run the bot setup"""
@@ -83,7 +65,7 @@ class BotSettings(utils.Cog):
         )
         await menu.start(ctx)
 
-    @commands.group(cls=utils.Group, enabled=False)
+    @utils.group(enabled=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()

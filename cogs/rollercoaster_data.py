@@ -2,8 +2,7 @@ import typing
 
 from bs4 import BeautifulSoup
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class RollercoasterData(utils.Cog):
@@ -30,7 +29,7 @@ class RollercoasterData(utils.Cog):
             data[item_id] = {"name": name, "park": park, "type": coaster_type, "design": design, "status": status}
         return data
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     async def coaster(self, ctx:utils.Context, *, name:typing.Union[int, str]):
         """Finds you the data of a rollercoaster"""
 

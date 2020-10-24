@@ -1,4 +1,3 @@
-import asyncio
 import typing
 import random
 from urllib.parse import urlencode
@@ -8,8 +7,7 @@ import discord
 from discord.ext import commands
 import unicodedata
 from PIL import Image
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class MiscCommands(utils.Cog):
@@ -26,7 +24,7 @@ class MiscCommands(utils.Cog):
         self.topics = lines.split('\n')
         return self.get_topics()
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     async def fpf(self, ctx:utils.Context, *, text:commands.clean_content):
         """"""
 
@@ -50,10 +48,10 @@ class MiscCommands(utils.Cog):
         embed = utils.Embed(use_random_colour=True).set_image(url)
         return await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command, ignore_extra=False, aliases=['imposter', 'crewmate', 'amongus'])
+    @utils.command(ignore_extra=False, aliases=['imposter', 'crewmate', 'amongus'])
     @commands.bot_has_permissions(send_messages=True, attach_files=True)
     async def impostor(self, ctx:utils.Context, user1:discord.User, user2:discord.User, user3:discord.User, user4:discord.User, user5:discord.User=None):
-        """Puts you and your friends into an imposter image"""
+        """Puts you and your friends into an impostor image"""
 
         # Fix up input args
         if user5 is None:
@@ -91,14 +89,14 @@ class MiscCommands(utils.Cog):
         output_image.seek(0)
         return await ctx.send(file=discord.File(output_image, filename="imposter.png"))
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     async def topic(self, ctx:utils.Context):
         """Gives you a conversation topic"""
 
         return await ctx.send(random.choice(self.get_topics()))
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(manage_channels=True)
     @commands.guild_only()
@@ -111,7 +109,7 @@ class MiscCommands(utils.Cog):
             return await ctx.send(str(e))
         await ctx.okay()
 
-    @commands.command(cls=utils.Command, aliases=['http'])
+    @utils.command(aliases=['http'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def httpcat(self, ctx:utils.Context, errorcode:int):
         """Gives you a cat based on a HTTP error code"""
@@ -129,7 +127,7 @@ class MiscCommands(utils.Cog):
             embed.set_image(url=f'https://http.cat/{errorcode}')
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command, aliases=['pip'])
+    @utils.command(aliases=['pip'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def pypi(self, ctx:utils.Context, module:commands.clean_content):
         """Grab data from PyPi"""
@@ -147,74 +145,7 @@ class MiscCommands(utils.Cog):
             embed.description = data['info']['summary']
         return await ctx.send(embed=embed)
 
-    @commands.command(aliases=['git', 'code'], cls=utils.Command)
-    @utils.checks.is_config_set('command_data', 'github')
-    @commands.bot_has_permissions(send_messages=True)
-    async def github(self, ctx:utils.Context):
-        """Sends the GitHub Repository link"""
-
-        await ctx.send(f"<{self.bot.config['command_data']['github']}>")
-
-    @commands.command(aliases=['support', 'guild'], cls=utils.Command)
-    @utils.checks.is_config_set('command_data', 'guild_invite')
-    @commands.bot_has_permissions(send_messages=True)
-    async def server(self, ctx:utils.Context):
-        """Gives the invite to the support server"""
-
-        await ctx.send(f"<{self.bot.config['command_data']['guild_invite']}>")
-
-    @commands.command(aliases=['patreon'], cls=utils.Command)
-    @utils.checks.is_config_set('command_data', 'patreon')
-    @commands.bot_has_permissions(send_messages=True)
-    async def donate(self, ctx:utils.Context):
-        """Gives you the bot's creator's Patreon"""
-
-        await ctx.send(f"<{self.bot.config['command_data']['patreon']}>")
-
-    @commands.command(cls=utils.Command)
-    @commands.bot_has_permissions(send_messages=True)
-    @utils.checks.is_config_set('command_data', 'invite_command_enabled')
-    async def invite(self, ctx:utils.Context):
-        """Gives you the bot's invite link"""
-
-        await ctx.send(f"<{self.bot.get_invite_link()}>")
-
-    @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(send_messages=True)
-    @utils.checks.is_config_set('command_data', 'echo_command_enabled')
-    async def echo(self, ctx:utils.Context, *, content:str):
-        """Echos the given content into the channel"""
-
-        await ctx.send(content, allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
-
-    @commands.command(cls=utils.Command, aliases=['status'])
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('command_data', 'stats_command_enabled')
-    async def stats(self, ctx:utils.Context):
-        """Gives you the stats for the bot"""
-
-        # Get creator info
-        creator_id = self.bot.config["owners"][0]
-        creator = self.bot.get_user(creator_id) or await self.bot.fetch_user(creator_id)
-
-        # Make embed
-        with utils.Embed(colour=0x1e90ff) as embed:
-            embed.set_footer(str(self.bot.user), icon_url=self.bot.user.avatar_url)
-            embed.add_field("Creator", f"{creator!s}\n{creator_id}")
-            embed.add_field("Library", f"Discord.py {discord.__version__}")
-            if self.bot.shard_count != len(self.bot.shard_ids):
-                embed.add_field("Average Guild Count", int((len(self.bot.guilds) / len(self.bot.shard_ids)) * self.bot.shard_count))
-            else:
-                embed.add_field("Guild Count", len(self.bot.guilds))
-            embed.add_field("Shard Count", self.bot.shard_count)
-            embed.add_field("Average WS Latency", f"{(self.bot.latency * 1000):.2f}ms")
-            embed.add_field("Coroutines", f"{len([i for i in asyncio.Task.all_tasks() if not i.done()])} running, {len(asyncio.Task.all_tasks())} total.")
-
-        # Send it out wew let's go
-        await ctx.send(embed=embed)
-
-    @commands.command(cls=utils.Command, aliases=['color'])
+    @utils.command(aliases=['color'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def colour(self, ctx:utils.Context, *, colour:typing.Union[discord.Role, discord.Colour, discord.Member]):
         """Get you a colour"""
@@ -232,7 +163,7 @@ class MiscCommands(utils.Cog):
             embed.set_image(url=f"https://www.htmlcsscolor.com/preview/gallery/{hex_colour:0>6X}.png")
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     async def charinfo(self, ctx, *, characters: str):
         """Shows you information about a number of characters.
@@ -249,7 +180,7 @@ class MiscCommands(utils.Cog):
             return await ctx.send('Output too long to display.')
         await ctx.send(msg)
 
-    @commands.command(cls=utils.Command, cooldown_after_parsing=True)
+    @utils.command(cooldown_after_parsing=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(send_messages=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.guild)
@@ -261,8 +192,8 @@ class MiscCommands(utils.Cog):
         for _ in range(amount):
             await ctx.send(text)
 
-    @commands.command(cls=utils.Command, aliases=['disconnectvc', 'clearvc'])
-    @commands.has_permissions(move_members=True)
+    @utils.command(aliases=['disconnectvc', 'clearvc'])
+    @commands.has_guild_permissions(move_members=True)
     @commands.bot_has_guild_permissions(move_members=True)
     @commands.bot_has_permissions(send_messages=True)
     async def emptyvc(self, ctx:utils.Context, channel:discord.VoiceChannel):
@@ -278,7 +209,7 @@ class MiscCommands(utils.Cog):
                 return await ctx.send("I don't have permission to remove members from that channel.")
         return await ctx.send(f"Dropped {member_count} members from the VC.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     async def square(self, ctx:utils.Context, *, text:commands.clean_content):
         """Makes your input into a sexy lil square"""
 
@@ -293,12 +224,28 @@ class MiscCommands(utils.Cog):
             return await ctx.send("your shits too fucked yo")
         return await ctx.send(returned_string)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     async def getinterval(self, ctx:utils.Context, message1:int, message2:int):
         """Get the interval between two messages"""
 
         timestamps = sorted([discord.Object(message1).created_at, discord.Object(message2).created_at], reverse=True)
         return await ctx.send(timestamps[0] - timestamps[1])
+
+    @utils.command()
+    @commands.bot_has_permissions(send_messages=True, attach_files=True)
+    async def randompicture(self, ctx:utils.Context):
+        """Let's make a random picture why not"""
+
+        await ctx.trigger_typing()
+        x = Image.new("RGB", (256, 256))
+        for i in range(0, x.size[0]):
+            for o in range(0, x.size[1]):
+                x.putpixel((i, o), (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+        y = x.resize((x.size[0] * 5, x.size[1] * 5), Image.NEAREST)
+        handle = io.BytesIO()
+        y.save(handle, format="PNG")
+        handle.seek(0)
+        return await ctx.send(file=discord.File(handle, filename="Wowowowowowow.png"))
 
 
 def setup(bot:utils.Bot):

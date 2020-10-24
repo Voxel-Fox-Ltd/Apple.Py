@@ -1,9 +1,13 @@
 import discord
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class VCHandler(utils.Cog):
+
+    async def cache_setup(self, db):
+        data = await self.bot._get_list_table_data(db, "channel_list", "MaxVCMembers")
+        for row in data:
+            self.bot.guild_settings[row['guild_id']].setdefault('max_vc_members', dict())[row['channel_id']] = int(row['value'])
 
     @utils.Cog.listener()
     async def on_voice_state_update(self, member:discord.Member, before:discord.VoiceState, after:discord.VoiceState):
@@ -14,7 +18,7 @@ class VCHandler(utils.Cog):
         for channel in channels:
 
             # Get allowed data
-            allowed_members_for_channel = self.bot.guild_settings[member.guild.id]['max_vc_members'].get(channel.id)
+            allowed_members_for_channel = self.bot.guild_settings[member.guild.id].setdefault('max_vc_members', dict()).get(channel.id)
             if allowed_members_for_channel is None:
                 continue
 

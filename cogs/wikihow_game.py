@@ -2,8 +2,7 @@ import re as regex
 import random
 
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class WikihowGame(utils.Cog):
@@ -23,7 +22,7 @@ class WikihowGame(utils.Cog):
             data = await r.text()
         self.possible_images = [i.group(1) for i in self.SLUG_REGEX.finditer(data, regex.MULTILINE)]
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     async def wikihow(self, ctx:utils.Context):
         """That classic ol wikihow game"""
 

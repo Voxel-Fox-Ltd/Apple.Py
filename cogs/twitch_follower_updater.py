@@ -5,8 +5,7 @@ import collections
 
 import discord
 from discord.ext import commands, tasks
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class TwitchFollowerUpdater(utils.Cog):
@@ -50,9 +49,9 @@ class TwitchFollowerUpdater(utils.Cog):
             new_followers[row['twitch_user_id']] = new_follower_list
 
             # Update the follower timestamps into real timestamps
-            self.logger.info(new_follower_list)
+            # self.logger.info(new_follower_list)
             filtered_new_follower_list = [i for i in new_follower_list if dt.strptime(i['followed_at'], "%Y-%m-%dT%H:%M:%SZ") > self.last_twitch_checked]
-            self.logger.info(filtered_new_follower_list)
+            # self.logger.info(filtered_new_follower_list)
 
             # Send DM to the user
             if filtered_new_follower_list:
@@ -80,14 +79,14 @@ class TwitchFollowerUpdater(utils.Cog):
         while True:
             async with self.bot.session.get(self.TWITCH_USER_FOLLOWS_URL, params=params, headers=headers) as r:
                 data = await r.json()
-                self.logger.info(data)
-            output.extend(data['data'])
-            if len(data['data']) < 100:
+                # self.logger.info(data)
+            output.extend(data.get('data', list()))
+            if len(data.get('data', list())) < 100:
                 break
             params['after'] = data.get('pagination', {}).get('cursor', None)
         return output, data.get('pagination', {}).get('cursor', None)
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     async def linktwitch(self, ctx:utils.Context):
         """lorem ipsum"""
@@ -126,7 +125,9 @@ class TwitchFollowerUpdater(utils.Cog):
         # Store that
         async with self.bot.database() as db:
             await db(
-                "INSERT INTO user_settings (user_id, twitch_user_id, twitch_username, twitch_bearer_token) VALUES ($1, $2, $3, $4)",
+                """INSERT INTO user_settings (user_id, twitch_user_id, twitch_username, twitch_bearer_token) VALUES ($1, $2, $3, $4)
+                ON CONFLICT (user_id) DO UPDATE SET twitch_user_id=excluded.twitch_user_id, twitch_username=excluded.twitch_username,
+                twitch_bearer_token=excluded.twitch_bearer_token""",
                 ctx.author.id, data['user_id'], data['login'], query_params['access_token'],
             )
 

@@ -1,6 +1,4 @@
-import discord
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class StaffPinger(utils.Cog):

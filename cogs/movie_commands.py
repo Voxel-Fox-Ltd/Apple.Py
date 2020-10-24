@@ -1,12 +1,11 @@
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class MovieCommand(utils.Cog):
 
-    @commands.group(cls=utils.Group, invoke_without_command=True)
+    @utils.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'omdb')
     async def movie(self, ctx:utils.Context, *, name:str):
@@ -61,7 +60,7 @@ class MovieCommand(utils.Cog):
                 embed.set_thumbnail(data['Poster'])
         return await ctx.send(embed=embed)
 
-    @movie.group(cls=utils.Command)
+    @movie.group()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'omdb')
     async def search(self, ctx:utils.Context, *, name:str):

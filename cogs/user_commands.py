@@ -1,12 +1,11 @@
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class UserCommands(utils.Cog):
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     async def ship(self, ctx:utils.Context, user:discord.Member, user2:discord.Member=None):
         """Gives you a ship percentage between two users"""
 

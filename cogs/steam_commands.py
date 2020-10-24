@@ -2,8 +2,7 @@ import re as regex
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class SteamCommand(utils.Cog):
@@ -34,7 +33,8 @@ class SteamCommand(utils.Cog):
     def get_valid_name(self, name):
         return ''.join(i for i in name if i.isdigit() or i.isalpha() or i.isspace())
 
-    @commands.command(cls=utils.Command, aliases=['steam'])
+    @utils.command(aliases=['steam'])
+    @utils.checks.is_config_set('api_keys', 'steam')
     async def steamsearch(self, ctx:utils.Context, *, app_name:str):
         """Search Steam for an item"""
 
