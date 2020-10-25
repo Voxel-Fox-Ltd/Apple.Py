@@ -233,11 +233,16 @@ class MiscCommands(utils.Cog):
 
     @utils.command()
     @commands.bot_has_permissions(send_messages=True, attach_files=True)
-    async def randompicture(self, ctx:utils.Context):
+    async def randompicture(self, ctx:utils.Context, x_size:int=256, y_size:int=None):
         """Let's make a random picture why not"""
-
+        
         await ctx.trigger_typing()
-        x = Image.new("RGB", (256, 256))
+        y_size = y_size or x_size  
+        image_size = (x_size, y_size)  
+        if min(image_size) < 10 or max(image_size) > 500:
+            return await ctx.send("Size must be between 10 and 500.")
+            
+        x = Image.new("RGB", image_size)
         for i in range(0, x.size[0]):
             for o in range(0, x.size[1]):
                 x.putpixel((i, o), (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
