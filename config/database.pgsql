@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS user_settings(
     twitch_user_id VARCHAR(16),
     twitch_username VARCHAR(32),
     twitch_bearer_token VARCHAR(30),
-    twitch_cursor VARCHAR(100)
+    twitch_cursor VARCHAR(100),
+    minecraft_username VARCHAR(16),
+    minecraft_uuid VARCHAR(32)
 );
 
 
