@@ -67,7 +67,7 @@ class MinecraftData(utils.Cog):
 
         # Wait for their message
         try:
-            message = await self.bot.wait_for("message", check=lambda m: m.guild is None and m.author.id == ctx.author.id, timeout=60 * 5)
+            message = await self.bot.wait_for("message", check=lambda m: isinstance(m.channel, discord.DMChannel) and m.author.id == ctx.author.id, timeout=60 * 5)
         except asyncio.TimeoutError:
             return await ctx.send("Timed out asking for your Minecraft Oauth code.")
 
