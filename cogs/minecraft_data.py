@@ -82,7 +82,7 @@ class MinecraftData(utils.Cog):
                 ON CONFLICT (user_id) DO UPDATE SET minecraft_username=excluded.minecraft_username, minecraft_uuid=excluded.minecraft_uuid""",
                 ctx.author.id, data['username'], data['uuid'],
             )
-        return await ctx.send(f"Linked your Minecraft account **{data['username']}** (`{data['uuid']}`) to your Discord!")
+        return await ctx.author.send(f"Linked your Minecraft account **{data['username']}** (`{data['uuid']}`) to your Discord!")
 
     @utils.command(aliases=['getminecraftname', 'getmcname', 'getmc', 'getminecraft'])
     @commands.bot_has_permissions(send_messages=True)
