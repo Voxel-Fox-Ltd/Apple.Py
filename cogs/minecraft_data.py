@@ -55,7 +55,7 @@ class MinecraftData(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     async def setminecraftusername(self, ctx:utils.Context):
         """
-        Binds your Minecraft username to your Discord account
+        Binds your Minecraft username to your Discord account.
         """
 
         try:
@@ -88,7 +88,7 @@ class MinecraftData(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     async def getminecraftusername(self, ctx:utils.Context, user:discord.Member):
         """
-        Gets the Minecraft username for a user
+        Gets the Minecraft username for a user.
         """
 
         async with self.bot.database() as db:
@@ -98,6 +98,21 @@ class MinecraftData(utils.Cog):
         if not rows:
             return await ctx.send(f"{user.mention} hasn't linked a Minecraft account to their Discord - run `{ctx.clean_prefix}setminecraftusername` to do so.")
         return await ctx.send(f"{user.mention}'s Minecraft account is **{rows[0]['minecraft_username']}** (`{rows[0]['minecraft_uuid']}`).")
+
+    @utils.command(aliases=['getminecraftdiscord', 'getmcdiscord'])
+    @commands.bot_has_permissions(send_messages=True)
+    async def getminecraftdiscord(self, ctx:utils.Context, username:str):
+        """
+        Gets the Discord username for a Minecraft user.
+        """
+
+        async with self.bot.database() as db:
+            rows = await db(
+                """SELECT * FROM user_settings WHERE LOWER(minecraft_username)=LOWER($1)""", username
+            )
+        if not rows:
+            return await ctx.send(f"There are no users stored with the username {username}.")
+        return await ctx.send(f"The account with the username **{rows[0]['minecraft_username']}** is <@{rows[0]['user_id']}>.")
 
 
 def setup(bot:utils.Bot):
