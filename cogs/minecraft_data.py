@@ -69,7 +69,7 @@ class MinecraftData(utils.Cog):
         try:
             message = await self.bot.wait_for("message", check=lambda m: m.guild is None and m.author.id == ctx.author.id, timeout=60 * 5)
         except asyncio.TimeoutError:
-            return await ctx.send("Timed out asking for your Minecraft Oauth code.")
+            return await ctx.author.send("Timed out asking for your Minecraft Oauth code.")
 
         # Make sure it's right
         async with self.bot.session.get("https://mc-oauth.net/api/api?token", headers={"token": message.content}) as r:
