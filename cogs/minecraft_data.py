@@ -99,7 +99,7 @@ class MinecraftData(utils.Cog):
             return await ctx.send(f"{user.mention} hasn't linked a Minecraft account to their Discord - run `{ctx.clean_prefix}setminecraftusername` to do so.")
         return await ctx.send(f"{user.mention}'s Minecraft account is **{rows[0]['minecraft_username']}** (`{rows[0]['minecraft_uuid']}`).")
 
-    @utils.command(aliases=['getminecraftdiscord', 'getmcdiscord'])
+    @utils.command(aliases=['getmcdiscord'])
     @commands.bot_has_permissions(send_messages=True)
     async def getminecraftdiscord(self, ctx:utils.Context, username:str):
         """
