@@ -72,7 +72,7 @@ class MinecraftData(utils.Cog):
             return await ctx.send("Timed out asking for your Minecraft Oauth code.")
 
         # Make sure it's right
-        async with self.bot.session.get("https://mc-oauth.net/api/api", params={"token": message.content}) as r:
+        async with self.bot.session.get("https://mc-oauth.net/api/api?token", headers={"token": message.content}) as r:
             data = await r.json()
         if data['status'] != 'success':
             return await ctx.author.send("The code you gave is invalid! Please run this command again to provide another.")
