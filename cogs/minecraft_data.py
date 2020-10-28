@@ -30,20 +30,17 @@ class MinecraftData(utils.Cog):
             data = await r.json()
 
         # Create embed
-        playerlist = '\n'.join(data['players']['list'])
         with utils.Embed(use_random_colour=True) as embed:
             embed.title = f'VFL Minecraft Server | {self.SERVER_IP}:{self.SERVER_PORT}'
-            if data['ip'] == "":
-                embed.add_field ('Server Offline', "", inline= True)
-            else:
-                embed.add_field(f'Currently Online:', f"{data['players']['online']} / {data['players']['max']}")
-                embed.add_field(f'Player List:', playerlist)
+            try:
+                embed.add_field ('Server Offline', data['offline'], inline=True)
+                await ctx.send(embed=embed)
+            except KeyError:
                 embed.add_field(f'MOTD:', data['motd']['clean'][0], inline=False)
-                embed.timestamp = dt.utcnow()
-            
-        await ctx.send(embed= embed)
-
-
+                embed.add_field(f'Player List:','\n'.join(data['players']['list']), inline=True)
+                embed.add_field(f'Currently Online:', f"{data['players']['online']} / {data['players']['max']}",inline=True)
+                await ctx.send(embed=embed)
+                
     @utils.command(aliases=['setminecraftname', 'setmcname', 'setmc', 'setminecraft'])
     @commands.bot_has_permissions(send_messages=True)
     async def setminecraftusername(self, ctx:utils.Context):
