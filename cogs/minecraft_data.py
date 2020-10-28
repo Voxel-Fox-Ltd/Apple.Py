@@ -5,51 +5,44 @@ import discord
 from discord.ext import commands, tasks
 import voxelbotutils as utils
 
+import json
 
 class MinecraftData(utils.Cog):
 
     # https://mcapi.us/server/status?ip=149.202.84.162&port=25588
-    MINECRAFT_API = "https://mcapi.us/server/status"
+    MINECRAFT_API = "https://api.mcsrvstat.us/1/vfl.mcserver.at"
     SERVER_IP = "vfl.mcserver.at"
     SERVER_PORT = 25565
     MINECRAFT_MESSAGE = (716321756171862048, 721771100790325321)  # ChannelID, MessageID
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
-        self.server_status_update.start()
+        pass
 
     def cog_unload(self):
-        self.server_status_update.cancel()
+        pass
 
-    @tasks.loop(minutes=10)
-    async def server_status_update(self):
+    @utils.command(aliases=['mcstats', 'mcserver', 'mcserverstats'])
+    @commands.bot_has_permissions(send_messages=True)
+    async def server_status_update(self, ctx:utils.Context):
         """Updates the Minecraft status message"""
-
-        # Get message
-        channel = self.bot.get_channel(self.MINECRAFT_MESSAGE[0])
-        message = await channel.fetch_message(self.MINECRAFT_MESSAGE[1])
-
-        # Get data
-        async with self.bot.session.get(self.MINECRAFT_API, params={"ip": self.SERVER_IP, "port": self.SERVER_PORT}) as r:
+        async with self.bot.session.get(self.MINECRAFT_API) as r:
             data = await r.json()
 
         # Create embed
-        with utils.Embed() as embed:
-            embed.colour = 0x00ff00 if data['online'] else 0xff0000
-            embed.title = f"{self.SERVER_IP}:{self.SERVER_PORT}"
-            embed.description = f"Currently running {data['server']['name']}"
-            if data['players']['now'] > 0:
-                embed.add_field("Currently Online", f"{data['players']['now']}/{data['players']['max']}\n{', '.join(data['players']['list'])}", inline=True)
+        playerlist = '\n'.join(data['players']['list'])
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.title = f'VFL Minecraft Server | {self.SERVER_IP}:{self.SERVER_PORT}'
+            if data['ip'] == "":
+                embed.add_field ('Server Offline', "", inline= True)
             else:
-                embed.add_field("Currently Online", f"{data['players']['now']}/{data['players']['max']}", inline=True)
-            embed.add_field("Uptime", utils.TimeValue(data['duration'] / 1000).clean_spaced)
-            embed.timestamp = dt.utcnow()
-            embed.set_footer(text="Last updated")
-        await message.edit(content=None, embed=embed)
+                embed.add_field(f'Currently Online:', f"{data['players']['online']} / {data['players']['max']}")
+                embed.add_field(f'Player List:', playerlist)
+                embed.add_field(f'MOTD:', data['motd']['clean'][0], inline=False)
+                embed.timestamp = dt.utcnow()
+            
+        await ctx.send(embed= embed)
 
-    @server_status_update.before_loop
-    async def before_server_status_update(self):
-        await self.bot.wait_until_ready()
 
     @utils.command(aliases=['setminecraftname', 'setmcname', 'setmc', 'setminecraft'])
     @commands.bot_has_permissions(send_messages=True)
