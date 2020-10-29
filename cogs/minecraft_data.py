@@ -21,7 +21,7 @@ class MinecraftData(utils.Cog):
     @utils.command(aliases=['mcstats', 'mcserver', 'mcserverstats'])
     @commands.bot_has_permissions(send_messages=True)
     async def server_status_update(self, ctx:utils.Context):
-        """Updates the Minecraft status message"""
+        """Shows the status of the VFL minecraft server"""
         async with self.bot.session.get(self.MINECRAFT_API) as r:
             data = await r.json()
 
