@@ -39,16 +39,17 @@ class RoleCommands(utils.Cog):
 
         output = [f"**Permissions for {user.mention}**"]
         for i in sorted(dir(channel_permissions)):
-            cp = getattr(channel_permissions, i, None)
             gp = getattr(guild_permissions, i, None)
-            if isinstance(cp, bool):
-                permission_name = i.title().replace('Vc', 'VC').replace('Tts', 'TTS').replace('_', ' ')
-                if i in ['connect', 'view_channel']:
-                    continue
-                if i in ['deafen_members', 'move_members', 'mute_members', 'priority_speaker', 'speak', 'stream', 'use_voice_activation']:
-                    output.append(f"Guild({green_circle if gp else red_circle}) Channel(\U00002716) - **{permission_name}**")
-                else:
-                    output.append(f"Guild({green_circle if gp else red_circle}) Channel({green_circle if cp else red_circle}) - **{permission_name}**")
+            cp = getattr(channel_permissions, i, None)
+
+            # if isinstance(cp, bool):
+            permission_name = i.title().replace('Vc', 'VC').replace('Tts', 'TTS').replace('_', ' ')
+            if i in ['connect', 'view_channel']:
+                continue
+            if i in ['deafen_members', 'move_members', 'mute_members', 'priority_speaker', 'speak', 'stream', 'use_voice_activation'] or cp is None:
+                output.append(f"Guild({green_circle if gp else red_circle}) Channel(\U00002716) - **{permission_name}**")
+            else:
+                output.append(f"Guild({green_circle if gp else red_circle}) Channel({green_circle if cp else red_circle}) - **{permission_name}**")
         await ctx.send('\n'.join(output), allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
 
     @utils.command()
