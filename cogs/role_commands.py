@@ -22,18 +22,22 @@ class RoleCommands(utils.Cog):
     @utils.command()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def permissions(self, ctx:utils.Context, user:discord.Member, channel:typing.Optional[discord.TextChannel]):
+    async def permissions(self, ctx:utils.Context, user:[discord.Member, discord.Role], channel:typing.Optional[discord.TextChannel]):
         """See all the permissions for a given user"""
 
         if channel is None:
             channel = ctx.channel
-        channel_permissions = channel.permissions_for(user)
-        guild_permissions = user.guild_permissions
+        # channel_permissions = channel.permissions_for(user)
+        channel_permissions = channel.overwrites_for(user)
+        if isinstance(user, discord.Role):
+            guild_permissions = user.permissions
+        else:
+            guild_permissions = user.guild_permissions
 
         green_circle = '\U0001f7e2'
         red_circle = '\U0001f534'
 
-        output = []
+        output = [f"**Permissions for {user.mention}**"]
         for i in sorted(dir(channel_permissions)):
             cp = getattr(channel_permissions, i, None)
             gp = getattr(guild_permissions, i, None)
@@ -45,7 +49,7 @@ class RoleCommands(utils.Cog):
                     output.append(f"Guild({green_circle if gp else red_circle}) Channel(\U00002716) - **{permission_name}**")
                 else:
                     output.append(f"Guild({green_circle if gp else red_circle}) Channel({green_circle if cp else red_circle}) - **{permission_name}**")
-        await ctx.send('\n'.join(output))
+        await ctx.send('\n'.join(output), allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
 
     @utils.command()
     @commands.has_permissions(manage_messages=True)
