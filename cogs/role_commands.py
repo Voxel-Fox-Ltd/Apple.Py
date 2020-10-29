@@ -34,22 +34,27 @@ class RoleCommands(utils.Cog):
         else:
             guild_permissions = user.guild_permissions
 
+        # Set up some perms baybeee
         green_circle = '\U0001f7e2'
         red_circle = '\U0001f534'
+        cross_emoji = '\U00002716'
+        base_permissions = discord.Permissions(2080831743)
 
-        output = [f"**Permissions for {user.mention}**"]
-        for i in sorted(dir(channel_permissions)):
-            gp = getattr(guild_permissions, i, None)
-            cp = getattr(channel_permissions, i, None)
+        output = [f"**Permissions for {user.mention}**" if channel == ctx.channel else f"**Permissions for {user.mention} in {channel.mention}**"]
+        for permission_api_name, o in base_permissions:
+            if o is False:
+                continue
+            has_guild_permission = getattr(guild_permissions, permission_api_name, None)
+            has_channel_permission = getattr(channel_permissions, permission_api_name, None)
 
             # if isinstance(cp, bool):
-            permission_name = i.title().replace('Vc', 'VC').replace('Tts', 'TTS').replace('_', ' ')
-            if i in ['connect', 'view_channel']:
+            permission_name = permission_api_name.title().replace('Vc', 'VC').replace('Tts', 'TTS').replace('_', ' ')
+            if permission_api_name in ['connect', 'view_channel']:
                 continue
-            if i in ['deafen_members', 'move_members', 'mute_members', 'priority_speaker', 'speak', 'stream', 'use_voice_activation'] or cp is None:
-                output.append(f"Guild({green_circle if gp else red_circle}) Channel(\U00002716) - **{permission_name}**")
+            # elif permission_api_name in ['deafen_members', 'move_members', 'mute_members', 'priority_speaker', 'speak', 'stream', 'use_voice_activation'] or has_channel_permission is None:
+            #     output.append(f"Guild({green_circle if has_guild_permission else red_circle}) Channel({cross_emoji}) - **{permission_name}**")
             else:
-                output.append(f"Guild({green_circle if gp else red_circle}) Channel({green_circle if cp else red_circle}) - **{permission_name}**")
+                output.append(f"Guild({green_circle if has_guild_permission else red_circle}) Channel({green_circle if has_channel_permission is True else red_circle if has_channel_permission is False else cross_emoji}) - **{permission_name}**")
         await ctx.send('\n'.join(output), allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
 
     @utils.command()
