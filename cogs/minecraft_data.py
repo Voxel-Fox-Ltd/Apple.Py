@@ -17,10 +17,6 @@ class MinecraftData(utils.Cog):
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
-        pass
-
-    def cog_unload(self):
-        pass
 
     @utils.command(aliases=['mcstats', 'mcserver', 'mcserverstats'])
     @commands.bot_has_permissions(send_messages=True)
