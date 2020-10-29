@@ -22,7 +22,7 @@ class RoleCommands(utils.Cog):
     @utils.command()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def permissions(self, ctx:utils.Context, user:[discord.Member, discord.Role], channel:typing.Optional[discord.TextChannel]):
+    async def permissions(self, ctx:utils.Context, user:typing.Union[discord.Member, discord.Role], channel:typing.Optional[discord.TextChannel]):
         """See all the permissions for a given user"""
 
         if channel is None:
