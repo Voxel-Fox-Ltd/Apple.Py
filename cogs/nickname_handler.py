@@ -176,6 +176,8 @@ class NicknameHandler(utils.Cog):
     async def fix_user_nickname(self, user:discord.Member, *, force_to_animal:bool=False) -> str:
         """Fix the nickname of a user"""
 
+        current_name = user.nick or user.name
+        
         # See if we should even bother trying to translate it
         if force_to_animal is False:
 
@@ -186,7 +188,6 @@ class NicknameHandler(utils.Cog):
             translator = str.maketrans(replacements)
 
             # Try and fix their name
-            current_name = user.nick or user.name
             new_name_with_zalgo = current_name.translate(translator)
             new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
 
