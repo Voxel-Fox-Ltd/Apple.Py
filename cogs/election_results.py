@@ -66,47 +66,50 @@ class ElectionResults(utils.Cog):
             embed.title = "The US Election Results - Live Updating"
 
             # Add presidential votes
+            total = sum([i for i in data['president'].values() if isinstance(i, (int, float))])
             dem = data['president']['called-d']
-            dem_percentage = dem * 100 / sum(data['president'].values())
+            dem_percentage = dem * 100 / total
             rep = data['president']['called-r']
-            rep_percentage = rep * 100 / sum(data['president'].values())
-            majority = math.ceil((sum(data['president'].values()) / 2) + 0.1)
+            rep_percentage = rep * 100 / total
+            majority = math.ceil((total / 2) + 0.1)
             embed.add_field(
                 "Presidential Votes", (
                     f"\N{LARGE BLUE CIRCLE} (`JB`) **{dem} votes** ({dem_percentage:.1f}% of votes) {EXCLAIM if dem > rep else ''}\n"
                     f"\N{LARGE RED CIRCLE} (`DT`) **{rep} votes** ({rep_percentage:.1f}% of votes){EXCLAIM if rep > dem else ''}\n"
-                    f"({dem + rep} Electoral College votes counted of {sum(data['president'].values())} votes total, {majority} needed for a majority)\n"
+                    f"({dem + rep} Electoral College votes counted of {total} votes total, {majority} needed for a majority)\n"
                 ),
                 inline=False,
             )
             embed.colour = int(format(int(255 * (rep_percentage or 50) / 100), '02X') + '00' + format(int(255 * (dem_percentage or 50) / 100), '02X'), 16)
 
             # Add senate seats
+            total = sum([i for i in data['senate'].values() if isinstance(i, (int, float))])
             dem = data['senate']['called-d'] + data['senate']['seated-d']
-            dem_percentage = dem * 100 / sum(data['senate'].values())
+            dem_percentage = dem * 100 / total
             rep = data['senate']['called-r'] + data['senate']['seated-r']
-            rep_percentage = rep * 100 / sum(data['senate'].values())
-            majority = math.ceil((sum(data['senate'].values()) / 2) + 0.1)
+            rep_percentage = rep * 100 / total
+            majority = math.ceil((total / 2) + 0.1)
             embed.add_field(
                 "Senate Seats", (
                     f"\N{LARGE BLUE CIRCLE} (`DEM`) **{dem} seats** ({dem_percentage:.1f}% of seats) {EXCLAIM if dem > rep else ''}\n"
                     f"\N{LARGE RED CIRCLE} (`REP`) **{rep} seats** ({rep_percentage:.1f}% of seats){EXCLAIM if rep > dem else ''}\n"
-                    f"({dem + rep} seats filled of {sum(data['senate'].values())} seats total, {majority} needed for a majority)\n"
+                    f"({dem + rep} seats filled of {total} seats total, {majority} needed for a majority)\n"
                 ),
                 inline=False,
             )
 
             # Add house seats
+            total = sum([i for i in data['house'].values() if isinstance(i, (int, float))])
             dem = data['house']['called-d']
-            dem_percentage = dem * 100 / sum(data['house'].values())
+            dem_percentage = dem * 100 / total
             rep = data['house']['called-r']
-            rep_percentage = rep * 100 / sum(data['house'].values())
-            majority = math.ceil((sum(data['house'].values()) / 2) + 0.1)
+            rep_percentage = rep * 100 / total
+            majority = math.ceil((total / 2) + 0.1)
             embed.add_field(
                 "House Seats", (
                     f"\N{LARGE BLUE CIRCLE} (`DEM`) **{dem} seats** ({dem_percentage:.1f}% of seats) {EXCLAIM if dem > rep else ''}\n"
                     f"\N{LARGE RED CIRCLE} (`REP`) **{rep} seats** ({rep_percentage:.1f}% of seats){EXCLAIM if rep > dem else ''}\n"
-                    f"({dem + rep} seats filled of {sum(data['house'].values())} seats total, {majority} needed for a majority)\n"
+                    f"({dem + rep} seats filled of {total} seats total, {majority} needed for a majority)\n"
                 ),
                 inline=False,
             )
@@ -114,7 +117,7 @@ class ElectionResults(utils.Cog):
             # Add winners
             async with self.bot.session.get("https://www.politico.com/2020-national-results/president-overall.json", headers=HEADERS) as r:
                 data = await r.json()
-            stateEmbed = utils.Embed(title="Votes By State")
+            state_embed = utils.Embed(title="Votes By State")
             state_fips = await self.get_state_fips()
             candidates = await self.get_candidates()
             for state in data['races']:
@@ -133,16 +136,18 @@ class ElectionResults(utils.Cog):
                         win_string_list.append(win_string)
                 if not win_string_list:
                     continue
-                stateEmbed.add_field(state_fips.get(state['stateFips']), '\n'.join(win_string_list), inline=False)
+                state_embed.add_field(state_fips.get(state['stateFips']), '\n'.join(win_string_list), inline=False)
 
             # And stuff here
             embed.timestamp = dt.utcnow()
             embed.set_footer(text="Provided by Politico.com")
+            state_embed.timestamp = dt.utcnow()
+            state_embed.set_footer(text="Provided by Politico.com")
 
         # And edit
         m, n = await self.get_messages()
         try:
-            await m.edit(content=None, embed=stateEmbed)
+            await m.edit(content=None, embed=state_embed)
         except discord.HTTPException:
             pass
         try:
