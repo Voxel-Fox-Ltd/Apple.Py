@@ -129,14 +129,13 @@ class ElectionResults(utils.Cog):
                     if c['vote'] == 0:
                         continue
                     candy = candidates.get(c['candidateID'], ('Unknown', '???'))
-                    win_string = f"`{candy[1]}` - {c['vote']} votes"
+                    win_string = f"`{candy[1]}` - {c['vote']:,} votes"
                     if c['winner']:
-                        win_string_list.insert(0, win_string + ' (winner)')
-                    else:
-                        win_string_list.append(win_string)
+                        win_string += ' (winner)'
+                    win_string_list.append(win_string)
                 if not win_string_list:
                     continue
-                state_embed.add_field(state_fips.get(state['stateFips']), '\n'.join(win_string_list), inline=False)
+                state_embed.add_field(state_fips.get(state['stateFips']), '\n'.join(sorted(win_string_list)), inline=False)
 
             # And stuff here
             embed.timestamp = dt.utcnow()
