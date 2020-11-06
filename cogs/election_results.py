@@ -129,6 +129,8 @@ class ElectionResults(utils.Cog):
                     if c['vote'] == 0:
                         continue
                     candy = candidates.get(c['candidateID'], ('Unknown', '???'))
+                    if candy[1] not in ["GOP", "DEM"]:
+                        continue
                     win_string = f"`{candy[1]}` - {c['vote']:,} votes"
                     if c['winner']:
                         win_string += ' (winner)'
