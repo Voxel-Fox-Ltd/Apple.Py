@@ -24,7 +24,7 @@ class WolframAlpha(utils.Cog):
             data = json.loads(await r.text())
         try:
             pod = data['queryresult']['pods'][1]
-            await ctx.send(pod['subpods'][0]['img'])
+            # await ctx.send(pod['subpods'][0]['img'])
             return await ctx.send(embed=utils.Embed(title=pod['title'], use_random_colour=True).set_image(pod['subpods'][0]['img']['src']))
         except (KeyError, IndexError):
             return await ctx.send("No results for that query!")
