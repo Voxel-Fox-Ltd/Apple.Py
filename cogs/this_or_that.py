@@ -16,6 +16,8 @@ class ThisOrThat(utils.Cog):
         690477072270753792,  # Honey
         598553427592871956,  # Profile
         760903667246432257,  # SimpTracker
+        468281173072805889,  # MarriageBot
+        723813550136754216,  # StalkerBot
     )
 
     @utils.command(hidden=True, aliases=['tot'])
