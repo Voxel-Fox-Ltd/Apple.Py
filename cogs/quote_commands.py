@@ -106,15 +106,21 @@ class QuoteCommands(utils.Cog):
             embed.timestamp = timestamp
 
         # See if we should bother saving it
+        async with self.bot.database() as db:
+            rows = await db(
+                "SELECT * FROM guild_settings WHERE guild_id=$1",
+                ctx.guild.id
+            )
+        reactions_needed = rows[0]['quote_reactions_needed']
         ask_to_save_message = await ctx.send(
-            "Should I save this quote? If I receive 3x\N{THUMBS UP SIGN} reactions in the next 60 seconds, the quote will be saved.",
+            f"Should I save this quote? If I receive {str(reactions_needed)}x\N{THUMBS UP SIGN} reactions in the next 60 seconds, the quote will be saved.",
             embed=embed,
         )
         await ask_to_save_message.add_reaction("\N{THUMBS UP SIGN}")
         try:
             await self.bot.wait_for(
                 "reaction_add",
-                check=lambda r, _: r.message.id == ask_to_save_message.id and str(r.emoji) == "\N{THUMBS UP SIGN}" and r.count >= 4,
+                check=lambda r, _: r.message.id == ask_to_save_message.id and str(r.emoji) == "\N{THUMBS UP SIGN}" and r.count >= {int(reactions_needed) + 1},
                 timeout=60,
             )
         except asyncio.TimeoutError:
