@@ -70,6 +70,10 @@ class ThisOrThat(utils.Cog):
             await ask_message.edit(content=f"{ctx.author.mention} has voted that they prefer <@{choice}>! Run `{ctx.clean_prefix}thisorthat` yourself to vote.")
         except discord.HTTPException:
             pass
+        try:
+            await ask_message.clear_reactions()
+        except discord.HTTPException:
+            pass
 
 
 def setup(bot:utils.Bot):
