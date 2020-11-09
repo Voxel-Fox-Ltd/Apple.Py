@@ -76,10 +76,6 @@ class ThisOrThat(utils.Cog):
             await ask_message.clear_reactions()
         except discord.HTTPException:
             pass
-        try:
-            await ask_message.delete(delay=30)
-        except discord.HTTPException:
-            pass
 
 
 def setup(bot:utils.Bot):
