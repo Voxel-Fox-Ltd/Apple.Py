@@ -51,8 +51,8 @@ class ThisOrThat(utils.Cog):
 
         # Save response to database
         choice = {
-            "1\N{COMBINING ENCLOSING KEYCAP}": choice_one
-            "2\N{COMBINING ENCLOSING KEYCAP}": choice_two
+            "1\N{COMBINING ENCLOSING KEYCAP}": choice_one,
+            "2\N{COMBINING ENCLOSING KEYCAP}": choice_two,
         }[str(reaction.emoji)]
         async with self.bot.database() as db:
             await db(
