@@ -56,6 +56,7 @@ class ThisOrThat(utils.Cog):
             "1\N{COMBINING ENCLOSING KEYCAP}": choice_one,
             "2\N{COMBINING ENCLOSING KEYCAP}": choice_two,
         }[str(reaction.emoji)]
+        self.logger.info("Saving thisorthat reaction to database")
         async with self.bot.database() as db:
             await db(
                 """INSERT INTO this_or_that (compare_1, compare_2, choice, user_id) VALUES ($1, $2, $3, $4)
@@ -64,8 +65,9 @@ class ThisOrThat(utils.Cog):
             )
 
         # Edit message
+        self.logger.info("Editing thisorthat message")
         try:
-            await ask_message.edit(f"{ctx.author.mention} has voted that they prefer <@{choice}>! Run `{ctx.clean_prefix}thisorthat` yourself to vote.")
+            await ask_message.edit(content=f"{ctx.author.mention} has voted that they prefer <@{choice}>! Run `{ctx.clean_prefix}thisorthat` yourself to vote.")
         except discord.HTTPException:
             pass
 
