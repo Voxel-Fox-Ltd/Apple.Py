@@ -1,3 +1,4 @@
+import asyncio
 import random
 
 from discord.ext import commands
@@ -17,7 +18,7 @@ class ThisOrThat(utils.Cog):
         760903667246432257,  # SimpTracker
     )
 
-    @utils.command(hidden=True)
+    @utils.command(hidden=True, aliases=['tot'])
     @commands.bot_has_permissions(send_messages=True, add_reactions=True)
     async def thisorthat(self, ctx:utils.Context):
         """
@@ -42,7 +43,7 @@ class ThisOrThat(utils.Cog):
         # Wait for response
         try:
             check = lambda r, u: str(r.emoji) in ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}"] and u.id == ctx.author.id and r.message.id == ask_message.id
-            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=30)
+            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=15)
         except asyncio.TimeoutError:
             try:
                 await ask_message.delete()
@@ -61,6 +62,12 @@ class ThisOrThat(utils.Cog):
                 ON CONFLICT (compare_1, compare_2, user_id) DO UPDATE SET choice=excluded.choice""",
                 choice_one, choice_two, choice, ctx.author.id
             )
+
+        # Edit message
+        try:
+            await ask_message.edit(f"{ctx.author.mention} has voted that they prefer <@{choice}>! Run `{ctx.clean_prefix}thisorthat` yourself to vote.")
+        except discord.HTTPException:
+            pass
 
 
 def setup(bot:utils.Bot):
