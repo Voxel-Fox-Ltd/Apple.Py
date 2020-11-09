@@ -69,3 +69,12 @@ CREATE TABLE IF NOT EXISTS user_points(
     points INTEGER DEFAULT 0,
     PRIMARY KEY (guild_id, user_id)
 );
+
+
+CREATE TABLE IF NOT EXISTS this_or_that(
+    compare_1 BIGINT,
+    compare_2 BIGINT,
+    choice BIGINT,
+    user_id BIGINT,
+    PRIMARY KEY (compare_1, compare_2, user_id)
+);

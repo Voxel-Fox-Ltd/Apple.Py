@@ -10,7 +10,7 @@ class VcChatUpdate(utils.Cog):
     NO_MIC_CHANNEL = 646155412692926475
     PART1 = ('voice', 'voiced', 'vocal', 'voiceable', 'vixen', 'vc', 'voie', 'vampire',)
     PART2 = ('chat', 'cat', 'c', 'cats', 'chatting', 'cool', 'xhta',)
-    PART3 = ('no', 'n', 'negative', 'nine', 'none',)
+    PART3 = ('no', 'n', 'negative', 'nine', 'none', 'nicotine', 'native', 'nugget', 'nocturnal',)
     PART4 = ('mic', 'microphone', 'mitchell', 'michelle', 'michael', 'mikey', 'monkey', 'schlopp', 'megan', 'mice', 'micloryphe', 'microwave',)
 
     def __init__(self, bot:utils.Bot):
