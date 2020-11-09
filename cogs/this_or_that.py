@@ -35,7 +35,7 @@ class ThisOrThat(utils.Cog):
 
         # Ask which they want
         ask_message = await ctx.send((
-            f"Which bot do you prefer?\n"
+            f"Which bot do you prefer, {ctx.author.mention}?\n"
             f"1\N{COMBINING ENCLOSING KEYCAP} <@{choice_one}>\n"
             f"2\N{COMBINING ENCLOSING KEYCAP} <@{choice_two}>\n"
         ))
@@ -74,6 +74,10 @@ class ThisOrThat(utils.Cog):
             pass
         try:
             await ask_message.clear_reactions()
+        except discord.HTTPException:
+            pass
+        try:
+            await ask_message.delete(delay=30)
         except discord.HTTPException:
             pass
 
