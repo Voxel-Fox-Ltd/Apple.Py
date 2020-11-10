@@ -109,23 +109,24 @@ class QuoteCommands(utils.Cog):
         async with self.bot.database() as db:
             rows = await db("SELECT * FROM guild_settings WHERE guild_id = $1", ctx.guild.id)
         reactions_needed = rows[0]['quote_reactions_needed']
-        ask_to_save_message = await ctx.send(
-            f"Should I save this quote? If I receive {reactions_needed}x\N{THUMBS UP SIGN} reactions in the next 60 seconds, the quote will be saved.",
-            embed=embed,
-        )
-        await ask_to_save_message.add_reaction("\N{THUMBS UP SIGN}")
-        try:
-            await self.bot.wait_for(
-                "reaction_add",
-                check=lambda r, _: r.message.id == ask_to_save_message.id and str(r.emoji) == "\N{THUMBS UP SIGN}" and r.count >= reactions_needed + 1,
-                timeout=60,
+        if reactions_needed > 0:
+            ask_to_save_message = await ctx.send(
+                f"Should I save this quote? If I receive {reactions_needed}x\N{THUMBS UP SIGN} reactions in the next 60 seconds, the quote will be saved.",
+                embed=embed,
             )
-        except asyncio.TimeoutError:
+            await ask_to_save_message.add_reaction("\N{THUMBS UP SIGN}")
             try:
-                await ask_to_save_message.delete()
-            except discord.HTTPException:
-                pass
-            return await ctx.send(f"_Not_ saving the quote asked by {ctx.author.mention} - not enough reactions received.", ignore_error=True)
+                await self.bot.wait_for(
+                    "reaction_add",
+                    check=lambda r, _: r.message.id == ask_to_save_message.id and str(r.emoji) == "\N{THUMBS UP SIGN}" and r.count >= reactions_needed + 1,
+                    timeout=60,
+                )
+            except asyncio.TimeoutError:
+                try:
+                    await ask_to_save_message.delete()
+                except discord.HTTPException:
+                    pass
+                return await ctx.send(f"_Not_ saving the quote asked by {ctx.author.mention} - not enough reactions received.", ignore_error=True)
 
         # If we get here, we can save to db
         try:
@@ -202,16 +203,16 @@ class QuoteCommands(utils.Cog):
 
         # Grab data from db
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
+            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1 and guild_id=$2", quote_id.lower(), ctx.guild.id)
         if not rows:
-            return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
+            return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}` in this server.")
 
         # Insert alias into db
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM quote_aliases WHERE alias=$1", alias)
+            rows = await db("SELECT * FROM quote_aliases WHERE alias=$1 and guild_id = $2", alias, ctx.guild.id)
             if rows:
                 return await ctx.send(f"The alias `{alias}` is already being used.")
-            await db("INSERT INTO quote_aliases (quote_id, alias) VALUES ($1, $2)", quote_id.lower(), alias.lower())
+            await db("INSERT INTO quote_aliases (quote_id, alias, guild_id) VALUES ($1, $2, $3)", quote_id.lower(), alias.lower(), ctx.guild.id)
         await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
     @alias.command(name='remove', aliases=['delete'])
@@ -222,8 +223,16 @@ class QuoteCommands(utils.Cog):
 
         # Grab data from db
         async with self.bot.database() as db:
-            await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
+            await db("DELETE FROM quote_aliases WHERE alias=$1 and guild_id = $2", alias.lower(), ctx.guild.id)
         return await ctx.send(f"Deleted alias `{alias.upper()}`.")
+
+    @alias.command(name='list')
+    #@commands.has_permissions(manage_guild=True)
+    @commands.bot_has_permissions(send_messages=True)
+    async def alias_list(self, ctx:utils.Context):
+        """Lists all the existing aliases by invoking runsql"""
+
+        await ctx.invoke(self.bot.get_command('runsql'), sql=f"SELECT * FROM quote_aliases WHERE guild_id ={ctx.guild.id}")
 
     @quote.command(enabled=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
