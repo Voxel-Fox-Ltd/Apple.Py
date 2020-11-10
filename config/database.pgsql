@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS guild_settings(
     rainbow_line_autodelete BOOLEAN DEFAULT FALSE,
     leaderboard_message_url VARCHAR(150),
     dump_stackoverflow_answers BOOLEAN DEFAULT FALSE,
-    nickname_banned_role_id BIGINT
+    nickname_banned_role_id BIGINT,
+    quote_reactions_needed SMALLINT DEFAULT 3
 );
 
 
