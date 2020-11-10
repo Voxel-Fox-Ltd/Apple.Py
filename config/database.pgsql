@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS user_quotes(
 
 CREATE TABLE IF NOT EXISTS quote_aliases(
     alias VARCHAR(2000) PRIMARY KEY,
-    quote_id VARCHAR(5) REFERENCES user_quotes(quote_id) ON DELETE CASCADE
+    quote_id VARCHAR(5) REFERENCES user_quotes(quote_id) ON DELETE CASCADE,
+    guild_id BIGINT
 );
 
 
