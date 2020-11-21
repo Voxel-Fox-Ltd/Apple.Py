@@ -26,6 +26,11 @@ class BotSettings(utils.Cog):
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'quote_channel_id'),
             },
             {
+                'display': lambda c: "Set reactions needed for quote (currently {0})".format(settings_mention(c, 'quote_reactions_needed')),
+                'converter_args': [("How many reactions should a message get to get quoted?", "reactions needed", int)],
+                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'quote_reactions_needed'),
+            },
+            {
                 'display': lambda c: "Set automatic nickname fixer (currently {0})".format(c.bot.guild_settings[c.guild.id]['automatic_nickname_update']),
                 'converter_args': [("Do you want to enable automatic nickname fixing?", "auto nickname", utils.converters.BooleanConverter)],
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'automatic_nickname_update'),

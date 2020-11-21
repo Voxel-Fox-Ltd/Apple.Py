@@ -126,6 +126,24 @@ class MiscCommands(utils.Cog):
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_image(url=f'https://http.cat/{errorcode}')
         await ctx.send(embed=embed)
+        
+    @utils.command()
+    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    async def httpdog(self, ctx:utils.Context, errorcode:int):
+        """Gives you a dog based on a HTTP error code"""
+
+        await ctx.channel.trigger_typing()
+        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg", headers=headers) as r:
+            if r.status == 404:
+                await ctx.send('That HTTP code doesnt exist.')
+                return
+            if r.status != 200:
+                await ctx.send('Something else went wrong, try again later.')
+                return
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_image(url=f'https://httpstatusdogs.com/img/{errorcode}.jpg')
+        await ctx.send(embed=embed)
 
     @utils.command(aliases=['pip'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
