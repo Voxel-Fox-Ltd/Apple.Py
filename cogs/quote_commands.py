@@ -191,6 +191,37 @@ class QuoteCommands(utils.Cog):
         # Output to user
         return await ctx.send(embed=message.embeds[0])
 
+    @quote.command()
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def random(self, ctx:utils.Context, user:discord.User=None):
+        """Gets a random quote for a given user"""
+
+        # Get quote from database
+        user = user or ctx.author
+        async with self.bot.database() as db:
+            quote_rows = await db(
+                """SELECT quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes WHERE user_id=$1 ORDER BY RANDOM() LIMIT 1""",
+                user.id,
+            )
+        if not quote_rows:
+            return await ctx.send(f"{user.mention} has no available quotes.", allowed_mentions=discord.AllowedMentions.none())
+
+        # Get the message
+        data = quote_rows[0]
+        if data['channel_id'] is None:
+            return await ctx.send("There's no quote channel set for that quote.")
+        channel = self.bot.get_channel(data['channel_id'])
+        if channel is None:
+            return await ctx.send("I wasn't able to get your quote channel.")
+        try:
+            message = await channel.fetch_message(data['message_id'])
+            assert message is not None
+        except (AssertionError, discord.HTTPException):
+            return await ctx.send("I wasn't able to get your quote message.")
+
+        # Output to user
+        return await ctx.send(embed=message.embeds[0])
+
     @quote.group(invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
