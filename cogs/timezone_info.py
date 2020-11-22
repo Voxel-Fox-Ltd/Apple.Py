@@ -42,8 +42,8 @@ class TimezoneInfo(utils.Cog):
 
         # Okay sick let's try and work out how far off we are
         now = dt.utcnow()
-        hour_offset = now.hour - hour
-        minute_offset = 15 * round((now.minute - minute) / 15)
+        hour_offset = hour - now.hour
+        minute_offset = 15 * round((minute - now.minute) / 15)
         # total_minute_offset = (hour_offset * 60) + minute_offset
         return await ctx.send(f"Oki so I reckon you're UTC{hour_offset:=+03d}:{minute_offset:=02d}")
 
