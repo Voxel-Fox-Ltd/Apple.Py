@@ -1,7 +1,8 @@
 import re
 import asyncio
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 
+import discord
 import voxelbotutils as utils
 
 
@@ -44,8 +45,29 @@ class TimezoneInfo(utils.Cog):
         now = dt.utcnow()
         hour_offset = hour - now.hour
         minute_offset = 15 * round((minute - now.minute) / 15)
-        # total_minute_offset = (hour_offset * 60) + minute_offset
-        return await ctx.send(f"Oki so I reckon you're UTC{hour_offset:=+03d}:{minute_offset:=02d}")
+        total_minute_offset = (hour_offset * 60) + minute_offset
+
+        # Store it in the database
+        async with self.bot.database() as db:
+            await db(
+                """INSERT INTO user_settings (user_id, timezone_offset) VALUES ($1, $2) ON CONFLICT (user_id)
+                DO UPDATE SET timezone_offset=excluded.timezone_offset""",
+                ctx.author.id, total_minute_offset,
+            )
+        await ctx.send(f"Oki so I reckon you're `UTC{hour_offset:=+03d}:{minute_offset:=02d}`. I've stored this in the database.")
+
+    @timezone.command(hidden=True)
+    async def get(self, ctx:utils.Context, user:discord.Member):
+        """
+        Get the current time for a given user.
+        """
+
+        # Store it in the database
+        async with self.bot.database() as db:
+            rows = await db("SELECT timezone_offset FROM user_settings WHERE user_id=$1", user.id)
+        if not rows:
+            return await ctx.send(f"{user.mention} hasn't set up their timezone information! They can set it with `{ctx.clean_prefix}timezone set`.")
+        await ctx.send(f"The current time for {user.mention} _should_ be somewhere around {(dt.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%I:%M %p')}.")
 
 
 def setup(bot:utils.Bot):
