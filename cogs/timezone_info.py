@@ -29,12 +29,12 @@ class TimezoneInfo(utils.Cog):
             await ask_message.delete()
 
         # See if their answer makes sense
-        match = re.search(r"(?P<hour>\d?\d)[:-]?(?P<minute>\d\d) ?(?P<daytime>(?:AM)|(?:PM))", response_message.content, re.IGNORECASE)
+        match = re.search(r"(?P<hour>\d?\d)[:-]?(?P<minute>\d\d) ?(?P<daytime>(?:AM)|(?:PM))?", response_message.content, re.IGNORECASE)
         if not match:
             return await ctx.send("You didn't give your time in the format provided. Please run this command again later to try again.")
         hour = int(match.group("hour"))
         minute = int(match.group("minute"))
-        daytime = match.group("daytime").lower()
+        daytime = (match.group("daytime") or "am").lower()
         if hour >= 24 or minute >= 60 or (daytime == 'am' and hour > 12):
             return await ctx.send("Hmmmmmmm that isn't a valid time. Try again later.")
         elif daytime == 'pm' and hour < 12:
