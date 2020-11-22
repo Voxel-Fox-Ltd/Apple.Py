@@ -45,7 +45,7 @@ class TimezoneInfo(utils.Cog):
         hour_offset = now.hour - hour
         minute_offset = 15 * round((now.minute - minute) / 15)
         # total_minute_offset = (hour_offset * 60) + minute_offset
-        return await ctx.send(f"Oki so I reckon you're UTC{hour_offset}:{minute_offset}")
+        return await ctx.send(f"Oki so I reckon you're UTC{hour_offset:=+03d}:{minute_offset:=02d}")
 
 
 def setup(bot:utils.Bot):
