@@ -67,7 +67,8 @@ class TimezoneInfo(utils.Cog):
             rows = await db("SELECT timezone_offset FROM user_settings WHERE user_id=$1", user.id)
         if not rows:
             return await ctx.send(f"{user.mention} hasn't set up their timezone information! They can set it with `{ctx.clean_prefix}timezone set`.")
-        await ctx.send(f"The current time for {user.mention} _should_ be somewhere around {(dt.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%I:%M %p')}.")
+        formatted_time = (dt.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%-I:%M %p')
+        await ctx.send(f"The current time for {user.mention} _should_ be somewhere around {formatted_time}.")
 
 
 def setup(bot:utils.Bot):
