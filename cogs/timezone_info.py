@@ -23,14 +23,16 @@ class TimezoneInfo(utils.Cog):
         """
 
         # Ask them the question
-        ask_message = await ctx.send(f"Hey, {ctx.author.mention}! What's your current time? Give it in the format `XX:YY AM`")
-        try:
-            response_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=30)
-        except asyncio.TimeoutError:
-            await ask_message.delete()
+        if offset is None:
+            ask_message = await ctx.send(f"Hey, {ctx.author.mention}! What's your current time? Give it in the format `XX:YY AM`")
+            try:
+                response_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=30)
+                offset = response_message.content
+            except asyncio.TimeoutError:
+                await ask_message.delete()
 
         # See if their answer makes sense
-        match = re.search(r"(?P<hour>\d?\d)[:-]?(?P<minute>\d\d) ?(?P<daytime>(?:AM)|(?:PM))?", response_message.content, re.IGNORECASE)
+        match = re.search(r"(?P<hour>\d?\d)[:-]?(?P<minute>\d\d) ?(?P<daytime>(?:AM)|(?:PM))?", offset, re.IGNORECASE)
         if not match:
             return await ctx.send("You didn't give your time in the format provided. Please run this command again later to try again.")
         hour = int(match.group("hour"))
