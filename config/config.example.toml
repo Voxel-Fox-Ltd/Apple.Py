@@ -59,7 +59,10 @@ event_webhook_url = ""  # Some events will be posted via webhook to this url
     cat_api = ""  # https://thecatapi.com
     omdb = ""
     wolfram = ""
-    dialogflow = ""
+    [api_keys.dialogflow]  # Thanks https://developers.google.com/oauthplayground/
+        client_id = ""
+        client_secret = ""
+        refresh_token = ""
 
 # This data is passed directly over to asyncpg.connect()
 [database]
