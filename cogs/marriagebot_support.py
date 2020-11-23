@@ -30,6 +30,7 @@ class MarriageBotHelper(utils.Cog):
         json.update({"grant_type": "refresh_token"})
         async with self.bot.session.post("https://oauth2.googleapis.com/token", json=json) as r:
             data = await r.json()
+        self.logger.info(f"Asked for access token, got back {data}")
         self.api_key = (data['access_token'], dt.utcnow() + timedelta(seconds=data['expires_in']))
         return self.api_key[0]
 
@@ -67,13 +68,15 @@ class MarriageBotHelper(utils.Cog):
                 },
             },
         }
+        access_token = await self.get_access_token()
         headers = {
-            "Authorization": f"Bearer {await self.get_access_token()}",
+            "Authorization": f"Bearer {access_token}",
         }
         async with self.bot.session.post(self.DIALOGFLOW_URL, json=json, headers=headers) as r:
             if r.status != 200:
                 return
             data = await r.json()
+            self.logger.info(f"Asked for dialogflow information, got back {data}")
 
         # Make sure it's right
         if data['queryResult']['intent']['name'] != self.DISOWN_USER_INTENT:
