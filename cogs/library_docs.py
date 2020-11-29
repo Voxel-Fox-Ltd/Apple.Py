@@ -58,8 +58,8 @@ class LibraryDocs(utils.Cog):
         docs = await self.get_discordjs_docs()
         outputs = []
         for key, link in docs.items():
-            if item in key:
-                if item == key:
+            if item.casefold() in key.casefold():
+                if item.casefold() == key.casefold():
                     outputs.append((key, link, 20,))
                 else:
                     outputs.append((key, link, 10,))
