@@ -59,14 +59,17 @@ class LibraryDocs(utils.Cog):
         outputs = []
         for key, link in docs.items():
             if item in key:
-                outputs.append((key, link, 10,))
+                if item == key:
+                    outputs.append((key, link, 20,))
+                else:
+                    outputs.append((key, link, 10,))
             if len(split) == 1:
                 continue
             if split[0].casefold() in key.casefold():
                 outputs.append((key, link, 5,))
             if split[1].casefold() in key.casefold():
                 outputs.append((key, link, 3,))
-        outputs.sort(key=lambda i: i[-1])
+        outputs.sort(key=lambda i: (i[2], i[0]))
         embed = utils.Embed(use_random_colour=True)
         description = ""
         for line in outputs[:10]:
