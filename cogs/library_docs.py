@@ -66,7 +66,7 @@ class LibraryDocs(utils.Cog):
                 outputs.append((key, link, 5,))
             if split[1] in key:
                 outputs.append((key, link, 3,))
-        outputs.sort(lambda i: i[-1])
+        outputs.sort(key=lambda i: i[-1])
         embed = utils.Embed(use_random_colour=True)
         description = ""
         for line in outputs[:10]:
