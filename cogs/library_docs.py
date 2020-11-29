@@ -57,7 +57,7 @@ class LibraryDocs(utils.Cog):
         split = item.split('.')
         docs = await self.get_discordjs_docs()
         outputs = []
-        for key, link in docs:
+        for key, link in docs.items():
             if item in key:
                 outputs.append((key, link, 10,))
             if len(split) == 1:
