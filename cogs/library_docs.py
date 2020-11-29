@@ -23,14 +23,14 @@ class LibraryDocs(utils.Cog):
         cache = {}
 
         for clazz in data['classes']:
-            cache[clazz['name']] = clazz['name']
+            cache[clazz['name']] = f"class/{clazz['name']}"
             for p in clazz.get('props', list()) + clazz.get('methods', list()):
                 if p['name'].startswith('_'):
                     continue
                 cache[f"{clazz['name']}.{p['name']}"] = f"class/{clazz['name']}?scrollTo={p['name']}"
 
-        for clazz in data['interfaces']:
-            cache[clazz['name']] = clazz['name']
+        for clazz in data['typedefs']:
+            cache[clazz['name']] = f"typedef/{clazz['name']}"
             for p in clazz.get('props', list()) + clazz.get('methods', list()):
                 if p['name'].startswith('_'):
                     continue
@@ -54,27 +54,32 @@ class LibraryDocs(utils.Cog):
         Get an item from the Discord.js documentation.
         """
 
-        split = item.split('.')
+        item_casefold = item.casefold()
+        split = item_casefold.split('.')
         docs = await self.get_discordjs_docs()
         outputs = []
+
         for key, link in docs.items():
-            if item.casefold() in key.casefold():
-                if item.casefold() == key.casefold():
+            key_casefold = key.casefold()
+            if item_casefold in key_casefold:
+                if item_casefold == key_casefold:
                     outputs.append((key, link, 20,))
                 else:
                     outputs.append((key, link, 10,))
             if len(split) == 1:
                 continue
-            if split[0].casefold() in key.casefold():
+            if split[0] in key_casefold:
                 outputs.append((key, link, 5,))
-            if split[1].casefold() in key.casefold():
+            if split[1] in key_casefold:
                 outputs.append((key, link, 3,))
+
         outputs.sort(key=lambda i: (i[2], i[0]))
         embed = utils.Embed(use_random_colour=True)
         description = ""
         for line in outputs[:10]:
             description += f"[`{line[0]}`](https://discord.js.org/#/docs/main/stable/{line[1]})\n"
         embed.description = description
+
         await ctx.send(embed=embed)
 
 
