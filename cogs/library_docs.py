@@ -1,3 +1,5 @@
+import json
+
 from discord.ext import commands
 import voxelbotutils as utils
 
@@ -15,7 +17,8 @@ class LibraryDocs(utils.Cog):
             return self.DISCORDJS_DOCS
 
         async with self.bot.session.get("https://raw.githubusercontent.com/discordjs/discord.js/docs/stable.json") as r:
-            data = await r.json()
+            body = await r.text()
+        data = json.loads(body)
 
         cache = {}
 
