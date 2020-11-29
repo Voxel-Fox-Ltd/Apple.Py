@@ -62,17 +62,17 @@ class LibraryDocs(utils.Cog):
                 outputs.append((key, link, 10,))
             if len(split) == 1:
                 continue
-            if split[0] in key:
+            if split[0].casefold() in key.casefold():
                 outputs.append((key, link, 5,))
-            if split[1] in key:
+            if split[1].casefold() in key.casefold():
                 outputs.append((key, link, 3,))
         outputs.sort(key=lambda i: i[-1])
         embed = utils.Embed(use_random_colour=True)
         description = ""
         for line in outputs[:10]:
             description += f"[`{line[0]}`](https://discord.js.org/#/docs/main/stable/{line[1]})\n"
-        emebd.description = description
-        await ctx.send(embed=emebd)
+        embed.description = description
+        await ctx.send(embed=embed)
 
 
 def setup(bot:utils.Bot):
