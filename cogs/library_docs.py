@@ -170,18 +170,33 @@ class LibraryDocs(utils.Cog):
                     obj = f'abc.Messageable.{name}'
                     break
 
-        cache = list(self._rtfm_cache[key].items())
-        def transform(tup):
-            return tup[0]
+        matches = fuzzy.finder(obj, cache)[:8]
 
-        matches = fuzzy.finder(obj, cache, key=lambda t: t[0], lazy=False)[:8]
+        item_casefold = item.casefold()
+        split = item_casefold.split('.')
+        outputs = []
+
+        for key, link in self._rtfm_cache[key].items():
+            key_casefold = key.casefold()
+            if item_casefold in key_casefold:
+                if item_casefold == key_casefold:
+                    outputs.append((key, link, 20,))
+                else:
+                    outputs.append((key, link, 10,))
+            if len(split) == 1:
+                continue
+            if split[0] in key_casefold:
+                outputs.append((key, link, 5,))
+            if split[1] in key_casefold:
+                outputs.append((key, link, 3,))
 
         embed = utils.Embed(use_random_colour=True)
-        if len(matches) == 0:
+        if len(outputs) == 0:
             return await ctx.send('Could not find anything. Sorry.')
 
-        e.description = '\n'.join(f'[`{key}`]({url})' for key, url in matches)
-        await ctx.send(embed=e)
+        outputs.sort(key=lambda i: (i[2], i[0]))
+        embed.description = '\n'.join(f'[`{key}`]({url})' for key, url, _ in outputs)
+        await ctx.send(embed=embed)
 
     @utils.group()
     async def rtfm(self, ctx):
