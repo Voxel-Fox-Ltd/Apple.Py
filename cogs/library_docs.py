@@ -170,8 +170,6 @@ class LibraryDocs(utils.Cog):
                     obj = f'abc.Messageable.{name}'
                     break
 
-        matches = fuzzy.finder(obj, cache)[:8]
-
         item_casefold = item.casefold()
         split = item_casefold.split('.')
         outputs = []
@@ -195,7 +193,7 @@ class LibraryDocs(utils.Cog):
             return await ctx.send('Could not find anything. Sorry.')
 
         outputs.sort(key=lambda i: (i[2], i[0]))
-        embed.description = '\n'.join(f'[`{key}`]({url})' for key, url, _ in outputs)
+        embed.description = '\n'.join(f'[`{key}`]({url})' for key, url, _ in outputs[:8])
         await ctx.send(embed=embed)
 
     @utils.group()
