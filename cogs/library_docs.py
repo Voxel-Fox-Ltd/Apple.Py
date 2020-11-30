@@ -192,7 +192,7 @@ class LibraryDocs(utils.Cog):
         if len(outputs) == 0:
             return await ctx.send('Could not find anything. Sorry.')
 
-        outputs.sort(key=lambda i: (i[2], i[0]))
+        outputs.sort(key=lambda i: (i[2], i[0]), reverse=True)
         embed.description = '\n'.join(f'[`{key}`]({url})' for key, url, _ in outputs[:8])
         await ctx.send(embed=embed)
 
@@ -230,7 +230,7 @@ class LibraryDocs(utils.Cog):
             if split[1] in key_casefold:
                 outputs.append((key, link, 3,))
 
-        outputs.sort(key=lambda i: (i[2], i[0]))
+        outputs.sort(key=lambda i: (i[2], i[0]), reverse=True)
         embed = utils.Embed(use_random_colour=True)
         description = ""
         for line in outputs[:8]:
