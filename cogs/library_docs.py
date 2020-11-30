@@ -4,6 +4,7 @@ import zlib
 import re
 import os
 
+import discord
 from discord.ext import commands
 import voxelbotutils as utils
 
