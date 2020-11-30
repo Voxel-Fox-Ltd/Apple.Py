@@ -170,7 +170,7 @@ class LibraryDocs(utils.Cog):
                     obj = f'abc.Messageable.{name}'
                     break
 
-        item_casefold = item.casefold()
+        item_casefold = obj.casefold()
         split = item_casefold.split('.')
         outputs = []
 
