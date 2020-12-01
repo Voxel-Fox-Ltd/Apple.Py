@@ -134,7 +134,7 @@ class MiscCommands(utils.Cog):
 
         await ctx.channel.trigger_typing()
         headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
-        async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg", headers=headers, follow_redirects=False) as r:
+        async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg", headers=headers, allow_redirects=False) as r:
             if str(r.status)[0] != "2":
                 return await ctx.send("That HTTP code doesnt exist.")
         with utils.Embed(use_random_colour=True) as embed:
