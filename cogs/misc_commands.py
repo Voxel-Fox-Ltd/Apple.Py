@@ -135,7 +135,7 @@ class MiscCommands(utils.Cog):
         await ctx.channel.trigger_typing()
         headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
         async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg", headers=headers) as r:
-            if r.status == 404:
+            if r.status == 404 or r.url == 'https://httpstatusdogs.com/404-not-found':
                 await ctx.send('That HTTP code doesnt exist.')
                 return
             if r.status != 200:
