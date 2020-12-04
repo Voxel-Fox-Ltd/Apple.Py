@@ -149,6 +149,7 @@ class LibraryDocs(utils.Cog):
         page_types = {
             'latest': 'https://discordpy.readthedocs.io/en/latest',
             'python': 'https://docs.python.org/3',
+            'pygame': 'https://www.pygame.org/docs'
         }
 
         if obj is None:
@@ -258,6 +259,14 @@ class LibraryDocs(utils.Cog):
         """
 
         await self.do_rtfm(ctx, "python", obj)
+
+    @rtfm.command(name="pygame")
+    async def rtdm_pygame(self, ctx, *, obj:str):
+        """
+        Gives you a documentation link for a Python entity.
+        """
+
+        await self.do_rtfm(ctx, "pygame", obj)
 
 
 def setup(bot:utils.Bot):
