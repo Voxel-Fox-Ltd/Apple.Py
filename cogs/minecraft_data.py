@@ -39,9 +39,9 @@ class MinecraftData(utils.Cog):
         with utils.Embed() as embed:
             embed.colour = 0x00ff00 if data.get('online', False) else 0xff0000
             if self.SERVER_PORT == 25565:
-                embed.title = f"Minecraft Server IP {self.SERVER_IP}"
+                embed.title = f"Minecraft Server IP: {self.SERVER_IP}"
             else:
-                embed.title = f"Minecraft Server IP {self.SERVER_IP}:{self.SERVER_PORT}"
+                embed.title = f"Minecraft Server IP: {self.SERVER_IP}:{self.SERVER_PORT}"
             embed.description = f"Currently running {data.get('server', dict()).get('name', 'Minecraft')}"
             # embed.add_field("Uptime", utils.TimeValue(data['duration'] / 1000).clean_spaced)
             name_list = [f"`{i.get('name', 'UNKNOWN_NAME')}`" for i in data.get('players', dict()).get('sample', list())]
