@@ -37,14 +37,12 @@ class MinecraftData(utils.Cog):
 
         # Create embed
         with utils.Embed() as embed:
-            embed.colour = 0x00ff00 if data['online'] else 0xff0000
+            embed.colour = 0x00ff00 if data.get('online', False) else 0xff0000
             embed.title = f"{self.SERVER_IP}:{self.SERVER_PORT}"
-            embed.description = f"Currently running {data['server']['name']}"
-            if data['players']['now'] > 0:
-                embed.add_field("Currently Online", f"{data['players']['now']}/{data['players']['max']}\n{', '.join([i['name'] for i in data['players'].get('sample', list())])}", inline=True)
-            else:
-                embed.add_field("Currently Online", f"{data['players']['now']}/{data['players']['max']}", inline=True)
-            embed.add_field("Uptime", utils.TimeValue(data['duration'] / 1000).clean_spaced)
+            embed.description = f"Currently running {data.get('server', dict()).get('name', 'Minecraft')}"
+            # embed.add_field("Uptime", utils.TimeValue(data['duration'] / 1000).clean_spaced)
+            name_list = [f"`{i.get('name', 'UNKNOWN_NAME')}`" for i in data.get('players', dict()).get('sample', list())]
+            embed.add_field("Currently Online", f"{data.get('players', dict()).get('now', 0)}/{data.get('players', dict()).get('max', 0)}\n{', '.join(name_list)}", inline=False)
             embed.set_footer(text="Last updated")
             embed.timestamp = dt.utcnow()
         await message.edit(content=None, embed=embed)
