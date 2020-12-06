@@ -46,6 +46,21 @@ class LibraryDocs(utils.Cog):
 
     DISCORDJS_DOCS = None
 
+    @utils.Cog.listener()
+    async def on_message(self, message:discord.Message):
+        """
+        Listens for "vbu.git" and responds with a Git url.
+        """
+
+        if message.author.bot:
+            return
+        if message.content.lower() != "vbu.git":
+            return
+        try:
+            return await message.channel.send("<https://github.com/Voxel-Fox-Ltd/VoxelBotUtils/>")
+        except Exception:
+            pass
+
     async def get_discordjs_docs(self):
         """
         Get the DiscordJS documentation from their Github page.
