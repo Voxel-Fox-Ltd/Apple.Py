@@ -14,7 +14,8 @@ class UserPoints(utils.Cog):
         Returns whether or not a message should get a point
         """
 
-        return re.search(r"`[a-zA-Z0-9 .\[\]]+`", message.content)
+        # return re.search(r"`[a-zA-Z0-9 .\[\]]+`", message.content)
+        return False
 
     @utils.Cog.listener()
     async def on_message(self, message:discord.Message):
