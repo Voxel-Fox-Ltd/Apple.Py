@@ -164,7 +164,8 @@ class LibraryDocs(utils.Cog):
         page_types = {
             'latest': 'https://discordpy.readthedocs.io/en/latest',
             'python': 'https://docs.python.org/3',
-            'pygame': 'https://www.pygame.org/docs'
+            'pygame': 'https://www.pygame.org/docs',
+            'voxelbotutils': 'https://voxelbotutils.readthedocs.io/en/latest/',
         }
 
         if obj is None:
@@ -266,6 +267,16 @@ class LibraryDocs(utils.Cog):
         """
 
         await self.do_rtfm(ctx, "latest", obj)
+
+    @rtfm.command(name="vbu")
+    async def rtdm_vbu(self, ctx, *, obj:str):
+        """
+        Gives you a documentation link for a discord.py entity.
+        Events, objects, and functions are all supported through a
+        a cruddy fuzzy algorithm.
+        """
+
+        await self.do_rtfm(ctx, "voxelbotutils", obj)
 
     @rtfm.command(name="python", aliases=["py"])
     async def rtdm_python(self, ctx, *, obj:str):
