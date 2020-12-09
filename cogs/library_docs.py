@@ -155,7 +155,7 @@ class LibraryDocs(utils.Cog):
 
         async with self.bot.session.get("https://ci.dv8tion.net/job/JDA/javadoc/member-search-index.js") as r:
             body = await r.text()
-        data = json.loads(body.split("=", 1)[-1].strip())
+        data = json.loads(body.split("=", 1)[-1].split(';')[0].strip())
 
         cache = {}
 
@@ -174,7 +174,7 @@ class LibraryDocs(utils.Cog):
 
         async with self.bot.session.get("https://docs.oracle.com/en/java/javase/15/docs/api/member-search-index.js") as r:
             body = await r.text()
-        data = json.loads(body.split("=", 1)[-1].strip())
+        data = json.loads(body.split("=", 1)[-1].split(';')[0].strip())
 
         cache = {}
 
