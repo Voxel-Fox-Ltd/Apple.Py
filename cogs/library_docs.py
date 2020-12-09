@@ -305,7 +305,7 @@ class LibraryDocs(utils.Cog):
             pass
         else:
             return await ctx.send("I can only unindent messages with one codeblock.")
-        block_match = re.search(r"```(.+)\n(.+)\n?```", message.content)
+        block_match = re.search(r"```(.+)\n([\s\S]+)\n```", message.content)
         if not block_match:
             return await ctx.send("I couldn't regex that message for codeblocks.")
         return await ctx.send(f"```{block_match.group(1)}{textwrap.dedent(block_match.group(2))}\n```")
