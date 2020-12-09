@@ -193,18 +193,34 @@ class LibraryDocs(utils.Cog):
         outputs = []
 
         for key, link in self._rtfm_cache[key].items():
+
+            # Key would be something like 'TextChannel.fetch', now 'textchannel.fetch'
             key_casefold = key.casefold()
+
+            # See if we got an exact match
             if item_casefold in key_casefold:
                 if item_casefold == key_casefold:
                     outputs.append((key, link, 20,))
                 else:
-                    outputs.append((key, link, 10,))
+                    outputs.append((key, link, 15,))
+
+            # See if we're looking for a method
             if len(split) == 1:
                 continue
-            if split[0] in key_casefold:
-                outputs.append((key, link, 5,))
-            if split[1] in key_casefold:
-                outputs.append((key, link, 3,))
+
+            # Search by method
+            if split[1] and split[1] in key_casefold:
+                if split[1] == key_casefold:
+                    outputs.append((key, link, 12,))
+                else:
+                    outputs.append((key, link, 10,))
+
+            # Search by class
+            if split[0] and split[0] in key_casefold:
+                if split[0] == key_casefold:
+                    outputs.append((key, link, 7,))
+                else:
+                    outputs.append((key, link, 5,))
 
         embed = utils.Embed(use_random_colour=True)
         if len(outputs) == 0:
@@ -229,24 +245,48 @@ class LibraryDocs(utils.Cog):
         Get an item from the Discord.js documentation.
         """
 
+        # Make our input case insensitive
         item_casefold = item.casefold()
+
+        # Split 'textchannel.fetch' into ['textchannel', 'fetch']
         split = item_casefold.split('.')
+
+        # Get our docs
         docs = await self.get_discordjs_docs()
+
+        # Start building our output
         outputs = []
 
+        # Go through everything
         for key, link in docs.items():
+
+            # Key would be something like 'TextChannel.fetch', now 'textchannel.fetch'
             key_casefold = key.casefold()
+
+            # See if we got an exact match
             if item_casefold in key_casefold:
                 if item_casefold == key_casefold:
                     outputs.append((key, link, 20,))
                 else:
-                    outputs.append((key, link, 10,))
+                    outputs.append((key, link, 15,))
+
+            # See if we're looking for a method
             if len(split) == 1:
                 continue
-            if split[0] in key_casefold:
-                outputs.append((key, link, 5,))
-            if split[1] in key_casefold:
-                outputs.append((key, link, 3,))
+
+            # Search by method
+            if split[1] and split[1] in key_casefold:
+                if split[1] == key_casefold:
+                    outputs.append((key, link, 12,))
+                else:
+                    outputs.append((key, link, 10,))
+
+            # Search by class
+            if split[0] and split[0] in key_casefold:
+                if split[0] == key_casefold:
+                    outputs.append((key, link, 7,))
+                else:
+                    outputs.append((key, link, 5,))
 
         outputs.sort(key=lambda i: (i[2], i[0]), reverse=True)
         embed = utils.Embed(use_random_colour=True)
