@@ -308,7 +308,7 @@ class LibraryDocs(utils.Cog):
         block_match = re.search(r"```(.+)\n([\s\S]+)\n```", message.content)
         if not block_match:
             return await ctx.send("I couldn't regex that message for codeblocks.")
-        return await ctx.send(f"```{block_match.group(1)}{textwrap.dedent(block_match.group(2))}\n```")
+        return await ctx.send(f"```{block_match.group(1)}\n{textwrap.dedent(block_match.group(2))}\n```")
 
     @utils.group()
     async def rtfm(self, ctx):
