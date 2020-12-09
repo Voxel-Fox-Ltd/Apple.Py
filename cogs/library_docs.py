@@ -167,6 +167,25 @@ class LibraryDocs(utils.Cog):
 
         self._rtfm_cache['jda'] = cache
 
+    async def get_java_docs(self):
+        """
+        Get the DiscordJS documentation from their Github page.
+        """
+
+        async with self.bot.session.get("https://docs.oracle.com/en/java/javase/15/docs/api/member-search-index.js") as r:
+            body = await r.text()
+        data = json.loads(body.split("=", 1)[-1].strip())
+
+        cache = {}
+
+        for item in data:
+            cache[f"{item['c']}"] = f"https://ci.dv8tion.net/job/JDA/javadoc/{item['p'].replace('.', '/')}/{item['c']}.html"
+            if item['l'].startswith(item['c']):
+                continue
+            cache[f"{item['c']}.{item['l'].split('(')[0]}"] = f"https://ci.dv8tion.net/job/JDA/javadoc/{item['p'].replace('.', '/')}/{item['c']}.html#{item.get('url', item.get('l'))}"
+
+        self._rtfm_cache['jda'] = cache
+
     def parse_object_inv(self, stream, url):
         # key: URL
         # n.b.: key doesn't have `discord` or `discord.ext.commands` namespaces
@@ -242,6 +261,7 @@ class LibraryDocs(utils.Cog):
         non_sphinx_page_types = {
             'djs': self.get_discordjs_docs,
             'jda': self.get_jda_docs,
+            'java': self.get_java_docs,
         }
 
         # Make sure we got something
@@ -295,6 +315,14 @@ class LibraryDocs(utils.Cog):
 
         await self.do_rtfm(ctx, "jda", item)
 
+    @rtfm.command(name="java")
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def rtfm_java(self, ctx:utils.Context, *, item:str):
+        """
+        Get an item from the Discord.js documentation.
+        """
+
+        await self.do_rtfm(ctx, "java", item)
 
     @rtfm.command(name="dpy")
     async def rtdm_dpy(self, ctx, *, obj:str):
