@@ -284,7 +284,7 @@ class LibraryDocs(utils.Cog):
 
         await self.do_rtfm(ctx, "djs", item)
 
-    @rtfm.command(name="djs")
+    @rtfm.command(name="jda")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def rtfm_djs(self, ctx:utils.Context, *, item:str):
         """
