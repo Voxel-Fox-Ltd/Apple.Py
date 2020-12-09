@@ -291,8 +291,13 @@ class LibraryDocs(utils.Cog):
         outputs.sort(key=lambda i: (i[2], i[0]), reverse=True)
         embed = utils.Embed(use_random_colour=True)
         description = ""
-        for line in outputs[:8]:
-            description += f"[`{line[0]}`](https://discord.js.org/#/docs/main/stable/{line[1]})\n"
+        for line in outputs:
+            v = f"[`{line[0]}`](https://discord.js.org/#/docs/main/stable/{line[1]})\n"
+            if v in description:
+                continue
+            description += v
+            if description.count("\n") >= 8:
+                break
         embed.description = description
         if not description:
             return await ctx.send('Could not find anything. Sorry.')
