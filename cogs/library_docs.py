@@ -3,6 +3,7 @@ import io
 import zlib
 import re
 import os
+import textwrap
 
 import discord
 from discord.ext import commands
@@ -288,6 +289,26 @@ class LibraryDocs(utils.Cog):
                     break
 
         return await ctx.send(**self.get_embed_from_cache(self._rtfm_cache[key], obj))
+
+    @utils.command(aliases=['dedent'])
+    async def unindent(self, ctx:utils.Context, message:discord.Message):
+        """
+        Unindents the codeblock inside of a message.
+        """
+
+        codeblock_backtick_count = message.content.count('```')
+        if codeblock_backtick_count == 0:
+            return await ctx.send("There aren't any codeblocks in that message.")
+        elif codeblock_backtick_count % 2 == 1:
+            return await ctx.send("The codeblocks in that message are a bit messed up.")
+        elif codeblock_backtick_count == 2:
+            pass
+        else:
+            return await ctx.send("I can only unindent messages with one codeblock.")
+        block_match = re.search(r"```(.+)\n(.+)\n?```", message.content)
+        if not block_match:
+            return await ctx.send("I couldn't regex that message for codeblocks.")
+        return await ctx.send(f"```{block_match.group(1)}{textwrap.dedent(block_match.group(2))}\n```")
 
     @utils.group()
     async def rtfm(self, ctx):
