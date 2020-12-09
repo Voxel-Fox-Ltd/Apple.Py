@@ -247,7 +247,7 @@ class LibraryDocs(utils.Cog):
             return
 
         # See if we have an rtfm cache
-        if not hasattr(self, '_rtfm_cache'):
+        if not self._rtfm_cache:
             await ctx.trigger_typing()
             await self.build_rtfm_lookup_table(page_types)
             for i in non_sphinx_page_types.values():
@@ -286,7 +286,7 @@ class LibraryDocs(utils.Cog):
 
     @rtfm.command(name="jda")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def rtfm_djs(self, ctx:utils.Context, *, item:str):
+    async def rtfm_jda(self, ctx:utils.Context, *, item:str):
         """
         Get an item from the Discord.js documentation.
         """
