@@ -160,10 +160,10 @@ class LibraryDocs(utils.Cog):
         cache = {}
 
         for item in data:
-            cache[f"{item['c']}"] = f"https://ci.dv8tion.net/job/JDA/javadoc/{item['p'].replace('.', '/')}.html"
+            cache[f"{item['c']}"] = f"https://ci.dv8tion.net/job/JDA/javadoc/{item['p'].replace('.', '/')}/{item['c']}.html"
             if 'url' not in item:
                 continue
-            cache[f"{item['c']}.{item['l'].split('(')[0]}"] = f"https://ci.dv8tion.net/job/JDA/javadoc/{item['p'].replace('.', '/')}.html#{item['url']}"
+            cache[f"{item['c']}.{item['l'].split('(')[0]}"] = f"https://ci.dv8tion.net/job/JDA/javadoc/{item['p'].replace('.', '/')}/{item['c']}.html#{item['url']}"
 
         self._rtfm_cache['jda'] = cache
 
