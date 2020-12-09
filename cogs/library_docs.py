@@ -282,63 +282,17 @@ class LibraryDocs(utils.Cog):
         Get an item from the Discord.js documentation.
         """
 
-        # Make our input case insensitive
-        item_casefold = item.casefold()
+        await self.do_rtfm(ctx, "djs", item)
 
-        # Split 'textchannel.fetch' into ['textchannel', 'fetch']
-        split = item_casefold.split('.')
+    @rtfm.command(name="djs")
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def rtfm_djs(self, ctx:utils.Context, *, item:str):
+        """
+        Get an item from the Discord.js documentation.
+        """
 
-        # Get our docs
-        docs = await self.get_discordjs_docs()
+        await self.do_rtfm(ctx, "jda", item)
 
-        # Start building our output
-        outputs = []
-
-        # Go through everything
-        for key, link in docs.items():
-
-            # Key would be something like 'TextChannel.fetch', now 'textchannel.fetch'
-            key_casefold = key.casefold()
-
-            # See if we got an exact match
-            if item_casefold in key_casefold:
-                if item_casefold == key_casefold:
-                    outputs.append((key, link, 20,))
-                else:
-                    outputs.append((key, link, 15,))
-
-            # See if we're looking for a method
-            if len(split) == 1:
-                continue
-
-            # Search by method
-            if split[1] and split[1] in key_casefold:
-                if split[1] == key_casefold:
-                    outputs.append((key, link, 12,))
-                else:
-                    outputs.append((key, link, 10,))
-
-            # Search by class
-            if split[0] and split[0] in key_casefold:
-                if split[0] == key_casefold:
-                    outputs.append((key, link, 7,))
-                else:
-                    outputs.append((key, link, 5,))
-
-        outputs.sort(key=lambda i: (i[2], i[0]), reverse=True)
-        embed = utils.Embed(use_random_colour=True)
-        description = ""
-        for line in outputs:
-            v = f"[`{line[0]}`](https://discord.js.org/#/docs/main/stable/{line[1]})\n"
-            if v in description:
-                continue
-            description += v
-            if description.count("\n") >= 8:
-                break
-        embed.description = description
-        if not description:
-            return await ctx.send('Could not find anything. Sorry.')
-        await ctx.send(embed=embed)
 
     @rtfm.command(name="dpy")
     async def rtdm_dpy(self, ctx, *, obj:str):
