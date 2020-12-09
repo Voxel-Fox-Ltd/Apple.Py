@@ -182,9 +182,9 @@ class LibraryDocs(utils.Cog):
             cache[f"{item['c']}"] = f"https://ci.dv8tion.net/job/JDA/javadoc/{item['p'].replace('.', '/')}/{item['c']}.html"
             if item['l'].startswith(item['c']):
                 continue
-            cache[f"{item['c']}.{item['l'].split('(')[0]}"] = f"https://ci.dv8tion.net/job/JDA/javadoc/{item['p'].replace('.', '/')}/{item['c']}.html#{item.get('url', item.get('l'))}"
+            cache[f"{item['c']}.{item['l'].split('(')[0]}"] = f"https://docs.oracle.com/en/java/javase/15/docs/api/java.base/{item['p'].replace('.', '/')}/{item['c']}.html#{item.get('url', item.get('l'))}"
 
-        self._rtfm_cache['jda'] = cache
+        self._rtfm_cache['java'] = cache
 
     def parse_object_inv(self, stream, url):
         # key: URL
