@@ -12,7 +12,7 @@ class AnimalCommands(utils.Cog):
 
         await ctx.channel.trigger_typing()
         headers = {
-            "User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831",
+            "User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004",
             "x-api-key": self.bot.config['api_keys']['cat_api']
         }
         params = {
@@ -34,7 +34,7 @@ class AnimalCommands(utils.Cog):
         """Gives you some dog pictures"""
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004"}
         if breed is None:
             url = "https://dog.ceo/api/breeds/image/random"
         else:
@@ -53,7 +53,7 @@ class AnimalCommands(utils.Cog):
         """Gives you some fox pictures"""
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004"}
         async with self.bot.session.get("https://randomfox.ca/floof/", headers=headers) as r:
             data = await r.json()
         with utils.Embed(use_random_colour=True) as embed:
@@ -66,7 +66,7 @@ class AnimalCommands(utils.Cog):
         """Gives you some bird pictures"""
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004"}
         async with self.bot.session.get("https://some-random-api.ml/img/birb", headers=headers) as r:
             data = await r.json()
         with utils.Embed(use_random_colour=True) as embed:
@@ -79,7 +79,7 @@ class AnimalCommands(utils.Cog):
         """Gives you some panda pictures"""
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004"}
         async with self.bot.session.get("https://some-random-api.ml/img/panda", headers=headers) as r:
             data = await r.json()
         with utils.Embed(use_random_colour=True) as embed:
@@ -92,7 +92,7 @@ class AnimalCommands(utils.Cog):
         """Gives you some red panda pictures"""
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004"}
         async with self.bot.session.get("https://some-random-api.ml/img/red_panda", headers=headers) as r:
             data = await r.json()
         with utils.Embed(use_random_colour=True) as embed:
@@ -105,7 +105,7 @@ class AnimalCommands(utils.Cog):
         """Gives you some koala pictures"""
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004"}
         async with self.bot.session.get("https://some-random-api.ml/img/koala", headers=headers) as r:
             data = await r.json()
         with utils.Embed(use_random_colour=True) as embed:
