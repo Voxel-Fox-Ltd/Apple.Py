@@ -159,7 +159,7 @@ class MiscCommands(utils.Cog):
             embed.description = data['info']['summary']
         return await ctx.send(embed=embed)
 
-    @utils.command(aliases=['npmjs  '])
+    @utils.command(aliases=['npmjs'])
     async def npm(self, ctx:utils.Context, package_name:str):
         async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
           data = await e.json()
