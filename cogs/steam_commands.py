@@ -11,7 +11,7 @@ class SteamCommand(utils.Cog):
     GAME_DATA_URL = "https://store.steampowered.com/api/appdetails"
     GAME_URL_REGEX = regex.compile(r"https:\/\/store\.steampowered\.com\/app\/(\d+)")
     headers = {
-        "User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"
+        "User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004"
     }
 
     def __init__(self, bot:utils.Bot):

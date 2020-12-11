@@ -115,7 +115,7 @@ class MiscCommands(utils.Cog):
         """Gives you a cat based on a HTTP error code"""
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004"}
         async with self.bot.session.get(f"https://http.cat/{errorcode}", headers=headers) as r:
             if r.status == 404:
                 await ctx.send('That HTTP code doesnt exist.')
@@ -133,7 +133,7 @@ class MiscCommands(utils.Cog):
         """Gives you a dog based on a HTTP error code"""
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Kae#0004"}
         async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg", headers=headers, allow_redirects=False) as r:
             if str(r.status)[0] != "2":
                 return await ctx.send("That HTTP code doesnt exist.")
