@@ -151,7 +151,7 @@ class LibraryDocs(utils.Cog):
 
     async def get_jda_docs(self):
         """
-        Get the DiscordJS documentation from their Github page.
+        Get the JDA documentation from their docs
         """
 
         async with self.bot.session.get("https://ci.dv8tion.net/job/JDA/javadoc/member-search-index.js") as r:
@@ -170,7 +170,7 @@ class LibraryDocs(utils.Cog):
 
     async def get_java_docs(self):
         """
-        Get the DiscordJS documentation from their Github page.
+        Get the Java docs from there JSON docs
         """
 
         async with self.bot.session.get("https://docs.oracle.com/en/java/javase/15/docs/api/member-search-index.js") as r:
@@ -331,7 +331,7 @@ class LibraryDocs(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def rtfm_jda(self, ctx:utils.Context, *, item:str):
         """
-        Get an item from the Discord.js documentation.
+        Get an item from the JDA documentation.
         """
 
         await self.do_rtfm(ctx, "jda", item)
@@ -340,7 +340,7 @@ class LibraryDocs(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def rtfm_java(self, ctx:utils.Context, *, item:str):
         """
-        Get an item from the Discord.js documentation.
+        Get an item from the Java documentation.
         """
 
         await self.do_rtfm(ctx, "java", item)
@@ -358,9 +358,7 @@ class LibraryDocs(utils.Cog):
     @rtfm.command(name="vbu")
     async def rtdm_vbu(self, ctx, *, obj:str):
         """
-        Gives you a documentation link for a discord.py entity.
-        Events, objects, and functions are all supported through a
-        a cruddy fuzzy algorithm.
+        Gives you the docs of VoxelBotUtils
         """
 
         await self.do_rtfm(ctx, "voxelbotutils", obj)
@@ -376,7 +374,7 @@ class LibraryDocs(utils.Cog):
     @rtfm.command(name="pygame")
     async def rtdm_pygame(self, ctx, *, obj:str):
         """
-        Gives you a documentation link for a Python entity.
+        Gives you a documentation link for a PyGame entity.
         """
 
         await self.do_rtfm(ctx, "pygame", obj)
