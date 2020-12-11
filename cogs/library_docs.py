@@ -358,7 +358,7 @@ class LibraryDocs(utils.Cog):
     @rtfm.command(name="vbu")
     async def rtdm_vbu(self, ctx, *, obj:str):
         """
-        Gives you the docs of VoxelBotUtils
+        Gives you a item from the docs of VoxelBotUtils
         """
 
         await self.do_rtfm(ctx, "voxelbotutils", obj)
