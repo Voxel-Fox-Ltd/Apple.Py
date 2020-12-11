@@ -161,10 +161,19 @@ class MiscCommands(utils.Cog):
 
     @utils.command(aliases=['npmjs'])
     async def npm(self, ctx:utils.Context, package_name:str):
+
+        # Get our data
         async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
-          data = await e.json()
-          with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author(name=data['name'], url=data['homepage'])
+            if e.status == 404:
+                await ctx.send(f"I could not find anything with {package_name} :c")
+                return
+            if e.status != 202:
+                await ctx.send("Something went wrong, try again later...")
+        data = await e.json()
+
+        # make a lil embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author(name=data['name'], url=data['httpomepage'])
             embed.description = data['description']
             await ctx.send(embed=embed)
 
