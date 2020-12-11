@@ -167,8 +167,9 @@ class MiscCommands(utils.Cog):
             if e.status == 404:
                 await ctx.send(f"I could not find anything with {package_name} :c")
                 return
-            if e.status != 202:
+            if e.status != 200:
                 await ctx.send("Something went wrong, try again later...")
+                return
         data = await e.json()
 
         # make a lil embed
