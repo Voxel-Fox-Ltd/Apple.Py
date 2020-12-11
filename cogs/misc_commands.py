@@ -176,7 +176,7 @@ class MiscCommands(utils.Cog):
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_author(name=data['name'], url=data['homepage'])
             embed.description = data['description']
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @utils.command(aliases=['color'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
