@@ -1,4 +1,5 @@
 import typing
+import re
 
 import discord
 from discord.ext import commands
@@ -6,6 +7,26 @@ import voxelbotutils as utils
 
 
 class UserPoints(utils.Cog):
+
+    @staticmethod
+    def should_get_a_point(message:discord.Message) -> bool:
+        """
+        Returns whether or not a message should get a point
+        """
+
+        # return re.search(r"`[a-zA-Z0-9 .\[\]]+`", message.content)
+        return False
+
+    @utils.Cog.listener()
+    async def on_message(self, message:discord.Message):
+        """
+        Adds a reaction to a message should it get a point
+        """
+
+        if message.channel.id not in [777048960790429738, 764056789666365440]:
+            return
+        if self.should_get_a_point(message):
+            await message.add_reaction("\N{OK HAND SIGN}")
 
     @utils.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True)

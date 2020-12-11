@@ -66,7 +66,7 @@ class TimezoneInfo(utils.Cog):
 
         # Check if they are a bot
         if user.bot:
-            return await ctx.send("I don't think bot's have timezones...")
+            return await ctx.send("I don't think bots have timezones...")
 
         # Store it in the database
         async with self.bot.database() as db:

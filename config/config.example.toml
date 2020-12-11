@@ -98,6 +98,11 @@ event_webhook_url = ""  # Some events will be posted via webhook to this url
     activity_type = "playing"  # Should be one of 'playing', 'listening', 'watching', 'competing'
     text = ".help"
     status = "online"  # Should be one of 'online', 'invisible', 'idle', 'dnd'
+    include_shard_id = true  # Whether or not to append "(shard N)" to the presence; only present if there's more than 1 shard
+    [presence.streaming]  # This is used to automatically set the bot's status to your Twitch stream when you go live
+        twitch_usernames = [ "kaylum_", ]  # The URL to your Twitch.tv channel
+        twitch_client_id = "4el1x73cztf2iglqfq58lt5a6ivpgdc"  # Your client ID - https://dev.twitch.tv/console/apps
+        twitch_client_secret = "lbnjotksuz5euo0rbxtzh014jk6o6c"  # Your client secret
 
 # Used to generate the invite link - if not set then will use the bot's ID, which is correct more often than not
 [oauth]

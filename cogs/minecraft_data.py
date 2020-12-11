@@ -10,9 +10,9 @@ class MinecraftData(utils.Cog):
 
     # https://mcapi.us/server/status?ip=149.202.84.162&port=25588
     MINECRAFT_API = "https://mcapi.us/server/status"
-    SERVER_IP = "vfl.mcserver.at"
+    SERVER_IP = "mc.vfl.gg"
     SERVER_PORT = 25565
-    MINECRAFT_MESSAGE = (716321756171862048, 721771100790325321)  # ChannelID, MessageID
+    MINECRAFT_MESSAGE = (784488302328676404, 784488385800437811)  # ChannelID, MessageID
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
@@ -26,25 +26,28 @@ class MinecraftData(utils.Cog):
         """Updates the Minecraft status message"""
 
         # Get message
+        self.logger.info(f"Updating minecraft server status for IP {self.SERVER_IP}")
         channel = self.bot.get_channel(self.MINECRAFT_MESSAGE[0])
         message = await channel.fetch_message(self.MINECRAFT_MESSAGE[1])
 
         # Get data
         async with self.bot.session.get(self.MINECRAFT_API, params={"ip": self.SERVER_IP, "port": self.SERVER_PORT}) as r:
             data = await r.json()
+        self.logger.info(f"Data received - {data}")
 
         # Create embed
         with utils.Embed() as embed:
-            embed.colour = 0x00ff00 if data['online'] else 0xff0000
-            embed.title = f"{self.SERVER_IP}:{self.SERVER_PORT}"
-            embed.description = f"Currently running {data['server']['name']}"
-            if data['players']['now'] > 0:
-                embed.add_field("Currently Online", f"{data['players']['now']}/{data['players']['max']}\n{', '.join(data['players']['list'])}", inline=True)
+            embed.colour = 0x00ff00 if data.get('online', False) else 0xff0000
+            if self.SERVER_PORT == 25565:
+                embed.title = f"Minecraft Server IP: {self.SERVER_IP}"
             else:
-                embed.add_field("Currently Online", f"{data['players']['now']}/{data['players']['max']}", inline=True)
-            embed.add_field("Uptime", utils.TimeValue(data['duration'] / 1000).clean_spaced)
-            embed.timestamp = dt.utcnow()
+                embed.title = f"Minecraft Server IP: {self.SERVER_IP}:{self.SERVER_PORT}"
+            embed.description = f"Currently running {data.get('server', dict()).get('name', 'Minecraft')}"
+            # embed.add_field("Uptime", utils.TimeValue(data['duration'] / 1000).clean_spaced)
+            name_list = [f"`{i.get('name', 'UNKNOWN_NAME')}`" for i in data.get('players', dict()).get('sample', list())]
+            embed.add_field("Currently Online", f"{data.get('players', dict()).get('now', 0)}/{data.get('players', dict()).get('max', 0)}\n{', '.join(name_list)}", inline=False)
             embed.set_footer(text="Last updated")
+            embed.timestamp = dt.utcnow()
         await message.edit(content=None, embed=embed)
 
     @server_status_update.before_loop

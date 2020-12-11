@@ -177,7 +177,7 @@ class NicknameHandler(utils.Cog):
         """Fix the nickname of a user"""
 
         current_name = user.nick or user.name
-        
+
         # See if we should even bother trying to translate it
         if force_to_animal is False:
 
@@ -209,7 +209,7 @@ class NicknameHandler(utils.Cog):
         await user.edit(nick=new_name)
         return new_name
 
-    @utils.command(aliases=['fun'])
+    @utils.group(aliases=['fun'], invoke_without_subcommand=False)
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     async def fixunzalgoname(self, ctx:utils.Context, user:discord.Member, force_to_animal:bool=False):
@@ -219,6 +219,32 @@ class NicknameHandler(utils.Cog):
         current_name = user.nick or user.name
         new_name = await self.fix_user_nickname(user, force_to_animal=force_to_animal)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
+
+    @fixunzalgoname.command(name='text')
+    @commands.has_permissions(manage_nicknames=True)
+    @commands.bot_has_permissions(manage_nicknames=True)
+    async def fixunzalgoname_text(self, ctx:utils.Context, text:str):
+        """Fixes a user's nickname to remove dumbass characters"""
+
+        # Read the letter replacements file
+        replacements = self.get_letter_replacements()
+
+        # Make a translator
+        translator = str.maketrans(replacements)
+
+        # Try and fix their name
+        new_name_with_zalgo = text.translate(translator)
+        new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
+
+        # See if they have enough valid characters
+        if not self.consecutive_character_regex:
+            chars = [i if i not in string.punctuation else f"\\{i}" for i in self.ASCII_CHARACTERS]
+            self.consecutive_character_regex = re.compile(f"[{''.join(chars)}]{{3,}}")
+
+        if self.consecutive_character_regex.search(new_name) is None:
+            new_name = random.choice(await self.get_animal_names())
+
+        return await ctx.send(f"I would change that from `{text}` to `{new_name}`.")
 
     @utils.command()
     @commands.is_owner()
