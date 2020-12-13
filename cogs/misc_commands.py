@@ -159,6 +159,25 @@ class MiscCommands(utils.Cog):
             embed.description = data['info']['summary']
         return await ctx.send(embed=embed)
 
+    @utils.command(aliases=['npmjs'])
+    async def npm(self, ctx:utils.Context, package_name:str):
+
+        # Get our data
+        async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
+            if e.status == 404:
+                await ctx.send(f"I could not find anything about {package_name} :c")
+                return
+            if e.status != 200:
+                await ctx.send("Something went wrong, try again later...")
+                return
+            data = await e.json()
+
+        # make a lil embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author(name=data['name'], url=data['homepage'])
+            embed.description = data['description']
+        await ctx.send(embed=embed)
+
     @utils.command(aliases=['color'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def colour(self, ctx:utils.Context, *, colour:typing.Union[discord.Role, discord.Colour, discord.Member]):
