@@ -16,8 +16,8 @@ class GitText(utils.Cog):
         
         # Dictionary of possible Git() links
         git_dict = {
-            "h": "hub",
-            "l": "lab"
+            "gh": "hub",
+            "gl": "lab"
         }
         
         # Add the url of each matched link to the final output
