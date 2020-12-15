@@ -161,6 +161,7 @@ class MiscCommands(utils.Cog):
 
     @utils.command(aliases=['npmjs'])
     async def npm(self, ctx:utils.Context, package_name:str):
+        """Check NPM for a package"""
 
         # Get our data
         async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
@@ -180,6 +181,8 @@ class MiscCommands(utils.Cog):
 
     @utils.command()
     async def nuget(self, ctx:utils.Context, package_name:str):
+        """Check nuget for a package"""
+
         # Get our data
         async with self.bot.session.get(f"https://azuresearch-usnc.nuget.org/query?q={package_name}") as e:
             if e.status != 200:
