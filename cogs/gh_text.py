@@ -3,22 +3,29 @@ import re
 import voxelbotutils as utils
 
 
-class GHText(utils.Cog):
+class GitText(utils.Cog):
 
     @utils.Cog.listener()
     async def on_message(self, message):
         """
-        Sends GitHub links if a message sent in the server matches the format `gh/user/repo`.
+        Sends GitHub/Lab links if a message sent in the server matches the format `gh/user/repo`.
         """
 
         # Find matches in the message
-        m = re.finditer(r'gh/(?P<url>(?P<user>\S{1,39})/(?P<repo>\S{1,100}))', message.content)
-
+        m = re.finditer(r'(?P<ident>g[hl])/(?P<url>(?P<user>\S{1,255})/(?P<repo>\S{1,255}))', message.content)
+        
+        # Dictionary of possible Git() links
+        git_dict = {
+            "gh": "hub",
+            "gl": "lab"
+        }
+        
         # Add the url of each matched link to the final output
         sendable = ""
         for i in m:
             url = i.group("url")
-            sendable += f"<https://github.com/{url}>\n"
+            ident = i.group("ident")
+            sendable += f"<https://git{git_dict[ident]}.com/{url}>\n"
 
         # Send the GitHub links if there's any output
         if sendable:
@@ -26,5 +33,5 @@ class GHText(utils.Cog):
 
 
 def setup(bot:utils.Bot):
-    x = GHText(bot)
+    x = GitText(bot)
     bot.add_cog(x)
