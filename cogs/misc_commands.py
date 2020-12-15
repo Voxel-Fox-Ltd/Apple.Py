@@ -165,7 +165,7 @@ class MiscCommands(utils.Cog):
         # Get our data
         async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
             if e.status == 404:
-                await ctx.send(f"I could not find anything about {package_name} :c")
+                await ctx.send(f"I could not find anything about `{package_name}` :c")
                 return
             if e.status != 200:
                 await ctx.send("Something went wrong, try again later...")
@@ -177,6 +177,26 @@ class MiscCommands(utils.Cog):
             embed.set_author(name=data['name'], url=data['homepage'])
             embed.description = data['description']
         await ctx.send(embed=embed)
+
+    @utils.command()
+    async def nuget(self, ctx:utils.Context, package_name:str):
+        # Get our data
+        async with self.bot.session.get(f"https://azuresearch-usnc.nuget.org/query?q={package_name}") as e:
+            if e.status != 200:
+                await ctx.send("Something went wrong, try again later...")
+                return
+            data = await e.json()
+
+        # make a lil embed
+        with utils.Embed(use_random_colour=True) as embed:
+            if data['data']:
+                embed.set_author(name=data['data'][0]['title'], url=data['data'][0]['projectUrl'])
+                embed.description = data['data'][0]['description']
+            else:
+                await ctx.send(f"I could not find anything for `{package_name}` :c")
+                return
+        await ctx.send(embed=embed)
+
 
     @utils.command(aliases=['color'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
