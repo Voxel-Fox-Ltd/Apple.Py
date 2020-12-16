@@ -226,7 +226,7 @@ class QuoteCommands(utils.Cog):
         return await ctx.send(embed=message.embeds[0])
 
     @quote.group(invoke_without_command=True)
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias:commands.clean_content):
         """Adds an alias to a quote"""
