@@ -155,7 +155,7 @@ class MiscCommands(utils.Cog):
 
         # Format into an embed
         with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author(name=data['info']['name'], url=data['info']['home_page'])
+            embed.set_author(name=data['info']['name'], url=f"https://pypi.org/project/{module}")
             embed.description = data['info']['summary']
         return await ctx.send(embed=embed)
 
@@ -175,7 +175,7 @@ class MiscCommands(utils.Cog):
 
         # make a lil embed
         with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author(name=data['name'], url=data['homepage'])
+            embed.set_author(name=data['name'], url=f"https://www.npmjs.com/package/{package_name}")
             embed.description = data['description']
         await ctx.send(embed=embed)
 
@@ -193,7 +193,7 @@ class MiscCommands(utils.Cog):
         # make a lil embed
         with utils.Embed(use_random_colour=True) as embed:
             if data['data']:
-                embed.set_author(name=data['data'][0]['title'], url=data['data'][0]['projectUrl'])
+                embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{package_name}")
                 embed.description = data['data'][0]['description']
             else:
                 await ctx.send(f"I could not find anything for `{package_name}` :c")
