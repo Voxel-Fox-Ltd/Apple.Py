@@ -8,7 +8,7 @@ import voxelbotutils as utils
 
 class TimezoneInfo(utils.Cog):
 
-    @utils.group(aliases=['tz'], hidden=True)
+    @utils.group(aliases=['tz'])
     async def timezone(self, ctx:utils.Context):
         """
         The parent group for timezone commands.
@@ -16,8 +16,8 @@ class TimezoneInfo(utils.Cog):
 
         pass
 
-    @timezone.command(hidden=True)
-    async def set(self, ctx:utils.Context, *, offset:str=None):
+    @timezone.command(name="set")
+    async def timezone_set(self, ctx:utils.Context, *, offset:str=None):
         """
         Sets and stores your UTC offset into the bot
         """
@@ -58,13 +58,14 @@ class TimezoneInfo(utils.Cog):
             )
         await ctx.send(f"I think you're somewhere around **UTC{hour_offset:=+03d}:{minute_offset:=02d}** - I've stored this in the database.")
 
-    @timezone.command(hidden=True)
-    async def get(self, ctx:utils.Context, user:discord.Member):
+    @timezone.command(name="get")
+    async def timezone_get(self, ctx:utils.Context, user:discord.Member=None):
         """
         Get the current time for a given user.
         """
 
         # Check if they are a bot
+        user = user or ctx.author
         if user.bot:
             return await ctx.send("I don't think bots have timezones...")
 
