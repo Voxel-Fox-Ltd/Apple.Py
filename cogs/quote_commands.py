@@ -162,9 +162,9 @@ class QuoteCommands(utils.Cog):
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
 
-    @quote.command()
+    @quote.command(name="get")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def get(self, ctx:utils.Context, identifier:commands.clean_content):
+    async def quote_get(self, ctx:utils.Context, identifier:commands.clean_content):
         """Gets a quote from the database"""
 
         # Get quote from database
@@ -194,9 +194,9 @@ class QuoteCommands(utils.Cog):
         # Output to user
         return await ctx.send(embed=message.embeds[0])
 
-    @quote.command()
+    @quote.command(name="random")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def random(self, ctx:utils.Context, user:discord.User=None):
+    async def quote_random(self, ctx:utils.Context, user:discord.User=None):
         """Gets a random quote for a given user"""
 
         # Get quote from database
@@ -225,10 +225,10 @@ class QuoteCommands(utils.Cog):
         # Output to user
         return await ctx.send(embed=message.embeds[0])
 
-    @quote.group(invoke_without_command=True)
+    @quote.group(name="alias", invoke_without_command=True)
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias:commands.clean_content):
+    async def quote_alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias:commands.clean_content):
         """Adds an alias to a quote"""
 
         # Grab data from db
@@ -245,10 +245,10 @@ class QuoteCommands(utils.Cog):
             await db("INSERT INTO quote_aliases (quote_id, alias) VALUES ($1, $2)", quote_id.lower(), alias.lower())
         await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
-    @alias.command(name='remove', aliases=['delete'])
+    @quote_alias.command(name="remove", aliases=["delete"])
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def alias_remove(self, ctx:utils.Context, alias:commands.clean_content):
+    async def quote_alias_remove(self, ctx:utils.Context, alias:commands.clean_content):
         """Deletes an alias from a quote"""
 
         # Grab data from db
@@ -256,9 +256,9 @@ class QuoteCommands(utils.Cog):
             await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
         return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
-    @quote.command(enabled=False)
+    @quote.command(name="search", enabled=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def search(self, ctx:utils.Context, user:typing.Optional[discord.Member]=None, *, search_term:str=""):
+    async def quote_search(self, ctx:utils.Context, user:typing.Optional[discord.Member]=None, *, search_term:str=""):
         """Searches the datbase for a quote with some text in it babeyeyeyey"""
 
         # Grab data from the database
@@ -283,10 +283,10 @@ class QuoteCommands(utils.Cog):
             embed.add_field(name=row['quote_id'].upper(), value=text, inline=len(text) < 100)
         return await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
-    @quote.command()
+    @quote.command(name="delete")
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def delete(self, ctx:utils.Context, *quote_ids:str):
+    async def quote_delete(self, ctx:utils.Context, *quote_ids:str):
         """Deletes a quote from your server"""
 
         quote_ids = [i.lower() for i in quote_ids]
