@@ -1,3 +1,4 @@
 voxelbotutils
 beautifulsoup4
 pillow
+arrow

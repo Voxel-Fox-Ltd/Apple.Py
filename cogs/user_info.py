@@ -1,15 +1,19 @@
 import io
+from datetime import datetime as dt
 
 import discord
 from discord.ext import commands
 import voxelbotutils as utils
+import arrow
 
 
 class UserInfo(utils.Cog):
 
-    @utils.command()
+    @utils.command(aliases=["av"])
     async def avatar(self, ctx:utils.Context, user:discord.User=None):
-        """Shows you the avatar of a given user"""
+        """
+        Shows you the avatar of a given user.
+        """
 
         if user is None:
             user = ctx.author
@@ -17,10 +21,28 @@ class UserInfo(utils.Cog):
             embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
 
+    @utils.command(aliases=["whoami"])
+    async def whois(self, ctx:utils.Context, user:discord.Member=None):
+        """
+        Give you some information about a user.
+        """
+
+        user = user or ctx.author
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author_to_user(user)
+            account_creation_time_humanized = arrow.get(user.created_at).humanize()
+            embed.add_field("Account Creation Time", f"{user.created_at.strftime('%A %B %d %Y %I:%M%S%p')}\n{account_creation_time_humanized}", inline=False)
+            guild_join_time_humanized = arrow.get(user.joined_at).humanize()
+            embed.add_field("Guild Join Time", f"{user.joined_at.strftime('%A %B %d %Y %I:%M%S%p')}\n{guild_join_time_humanized}", inline=False)
+            embed.set_thumbnail(user.avatar_url(size=1024))
+        return await ctx.send(embed=embed)
+
     @utils.command()
     @commands.guild_only()
     async def createlog(self, ctx:utils.Context, amount:int=100):
-        """Create a log of chat"""
+        """
+        Create a log of chat.
+        """
 
         # Create the data we're gonna send
         data = {
@@ -59,7 +81,6 @@ class UserInfo(utils.Cog):
                 embeds.append(embed_data)
             message_data.update({'embeds': embeds})
             data_messages.append(message_data)
-
 
         # Send data to the API
         data.update({"users": data_authors, "messages": data_messages[::-1]})
