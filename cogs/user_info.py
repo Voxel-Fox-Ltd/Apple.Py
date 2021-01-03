@@ -34,7 +34,7 @@ class UserInfo(utils.Cog):
             embed.add_field("Account Creation Time", f"{user.created_at.strftime('%A %B %d %Y %I:%M%S%p')}\n{account_creation_time_humanized}", inline=False)
             guild_join_time_humanized = arrow.get(user.joined_at).humanize()
             embed.add_field("Guild Join Time", f"{user.joined_at.strftime('%A %B %d %Y %I:%M%S%p')}\n{guild_join_time_humanized}", inline=False)
-            embed.set_thumbnail(user.avatar_url(size=1024))
+            embed.set_thumbnail(user.avatar_url_as(size=1024))
         return await ctx.send(embed=embed)
 
     @utils.command()
