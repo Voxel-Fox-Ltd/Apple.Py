@@ -155,17 +155,18 @@ class MiscCommands(utils.Cog):
 
         # Format into an embed
         with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author(name=data['info']['name'], url=data['info']['home_page'])
+            embed.set_author(name=data['info']['name'], url=f"https://pypi.org/project/{module}")
             embed.description = data['info']['summary']
         return await ctx.send(embed=embed)
 
     @utils.command(aliases=['npmjs'])
     async def npm(self, ctx:utils.Context, package_name:str):
+        """Check NPM for a package"""
 
         # Get our data
         async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
             if e.status == 404:
-                await ctx.send(f"I could not find anything about {package_name} :c")
+                await ctx.send(f"I could not find anything about `{package_name}` :c")
                 return
             if e.status != 200:
                 await ctx.send("Something went wrong, try again later...")
@@ -174,9 +175,31 @@ class MiscCommands(utils.Cog):
 
         # make a lil embed
         with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author(name=data['name'], url=data['homepage'])
+            embed.set_author(name=data['name'], url=f"https://www.npmjs.com/package/{package_name}")
             embed.description = data['description']
         await ctx.send(embed=embed)
+
+    @utils.command()
+    async def nuget(self, ctx:utils.Context, package_name:str):
+        """Check nuget for a package"""
+
+        # Get our data
+        async with self.bot.session.get(f"https://azuresearch-usnc.nuget.org/query?q={package_name}") as e:
+            if e.status != 200:
+                await ctx.send("Something went wrong, try again later...")
+                return
+            data = await e.json()
+
+        # make a lil embed
+        with utils.Embed(use_random_colour=True) as embed:
+            if data['data']:
+                embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{package_name}")
+                embed.description = data['data'][0]['description']
+            else:
+                await ctx.send(f"I could not find anything for `{package_name}` :c")
+                return
+        await ctx.send(embed=embed)
+
 
     @utils.command(aliases=['color'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
