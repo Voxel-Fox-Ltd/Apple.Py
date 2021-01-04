@@ -38,14 +38,18 @@ class TimezoneInfo(utils.Cog):
         hour = int(match.group("hour"))
         minute = int(match.group("minute"))
         daytime = (match.group("daytime") or "am").lower()
-        if hour >= 24 or minute >= 60 or (daytime == 'am' and hour > 12):
-            return await ctx.send("Hmmmmmmm that isn't a valid time. Try again later.")
+        if hour >= 24 or minute >= 60:  # or (daytime == 'am' and hour > 12):
+            return await ctx.send("It looks like the time you provided isn't valid; please try again later.")
         elif daytime == 'pm' and hour < 12:
             hour += 12
 
         # Okay sick let's try and work out how far off we are
         now = dt.utcnow()
         hour_offset = hour - now.hour
+        if hour_offset > 12:
+            hour_offset -= 12
+        elif hour_offset < -12:
+            hour_offset += 12
         minute_offset = 15 * round((minute - now.minute) / 15)
         total_minute_offset = (hour_offset * 60) + minute_offset
 
