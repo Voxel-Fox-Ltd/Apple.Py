@@ -193,7 +193,7 @@ class MiscCommands(utils.Cog):
         # make a lil embed
         with utils.Embed(use_random_colour=True) as embed:
             if data['data']:
-                embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{package_name}")
+                embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{data['data'][0]['id']}")
                 embed.description = data['data'][0]['description']
             else:
                 await ctx.send(f"I could not find anything for `{package_name}` :c")
