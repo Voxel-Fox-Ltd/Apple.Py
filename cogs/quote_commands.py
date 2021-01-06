@@ -122,7 +122,7 @@ class QuoteCommands(utils.Cog):
             check = lambda r, _: all([
                 r.message.id == ask_to_save_message.id,
                 str(r.emoji) in ["\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"],
-                reaction_check(message.reactions) >= reactions_needed
+                reaction_check(r.message.reactions) >= reactions_needed
             ])
             await self.bot.wait_for("reaction_add", check=check, timeout=60)
         except asyncio.TimeoutError:
