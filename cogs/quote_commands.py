@@ -110,16 +110,21 @@ class QuoteCommands(utils.Cog):
             rows = await db("SELECT * FROM guild_settings WHERE guild_id = $1", ctx.guild.id)
         reactions_needed = rows[0]['quote_reactions_needed']
         ask_to_save_message = await ctx.send(
-            f"Should I save this quote? If I receive {reactions_needed}x\N{THUMBS UP SIGN} reactions in the next 60 seconds, the quote will be saved.",
+            f"Should I save this quote? If I receive {reactions_needed} positive reactions in the next 60 seconds, the quote will be saved.",
             embed=embed,
         )
         await ask_to_save_message.add_reaction("\N{THUMBS UP SIGN}")
+        await ask_to_save_message.add_reaction("\N{THUMBS DOWN SIGN}")
         try:
-            await self.bot.wait_for(
-                "reaction_add",
-                check=lambda r, _: r.message.id == ask_to_save_message.id and str(r.emoji) == "\N{THUMBS UP SIGN}" and r.count >= reactions_needed + 1,
-                timeout=60,
-            )
+            reaction_check = lambda rl: sum([
+                i.count if str(i.emoji) == "\N{THUMBS UP SIGN}" else -i.count if str(i.emoji) == "\N{THUMBS DOWN SIGN}" else 0 for i in rl
+            ])
+            check = lambda r, _: all([
+                r.message.id == ask_to_save_message.id,
+                str(r.emoji) in ["\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"],
+                reaction_check(message.reactions) >= reactions_needed
+            ])
+            await self.bot.wait_for("reaction_add", check=check, timeout=60)
         except asyncio.TimeoutError:
             try:
                 await ask_to_save_message.delete()
