@@ -46,11 +46,14 @@ class TimezoneInfo(utils.Cog):
         # Okay sick let's try and work out how far off we are
         now = dt.utcnow()
         hour_offset = hour - now.hour
-        if hour_offset > 12:
-            hour_offset -= 12
-        elif hour_offset < -12:
-            hour_offset += 12
         minute_offset = 15 * round((minute - now.minute) / 15)
+        if minute_offset < 0:
+            minute_offset += 60
+            hour_offset -= 1
+        if hour_offset > 12:
+            hour_offset -= 24
+        elif hour_offset < -12:
+            hour_offset += 24
         total_minute_offset = (hour_offset * 60) + minute_offset
 
         # Store it in the database
