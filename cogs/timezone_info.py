@@ -52,7 +52,7 @@ class TimezoneInfo(utils.Cog):
             hour_offset -= 1
         if hour_offset > 12:
             hour_offset -= 24
-        elif hour_offset < -12:
+        elif hour_offset <= -12:
             hour_offset += 24
         total_minute_offset = (hour_offset * 60) + minute_offset
 
