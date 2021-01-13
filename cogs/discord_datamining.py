@@ -74,11 +74,16 @@ class DiscordDatamining(utils.Cog):
                 data = await r.json()
             comment_text.extend([(i['commit_id'], re.sub(r"^## (.+)", r"**\1**", i['body'])) for i in data])
         self.logger.info(f"Logging info of {len(comment_text)} comments")
-
-        # Format it all into an embed
+        #get the description
+        pog =  '\n'.join([f"{i['commit']['message']} - [Link]({repo_url}commit/{i['sha']})" for i in new_commits])
+        if len(pog)>2048:
+            self.logger.info(f"So it turns out our description is longer than 2048 and this isnt really poggers, we need to make it in multiple embeds. It was {len(pog)}")
+        #make the description into a list of descriptions each 2048 or less
+        array = [pog[i:i+2048] for i in range(0, len(pog), 2048)]
+           # Format it all into an embed
         with utils.Embed(use_random_colour=True) as embed:
             embed.title = embed_title
-            embed.description = '\n'.join([f"{i['commit']['message']} - [Link]({repo_url}commit/{i['sha']})" for i in new_commits])
+            embed.description = array.pop()
             for sha, body in comment_text:
                 embed.add_field(sha, body, inline=False)
 
@@ -86,6 +91,13 @@ class DiscordDatamining(utils.Cog):
         channel = self.bot.get_channel(self.VFL_CODING_CHANNEL_ID)
         m = await channel.send(embed=embed)
         await m.publish()
+        if len(array)>0:
+           for thing in array:
+                with utils.Embed(use_random_colour=True) as newembed:
+                   embed.title ="Continuation of "+ embed_title
+                   embed.description = thing
+                   nm = await channel.send(embed=embed)
+                   await nm.publish()
         self.logger.info("Sent data to channel")
         self.last_posted_commit[repo_url] = new_commits[0]['sha']
 
