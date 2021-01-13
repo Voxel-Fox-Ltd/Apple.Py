@@ -115,28 +115,18 @@ class QuoteCommands(utils.Cog):
         )
         await ask_to_save_message.add_reaction("\N{THUMBS UP SIGN}")
         await ask_to_save_message.add_reaction("\N{THUMBS DOWN SIGN}")
-        try:
-            reaction_check = lambda rl: sum([
-                i.count if str(i.emoji) == "\N{THUMBS UP SIGN}" else -i.count if str(i.emoji) == "\N{THUMBS DOWN SIGN}" else 0 for i in rl
-            ])
-            check = lambda r, _: all([
-                r.message.id == ask_to_save_message.id,
-                str(r.emoji) in ["\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"],
-                reaction_check(r.message.reactions) >= reactions_needed
-            ])
-            await self.bot.wait_for("reaction_add", check=check, timeout=60)
-        except asyncio.TimeoutError:
-            try:
-                await ask_to_save_message.delete()
-            except discord.HTTPException:
-                pass
-            return await ctx.send(f"_Not_ saving the quote asked by {ctx.author.mention} - not enough reactions received.", ignore_error=True)
+        await asyncio.sleep(60)
 
-        # If we get here, we can save to db
+        # Get the message again so we can refresh the reactions
+        reaction_count = sum([i.count if str(i.emoji) == "\N{THUMBS UP SIGN}" else -i.count if str(i.emoji) == "\N{THUMBS DOWN SIGN}" else 0 for i in ask_to_save_message.reactions])
         try:
             await ask_to_save_message.delete()
         except discord.HTTPException:
             pass
+        if reaction_count < reactions_needed:
+            return await ctx.send(f"_Not_ saving the quote asked by {ctx.author.mention} - not enough reactions received.", ignore_error=True)
+
+        # If we get here, we can save to db
         quote_id = create_id()
 
         # See if they have a quotes channel
