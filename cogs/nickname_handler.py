@@ -94,7 +94,7 @@ class NicknameHandler(utils.Cog):
             )
         if data:
             try:
-                await member.edit(nick=data[0]["nickname"],reason= "Changed by Apple.Py automagicly")
+                await member.edit(nick=data[0]["nickname"],reason= "Changed by Apple.Py automagically")
                 self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} from member join")
             except discord.Forbidden as e:
                 self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
@@ -128,7 +128,7 @@ class NicknameHandler(utils.Cog):
             if member.nick == new_nickname:
                 return
             try:
-                await member.edit(nick=new_nickname,reason= "Changed by Apple.Py automagicly")
+                await member.edit(nick=new_nickname,reason= "Changed by Apple.Py automagically")
                 self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} to '{new_nickname}' from member update")
             except discord.Forbidden as e:
                 self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
@@ -207,7 +207,7 @@ class NicknameHandler(utils.Cog):
 
         # Change their name
         self.logger.info(f"Updating nickname '{current_name}' to '{new_name}' (G{user.guild.id}/U{user.id})")
-        await user.edit(nick=new_name,reason= "Changed by Apple.Py automagicly")
+        await user.edit(nick=new_name,reason= "Changed by Apple.Py automagically")
         return new_name
 
     @utils.group(aliases=['fun'], invoke_without_subcommand=False)
