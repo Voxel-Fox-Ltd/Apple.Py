@@ -94,7 +94,7 @@ class NicknameHandler(utils.Cog):
             )
         if data:
             try:
-                await member.edit(nick=data[0]["nickname"])
+                await member.edit(nick=data[0]["nickname"],reason= "Changed by Apple.Py automagicly")
                 self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} from member join")
             except discord.Forbidden as e:
                 self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
@@ -128,7 +128,7 @@ class NicknameHandler(utils.Cog):
             if member.nick == new_nickname:
                 return
             try:
-                await member.edit(nick=new_nickname)
+                await member.edit(nick=new_nickname,reason= "Changed by Apple.Py automagicly")
                 self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} to '{new_nickname}' from member update")
             except discord.Forbidden as e:
                 self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
@@ -150,7 +150,7 @@ class NicknameHandler(utils.Cog):
 
             # Change nickname back
             try:
-                await member.edit(nick=before.nick or before.name)
+                await member.edit(nick=before.nick or before.name,reason= "Changed by Apple.Py due to nickname ban role")
                 self.logger.info(f"User {member.id} on guild {member.guild.id} changed nickname - changing back due to nickname ban role")
             except discord.Forbidden as e:
                 self.logger.error(f"Can't change user {member.id}'s nickname on guild {member.guild.id} - {e}")
@@ -207,7 +207,7 @@ class NicknameHandler(utils.Cog):
 
         # Change their name
         self.logger.info(f"Updating nickname '{current_name}' to '{new_name}' (G{user.guild.id}/U{user.id})")
-        await user.edit(nick=new_name)
+        await user.edit(nick=new_name,reason= "Changed by Apple.Py automagicly")
         return new_name
 
     @utils.group(aliases=['fun'], invoke_without_subcommand=False)
