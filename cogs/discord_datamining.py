@@ -91,13 +91,13 @@ class DiscordDatamining(utils.Cog):
         channel = self.bot.get_channel(self.VFL_CODING_CHANNEL_ID)
         m = await channel.send(embed=embed)
         await m.publish()
-        if len(array)>0:
-           for thing in array:
-                with utils.Embed(use_random_colour=True) as newembed:
-                   embed.title ="Continuation of "+ embed_title
-                   embed.description = thing
-                   nm = await channel.send(embed=embed)
-                   await nm.publish()
+        
+        for thing in array:
+            with utils.Embed(use_random_colour=True) as newembed:
+                embed.title ="Continuation of "+ embed_title
+                embed.description = thing
+                nm = await channel.send(embed=embed)
+                await nm.publish()
         self.logger.info("Sent data to channel")
         self.last_posted_commit[repo_url] = new_commits[0]['sha']
 
