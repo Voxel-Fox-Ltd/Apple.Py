@@ -118,7 +118,11 @@ class QuoteCommands(utils.Cog):
         await asyncio.sleep(60)
 
         # Get the message again so we can refresh the reactions
-        reaction_count = sum([i.count if str(i.emoji) == "\N{THUMBS UP SIGN}" else -i.count if str(i.emoji) == "\N{THUMBS DOWN SIGN}" else 0 for i in ask_to_save_message.reactions])
+        try:
+            ask_to_save_message_again = await ask_to_save_message.channel.fetch_message(ask_to_save_message.id)
+            reaction_count = sum([i.count if str(i.emoji) == "\N{THUMBS UP SIGN}" else -i.count if str(i.emoji) == "\N{THUMBS DOWN SIGN}" else 0 for i in ask_to_save_message_again.reactions])
+        except discord.HTTPException:
+            return
         try:
             await ask_to_save_message.delete()
         except discord.HTTPException:
