@@ -79,7 +79,7 @@ class DiscordDatamining(utils.Cog):
         descriptionunsplit =  '\n'.join([f"{i['commit']['message']} - [Link]({repo_url}commit/{i['sha']})" for i in new_commits])
 
         # Inform the bot owner that the description is larger than allowed by discord
-        if len(descriptionunsplit)>2048:
+        if len(descriptionunsplit) > 2048:
             self.logger.info(f"Our description is longer than 2048 characters and this isnt really poggers, we need to make it in multiple embeds. It was {len(descriptionunsplit)} characters.")
 
         # Split the description into a list of descriptions each 2048 or less
