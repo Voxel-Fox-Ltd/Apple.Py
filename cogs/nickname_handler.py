@@ -86,6 +86,10 @@ class NicknameHandler(utils.Cog):
     async def on_member_join(self, member:discord.Member):
         """Pings a member nickname update on member join"""
 
+        # Check if they are a bot
+        if member.bot:
+            return
+
         # See if they have a permanent nickname set
         async with self.bot.database() as db:
             data = await db(
@@ -115,6 +119,10 @@ class NicknameHandler(utils.Cog):
 
         # Only ping for non-moderators
         if member.guild_permissions.manage_nicknames:
+            return
+
+        # Only ping for non-bots
+        if member.bot:
             return
 
         # See if they have a permanent nickname
