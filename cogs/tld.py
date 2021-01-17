@@ -11,7 +11,7 @@ class tld(utils.Cog):
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
-        self.tlds = None
+        self.tld_list = None
 
     async def load_tlds(self):
         """Loads tlds into the cache"""
