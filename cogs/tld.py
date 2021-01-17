@@ -16,7 +16,7 @@ class tld(utils.Cog):
     async def load_tlds(self):
         """Loads tlds into the cache"""
 
-        async with self.bot.session.get(self.SLUG_URL) as r:
+        async with self.bot.session.get(self.TLD_URL) as r:
             data = await r.text()
         self.tld_list = data.split("\n")
 
