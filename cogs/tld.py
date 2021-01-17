@@ -5,7 +5,7 @@ from discord.ext import commands
 import voxelbotutils as utils
 
 
-class tld(utils.Cog):
+class TldCommands(utils.Cog):
 
     TLD_URL = "https://data.iana.org/TLD/tlds-alpha-by-domain.txt"
 
@@ -21,10 +21,10 @@ class tld(utils.Cog):
         self.tld_list = data.split("\n")
 
 
-    @utils.group()
+    @utils.group(aliases=['tld'])
     async def tlds(self, ctx):
         """
-        Get some data from the docs.
+        Allows some functions on tlds
         """
 
         pass
@@ -49,14 +49,14 @@ class tld(utils.Cog):
             await self.load_tlds()
         tld_check = tld_check.upper()
         if tld_check in self.tld_list:
-            await ctx.send(f"Is a tld. (.{tld_check.lower()}) <:tick_filled_yes:784976310366634034>")
+            await ctx.send(f"Is a tld. (.{tld_check.lower()}) <:tick_filled_yes:784976310366634034>.")
         else:
-            await ctx.send(f"Not a tld. (.{tld_check.lower()}) <:tick_filled_no:784976328231223306>")
+            await ctx.send(f"Not a tld. (.{tld_check.lower()}) <:tick_filled_no:784976328231223306>.")
     
         
 
 
 
 def setup(bot:utils.Bot):
-    x = tld(bot)
+    x = TldCommands(bot)
     bot.add_cog(x)
