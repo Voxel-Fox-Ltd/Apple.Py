@@ -61,5 +61,5 @@ class TLDCommands(utils.Cog):
     
 
 def setup(bot:utils.Bot):
-    x = TldCommands(bot)
+    x = TLDCommands(bot)
     bot.add_cog(x)
