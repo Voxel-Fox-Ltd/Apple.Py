@@ -37,9 +37,9 @@ class TldCommands(utils.Cog):
         tld = random.choice(self.tld_list)
         if not tld.startswith("XN--"):
             if domain is None:
-                await ctx.send(tld.lower())
+                await ctx.send("`{tld.lower()`")
             else:
-                await ctx.send(f"`{domain}.{tld.lower()}")
+                await ctx.send(f"`{domain}.{tld.lower()}`")
 
     @tlds.command()
     async def check(self, ctx:utils.Context, tld_check:str=None):
@@ -50,9 +50,9 @@ class TldCommands(utils.Cog):
 
         tld_check = tld_check.upper()
         if tld_check in self.tld_list:
-            await ctx.send(f"Is a tld. (.{tld_check.lower()}) <:tick_filled_yes:784976310366634034>.")
+            await ctx.send(f"Is a tld. (`.{tld_check.lower()}`) <:tick_filled_yes:784976310366634034>.")
         else:
-            await ctx.send(f"Not a tld. (.{tld_check.lower()}) <:tick_filled_no:784976328231223306>.")
+            await ctx.send(f"Not a tld. (`.{tld_check.lower()}`) <:tick_filled_no:784976328231223306>.")
     
         
 
