@@ -18,7 +18,7 @@ class TldCommands(utils.Cog):
             data = await r.text()
         self.tld_list = data.split("\n")
 
-    
+
     @utils.group(aliases=['tld'])
     async def tlds(self, ctx):
         """
@@ -37,7 +37,7 @@ class TldCommands(utils.Cog):
         tld = random.choice(self.tld_list)
         if not tld.startswith("XN--"):
             if domain is None:
-                await ctx.send(tld)
+                await ctx.send(tld.lower())
             else:
                 await ctx.send(f"`{domain}.{tld.lower()}")
 
