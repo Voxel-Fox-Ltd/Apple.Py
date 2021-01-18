@@ -1,7 +1,5 @@
-import re as regex
 import random
 
-from discord.ext import commands
 import voxelbotutils as utils
 
 
@@ -20,7 +18,7 @@ class TldCommands(utils.Cog):
             data = await r.text()
         self.tld_list = data.split("\n")
 
-
+    
     @utils.group(aliases=['tld'])
     async def tlds(self, ctx):
         """
@@ -35,11 +33,13 @@ class TldCommands(utils.Cog):
 
         if self.tld_list is None:
             await self.load_tlds()
+
         tld = random.choice(self.tld_list)
-        if domain is None:
-            await ctx.send(tld)
-        else:
-            await ctx.send(f"{domain}.{tld.lower()}")
+        if not tld.startswith("XN--"):
+            if domain is None:
+                await ctx.send(tld)
+            else:
+                await ctx.send(f"`{domain}.{tld.lower()}")
 
     @tlds.command()
     async def check(self, ctx:utils.Context, tld_check:str=None):
@@ -47,6 +47,7 @@ class TldCommands(utils.Cog):
 
         if self.tld_list is None:
             await self.load_tlds()
+
         tld_check = tld_check.upper()
         if tld_check in self.tld_list:
             await ctx.send(f"Is a tld. (.{tld_check.lower()}) <:tick_filled_yes:784976310366634034>.")
