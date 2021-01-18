@@ -37,7 +37,7 @@ class TldCommands(utils.Cog):
         tld = random.choice(self.tld_list)
         if not tld.startswith("XN--"):
             if domain is None:
-                await ctx.send("`{tld.lower()`")
+                await ctx.send(f"`{tld.lower()}`")
             else:
                 await ctx.send(f"`{domain}.{tld.lower()}`")
 
