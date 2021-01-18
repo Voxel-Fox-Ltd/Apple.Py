@@ -57,7 +57,7 @@ class TLDCommands(utils.Cog):
         if tld_check in self.tld_list:
             await ctx.send(f"Is a tld. (`.{tld_check.lower()}`) :white_check_mark: .")
         else:
-            await ctx.send(f"Not a tld. (`.{tld_check.lower()}`) :tick_filled_no: .")
+            await ctx.send(f"Not a tld. (`.{tld_check.lower()}`) :x: .")
     
 
 def setup(bot:utils.Bot):
