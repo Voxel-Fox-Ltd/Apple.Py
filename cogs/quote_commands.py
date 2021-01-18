@@ -146,6 +146,7 @@ class QuoteCommands(utils.Cog):
         if quote_channel_id is None or posted_message is None:
             return await ctx.send("I couldn't send your quote into the quote channel.")
 
+        # And save it to the database
         async with self.bot.database() as db:
             rows = await db(
                 "SELECT * FROM user_quotes WHERE guild_id=$1 AND user_id=$2 AND timestamp=$3 AND text=$4",
