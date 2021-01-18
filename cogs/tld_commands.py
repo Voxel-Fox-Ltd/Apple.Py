@@ -13,7 +13,7 @@ class TLDCommands(utils.Cog):
 
     async def load_tlds(self):
         """
-        Loads tlds into the cache
+        Loads tlds into the cache.
         """
 
         async with self.bot.session.get(self.TLD_URL) as r:
@@ -23,7 +23,7 @@ class TLDCommands(utils.Cog):
     @utils.group(aliases=['tld'])
     async def tlds(self, ctx):
         """
-        Allows some functions on tlds.
+        Allows some functions on tlds. 
         """
 
         pass
