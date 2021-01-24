@@ -117,6 +117,7 @@ class GithubCommands(utils.Cog):
         }
         async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", json=json, headers=headers) as r:
             data = await r.json()
+            self.logger.info(f"Received data from Github - {data!s}")
 
         # And done
         await ctx.send(f"Your issue has been created - <{data['url']}>.")
