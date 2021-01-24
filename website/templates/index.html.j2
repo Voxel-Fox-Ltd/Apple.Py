@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apple.py Oauth Connection Page</title>
+</head>
+<body>
+
+<div id="buttons">
+
+    {% if session.logged_in %}
+        <div class="button-holder">
+            <a href="/logout">Logout of Discord ({{ session.user_info.username }}#{{ session.user_info.discriminator }})</a>
+        </div>
+    {% else %}
+        <div class="button-holder">
+            <a href="{{ login_url }}">Login with Discord</a>
+        </div>
+    {% endif %}
+
+    <div class="button-holder">
+        <a>Login with Twitch</a>
+    </div>
+
+    <div class="button-holder">
+        <a>Login with Github</a>
+    </div>
+</div>
+
+</body>
+</html>
