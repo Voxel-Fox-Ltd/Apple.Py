@@ -86,54 +86,6 @@ class TwitchFollowerUpdater(utils.Cog):
             params['after'] = data.get('pagination', {}).get('cursor', None)
         return output, data.get('pagination', {}).get('cursor', None)
 
-    @utils.command()
-    @commands.bot_has_permissions(send_messages=True)
-    async def linktwitch(self, ctx:utils.Context):
-        """lorem ipsum"""
-
-        # Send initial DM
-        try:
-            await ctx.author.send(f"Go to this URL, log in, and then paste the URL you're directed to right here! It'll look something like `http://localhost:3000/#access_token=123456789abcde`.\n\n<{self.TWITCH_OAUTH_URL}?{urlencode(self.TWITCH_PARAMS)}>")
-        except discord.HTTPException:
-            return await ctx.send("I wasn't able to send you a DM! Please enable DMs from this server to proceed.")
-        if ctx.guild:
-            await ctx.send("Sent you a DM!")
-
-        # Wait for them to respond
-        try:
-            response_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.guild is None, timeout=60 * 5)
-        except asyncio.TimeoutError:
-            try:
-                await ctx.author.send("Timed out waiting for a response.")
-            except discord.HTTPException:
-                pass
-            return
-
-        # Parse that
-        url_object = urlparse(response_message.content)
-        fragment = url_object.fragment
-        query_params = {i.split('=')[0]: i.split('=')[1] for i in fragment.split('&')}
-        if 'access_token' not in query_params:
-            return await ctx.author.send("You gave an invalid return URL.")
-
-        # Validate that
-        async with self.bot.session.get(self.TWITCH_VALIDATE_URL, headers={"Authorization": f"Bearer {query_params['access_token']}"}) as r:
-            data = await r.json()
-            if r.status != 200:
-                return await ctx.author.send("I couldn't validate your login data.")
-
-        # Store that
-        async with self.bot.database() as db:
-            await db(
-                """INSERT INTO user_settings (user_id, twitch_user_id, twitch_username, twitch_bearer_token) VALUES ($1, $2, $3, $4)
-                ON CONFLICT (user_id) DO UPDATE SET twitch_user_id=excluded.twitch_user_id, twitch_username=excluded.twitch_username,
-                twitch_bearer_token=excluded.twitch_bearer_token""",
-                ctx.author.id, data['user_id'], data['login'], query_params['access_token'],
-            )
-
-        # Sick
-        return await ctx.author.send(f"Logged in successfully as **{data['login']}**! You will now receive DMs when you get new followers.")
-
 
 def setup(bot:utils.Bot):
     x = TwitchFollowerUpdater(bot)

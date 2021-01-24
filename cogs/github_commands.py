@@ -1,3 +1,4 @@
+import asyncio
 import re
 
 from bs4 import BeautifulSoup, NavigableString
@@ -42,9 +43,84 @@ class GithubCommands(utils.Cog):
         if sendable:
             await message.channel.send(sendable)
 
+    @utils.command()
+    async def createissue(self, ctx:utils.Context, repo:str, *, title:str):
+        """
+        Create a Github issue on a given repo.
+        """
+
+        # Validate the repo
+        if repo.startswith("gh/"):
+            _, owner, repo = repo.split('/')
+        else:
+            match = re.search(r"https://github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
+            if not match:
+                raise utils.errors.MissingRequiredArgumentString("repo")
+            owner, repo = match.group("user"), match.group("repo")
+
+        # See if they have a connected Github account
+        async with self.bot.database() as db:
+            rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
+        if not rows or not rows[0]['github_username']:
+            return await ctx.send(f"You need to link your Github account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+
+        # Ask if we want to do this
+        embed = utils.Embed(title=title, use_random_colour=True).set_footer("Use the \N{HEAVY PLUS SIGN} emoji to add a body.")
+        m = await ctx.send("Are you sure you want to create this issue?", embed=embed)
+        valid_emojis = ["\N{THUMBS UP SIGN}", "\N{HEAVY PLUS SIGN}", "\N{THUMBS DOWN SIGN}"]
+        for e in valid_emojis:
+            self.bot.loop.create_task(m.add_reaction(e))
+        try:
+            payload = await self.bot.wait_for("raw_reaction_add", check=lambda p: p.message_id == m.id and str(p.emoji) in valid_emojis, timeout=120)
+        except asyncio.TimeoutError:
+            return await ctx.send("Timed out asking for issue create confirmation.")
+
+        # Get the body
+        body = None
+        if str(payload.emoji) == "\N{HEAVY PLUS SIGN}":
+            n = await ctx.send("What body content do you want to be added to your issue?")
+            try:
+                check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+                body_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
+            except asyncio.TimeoutError:
+                return await ctx.send("Timed out asking for issue body text.")
+            body = body_message.content
+
+        if body:
+            embed = utils.Embed(title=title, description=body, use_random_colour=True)
+            m = await ctx.send("Are you sure you want to create this issue?", embed=embed)
+            valid_emojis = ["\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"]
+            for e in valid_emojis:
+                self.bot.loop.create_task(m.add_reaction(e))
+            try:
+                payload = await self.bot.wait_for("raw_reaction_add", check=lambda p: p.message_id == m.id and str(p.emoji) in valid_emojis, timeout=120)
+            except asyncio.TimeoutError:
+                return await ctx.send("Timed out asking for issue create confirmation.")
+
+        # Check the reaction
+        if str(payload.emoji) == "\N{THUMBS DOWN SIGN}":
+            return await ctx.send("Alright, cancelling issue add.")
+
+        # Create the issue
+        json = {
+            'title': title,
+            'body': body,
+        }
+        headers = {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': rows[0]['github_access_token'],
+        }
+        async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", json=json, headers=headers) as r:
+            data = await r.json()
+
+        # And done
+        await ctx.send(f"Your issue has been created - <{data['url']}>.")
+
     @utils.Cog.listener("on_message")
     async def github_message_answer_listener(self, message:discord.Message):
-        """Listens for messages being made and finds Github answer URLs in them"""
+        """
+        Listens for messages being made and finds Github answer URLs in them.
+        """
 
         # Set up our filters
         if not message.guild:
@@ -54,6 +130,8 @@ class GithubCommands(utils.Cog):
         if not message.channel.permissions_for(message.guild.me).send_messages:
             return
         if not message.channel.permissions_for(message.guild.me).embed_links:
+            return
+        if (await self.bot.get_context(message)).command is not None:
             return
         matches = self.GITHUB_ANSWER_URL_REGEX.search(message.content)
         if not matches:
