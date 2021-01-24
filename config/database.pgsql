@@ -19,7 +19,9 @@ CREATE TABLE IF NOT EXISTS user_settings(
     twitch_cursor VARCHAR(100),
     minecraft_username VARCHAR(16),
     minecraft_uuid VARCHAR(32),
-    timezone_offset INTEGER
+    timezone_offset INTEGER,
+    github_access_token VARCHAR(100),
+    github_username VARCHAR(40)
 );
 
 

@@ -26,7 +26,15 @@ async def index(request:Request):
         'scope': 'channel:read:subscriptions',
     }
 
-    # Handle current Twitch login
+    # Github login URL params
+    github_login_url_params = {
+        'client_id': request.app['config']['github_oauth']['client_id'],
+        'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/github_login_processor',
+        # 'response_type': 'code',
+        'scope': 'user repo',
+    }
+
+    # Handle current logins
     session = await aiohttp_session.get_session(request)
     twitch_username = None
     if session.get('logged_in'):
@@ -34,10 +42,13 @@ async def index(request:Request):
             rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
         if rows:
             twitch_username = rows[0]['twitch_username']
+            github_username = rows[0]['github_username']
 
     # Return items
     return {
         'login_url': webutils.get_discord_login_url(request),
         'twitch_login_url': f'https://id.twitch.tv/oauth2/authorize?{urlencode(twitch_login_url_params)}',
         'twitch_username': twitch_username,
+        'github_login_url': f'https://github.com/login/oauth/authorize?{urlencode(github_login_url_params)}',
+        'github_username': github_username,
     }

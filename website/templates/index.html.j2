@@ -11,12 +11,12 @@
     {% if session.logged_in %}
 
         <a href="/logout">
-            <div class="button-holder">Logout of Discord ({{ session.user_info.username }}#{{ session.user_info.discriminator }})</div>
+            <div class="button-holder">Logout of Discord (<b>{{ session.user_info.username }}#{{ session.user_info.discriminator }}</b>)</div>
         </a>
 
         {% if twitch_username %}
             <a href="/twitch_logout">
-                <div class="button-holder">Logout of Twitch ({{ twitch_username }})</div>
+                <div class="button-holder">Logout of Twitch (<b>{{ twitch_username }}</b>)</div>
             </a>
         {% else %}
             <a href="{{ twitch_login_url }}">
@@ -24,9 +24,15 @@
             </a>
         {% endif %}
 
-        <div class="button-holder">
-            <a>Login with Github</a>
-        </div>
+        {% if github_username %}
+            <a href="/github_logout">
+                <div class="button-holder">Logout of Github (<b>{{ github_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ github_login_url }}">
+                <div class="button-holder">Login with Github</div>
+            </a>
+        {% endif %}
 
     {% else %}
         <a href="{{ login_url }}">
