@@ -27,7 +27,7 @@ async def index(request:Request):
     }
 
     # Handle current Twitch login
-    session = aiohttp_session.get_session(request)
+    session = await aiohttp_session.get_session(request)
     async with request.app['database']() as db:
         rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
     twitch_username = None
