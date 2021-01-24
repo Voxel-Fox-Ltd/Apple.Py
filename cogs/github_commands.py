@@ -120,7 +120,7 @@ class GithubCommands(utils.Cog):
             self.logger.info(f"Received data from Github - {data!s}")
 
         # And done
-        await ctx.send(f"Your issue has been created - <{data['url']}>.")
+        await ctx.send(f"Your issue has been created - <{data['html_url']}>.")
 
     @utils.Cog.listener("on_message")
     async def github_message_answer_listener(self, message:discord.Message):
