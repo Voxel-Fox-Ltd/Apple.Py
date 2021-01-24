@@ -22,7 +22,7 @@ async def index(request:Request):
     twitch_login_url_params = {
         'client_id': request.app['config']['twitch_oauth']['client_id'],
         'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/twitch_login_processor',
-        'response_type': 'token',
+        'response_type': 'code',
         'scope': 'channel:read:subscriptions',
     }
 

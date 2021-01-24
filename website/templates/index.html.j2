@@ -15,8 +15,8 @@
         </a>
 
         {% if twitch_username %}
-            <a href="#">
-                <div class="button-holder">Logged in with Twitch ({{ twitch_username }})</div>
+            <a href="/twitch_logout">
+                <div class="button-holder">Logout of Twitch ({{ twitch_username }})</div>
             </a>
         {% else %}
             <a href="{{ twitch_login_url }}">
