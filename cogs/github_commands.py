@@ -23,6 +23,9 @@ class GithubCommands(utils.Cog):
         Sends GitHub/Lab links if a message sent in the server matches the format `gh/user/repo`.
         """
 
+        if (await self.bot.get_context(message)).command is not None:
+            return
+
         # Find matches in the message
         m = re.finditer(r'(?P<ident>g[hl])/(?P<url>(?P<user>\S{1,255})/(?P<repo>\S{1,255}))', message.content)
 
@@ -71,14 +74,15 @@ class GithubCommands(utils.Cog):
         for e in valid_emojis:
             self.bot.loop.create_task(m.add_reaction(e))
         try:
-            payload = await self.bot.wait_for("raw_reaction_add", check=lambda p: p.message_id == m.id and str(p.emoji) in valid_emojis, timeout=120)
+            check = lambda p: p.message_id == m.id and str(p.emoji) in valid_emojis and p.user_id == ctx.author.id
+            payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
         except asyncio.TimeoutError:
             return await ctx.send("Timed out asking for issue create confirmation.")
 
         # Get the body
         body = None
         if str(payload.emoji) == "\N{HEAVY PLUS SIGN}":
-            n = await ctx.send("What body content do you want to be added to your issue?")
+            m = await ctx.send("What body content do you want to be added to your issue?")
             try:
                 check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
                 body_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
@@ -93,7 +97,8 @@ class GithubCommands(utils.Cog):
             for e in valid_emojis:
                 self.bot.loop.create_task(m.add_reaction(e))
             try:
-                payload = await self.bot.wait_for("raw_reaction_add", check=lambda p: p.message_id == m.id and str(p.emoji) in valid_emojis, timeout=120)
+                check = lambda p: p.message_id == m.id and str(p.emoji) in valid_emojis and p.user_id == ctx.author.id
+                payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
             except asyncio.TimeoutError:
                 return await ctx.send("Timed out asking for issue create confirmation.")
 
