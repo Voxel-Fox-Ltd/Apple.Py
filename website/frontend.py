@@ -28,11 +28,12 @@ async def index(request:Request):
 
     # Handle current Twitch login
     session = await aiohttp_session.get_session(request)
-    async with request.app['database']() as db:
-        rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
-    twitch_username = None
-    if rows:
-        twitch_username = rows[0]['twitch_username']
+    if session.get('logged_in'):
+        async with request.app['database']() as db:
+            rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
+        twitch_username = None
+        if rows:
+            twitch_username = rows[0]['twitch_username']
 
     # Return items
     return {
