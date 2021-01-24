@@ -37,6 +37,7 @@ async def index(request:Request):
     # Handle current logins
     session = await aiohttp_session.get_session(request)
     twitch_username = None
+    github_username = None
     if session.get('logged_in'):
         async with request.app['database']() as db:
             rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
