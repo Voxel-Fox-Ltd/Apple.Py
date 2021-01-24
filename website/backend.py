@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 import aiohttp
 from aiohttp.web import HTTPFound, Request, RouteTableDef
 from voxelbotutils import web as webutils
@@ -27,7 +29,10 @@ async def twitch_login_processor(request:Request):
     """
 
     session = await aiohttp_session.get_session(request)
-    access_token = request.query.get('access_token')
+    url_object = urlparse(request.url)
+    fragment = url_object.fragment
+    query_params = {i.split('=')[0]: i.split('=')[1] for i in fragment.split('&')}
+    access_token = query_params.get('access_token')
 
     # Validate that
     async with aiohttp.ClientSession() as web_session:
