@@ -30,8 +30,8 @@ async def twitch_login_processor(request:Request):
     access_token = request.query.get('access_token')
 
     # Validate that
-    async with aiohttp.ClientSession() as session:
-        async with session.get("https://id.twitch.tv/oauth2/validate", headers={"Authorization": f"Bearer {access_token}"}) as r:
+    async with aiohttp.ClientSession() as web_session:
+        async with web_session.get("https://id.twitch.tv/oauth2/validate", headers={"Authorization": f"Bearer {access_token}"}) as r:
             data = await r.json()
             if r.status != 200:
                 return HTTPFound(location=session.pop('redirect_on_login', '/'))

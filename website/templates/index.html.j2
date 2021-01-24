@@ -2,28 +2,37 @@
 <html>
 <head>
     <title>Apple.py Oauth Connection Page</title>
+    <link rel="stylesheet" type="text/css" href="{{ static('main.css') }}" />
 </head>
 <body>
 
 <div id="buttons">
 
     {% if session.logged_in %}
+
+        <a href="/logout">
+            <div class="button-holder">Logout of Discord ({{ session.user_info.username }}#{{ session.user_info.discriminator }})</div>
+        </a>
+
+        {% if twitch_username %}
+            <a href="#">
+                <div class="button-holder">Logged in with Twitch ({{ twitch_username }})</div>
+            </a>
+        {% else %}
+            <a href="{{ twitch_login_url }}">
+                <div class="button-holder">Login with Twitch</div>
+            </a>
+        {% endif %}
+
         <div class="button-holder">
-            <a href="/logout">Logout of Discord ({{ session.user_info.username }}#{{ session.user_info.discriminator }})</a>
+            <a>Login with Github</a>
         </div>
+
     {% else %}
         <div class="button-holder">
             <a href="{{ login_url }}">Login with Discord</a>
         </div>
     {% endif %}
-
-    <div class="button-holder">
-        <a>Login with Twitch</a>
-    </div>
-
-    <div class="button-holder">
-        <a>Login with Github</a>
-    </div>
 </div>
 
 </body>
