@@ -21,6 +21,7 @@ body {
     border-radius: 10px;
     text-align: center;
     background: lightblue;
+    transition: ease 0.2s;
 }
 
 a, a:visited {
@@ -31,4 +32,5 @@ a, a:visited {
 .button-holder:hover {
     background: darkblue;
     color: white;
+    transition: ease 0.2s;
 }
