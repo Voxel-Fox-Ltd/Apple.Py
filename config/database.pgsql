@@ -95,8 +95,16 @@ CREATE TABLE IF NOT EXISTS ship_percentages(
 );
 
 
+DO $$ BEGIN
+    CREATE TYPE git_host AS ENUM ('Github', 'Gitlab');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+
 CREATE TABLE IF NOT EXISTS github_repo_aliases(
     alias VARCHAR(100) PRIMARY KEY,
     owner VARCHAR(300),
-    repo VARCHAR(300)
+    repo VARCHAR(300),
+    host git_host DEFAULT 'Github'
 );
