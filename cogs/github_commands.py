@@ -3,6 +3,7 @@ import re
 
 from bs4 import BeautifulSoup, NavigableString
 import discord
+from discord.ext import commands
 import voxelbotutils as utils
 
 
@@ -47,25 +48,54 @@ class GithubCommands(utils.Cog):
             await message.channel.send(sendable)
 
     @utils.command()
+    @commands.bot_has_permissions(send_messages=True, add_reactions=True)
+    @commands.is_owner()
+    async def addrepoalias(self, ctx:utils.Context, alias:str, repo:str):
+        """
+        Add a Github repo alias to the database.
+        """
+
+        if repo.startswith("gh/"):
+            _, owner, repo = repo.split('/')
+        elif "github.com" in repo.lower():
+            match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
+            if not match:
+                raise utils.errors.MissingRequiredArgumentString("repo")
+            owner, repo = match.group("user"), match.group("repo")
+        else:
+            return await ctx.send("I couldn't find that Github repo.")
+        async with self.bot.database() as db:
+            await db("INSERT INTO github_repo_aliases (alias, owner, repo) VALUES (LOWER($1), $2, $3)", alias, owner, repo)
+        await ctx.okay()
+
+    @utils.command()
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     async def createissue(self, ctx:utils.Context, repo:str, *, title:str):
         """
         Create a Github issue on a given repo.
         """
 
-        # Validate the repo
-        if repo.startswith("gh/"):
-            _, owner, repo = repo.split('/')
-        else:
-            match = re.search(r"https://github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
-            if not match:
-                raise utils.errors.MissingRequiredArgumentString("repo")
-            owner, repo = match.group("user"), match.group("repo")
-
-        # See if they have a connected Github account
+        # Get the database because whatever why not
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
-        if not rows or not rows[0]['github_username']:
-            return await ctx.send(f"You need to link your Github account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+
+            # Validate the repo
+            if repo.startswith("gh/"):
+                _, owner, repo = repo.split('/')
+            elif "github.com" in repo.lower():
+                match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
+                if not match:
+                    raise utils.errors.MissingRequiredArgumentString("repo")
+                owner, repo = match.group("user"), match.group("repo")
+            else:
+                repo_rows = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1)", repo)
+                if not repo_rows:
+                    return await ctx.send("I couldn't find that Github repo.")
+                owner, repo = repo_rows[0]['owner'], repo_rows[0]['repo']
+
+            # See if they have a connected Github account
+            user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
+            if not user_rows or not user_rows[0]['github_username']:
+                return await ctx.send(f"You need to link your Github account to Discord to run this command - see `{ctx.clean_prefix}website`.")
 
         # Ask if we want to do this
         embed = utils.Embed(title=title, use_random_colour=True).set_footer("Use the \N{HEAVY PLUS SIGN} emoji to add a body.")

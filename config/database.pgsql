@@ -90,3 +90,10 @@ CREATE TABLE ship_percentages(
     percentage SMALLINT,
     PRIMARY KEY (user_id_1, user_id_2)
 );
+
+
+CREATE TABLE github_repo_aliases(
+    alias VARCHAR(100) PRIMARY KEY,
+    owner VARCHAR(300),
+    repo VARCHAR(300)
+);
