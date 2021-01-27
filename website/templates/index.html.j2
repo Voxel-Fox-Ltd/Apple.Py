@@ -35,6 +35,16 @@
             </a>
         {% endif %}
 
+        {% if gitlab_username %}
+            <a href="/gitlab_logout">
+                <div class="button-holder">Logout of Gitlab (<b>{{ gitlab_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ gitlab_login_url }}">
+                <div class="button-holder">Login with Gitlab</div>
+            </a>
+        {% endif %}
+
     {% else %}
         <a href="{{ login_url }}">
             <div class="button-holder">Login with Discord</div>

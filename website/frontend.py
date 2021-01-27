@@ -30,20 +30,29 @@ async def index(request:Request):
     github_login_url_params = {
         'client_id': request.app['config']['github_oauth']['client_id'],
         'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/github_login_processor',
-        # 'response_type': 'code',
         'scope': 'user repo',
+    }
+
+    # Gitlab login URL params
+    github_login_url_params = {
+        'client_id': request.app['config']['gitlab_oauth']['client_id'],
+        'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/gitlab_login_processor',
+        'response_type': 'code',
+        'scope': 'read_user read_repository',
     }
 
     # Handle current logins
     session = await aiohttp_session.get_session(request)
     twitch_username = None
     github_username = None
+    gitlab_username = None
     if session.get('logged_in'):
         async with request.app['database']() as db:
             rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
         if rows:
             twitch_username = rows[0]['twitch_username']
             github_username = rows[0]['github_username']
+            gitlab_username = rows[0]['gitlab_username']
 
     # Return items
     return {
@@ -52,4 +61,6 @@ async def index(request:Request):
         'twitch_username': twitch_username,
         'github_login_url': f'https://github.com/login/oauth/authorize?{urlencode(github_login_url_params)}',
         'github_username': github_username,
+        'gitlab_login_url': f'https://gitlab.com/oauth/authorize?{urlencode(github_login_url_params)}',
+        'gitlab_username': gitlab_username,
     }
