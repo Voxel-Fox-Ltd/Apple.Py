@@ -160,7 +160,7 @@ class GithubCommands(utils.Cog):
             }
             async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", json=json, headers=headers) as r:
                 data = await r.json()
-                self.logger.info(f"Received data from Github - {data!s}")
+                self.logger.info(f"Received data from Github {r.url!s} - {data!s}")
                 if str(r.status)[0] != '2':
                     return await ctx.send(f"I was unable to create an issue on that Github repository - `{data}`.")
             await ctx.send(f"Your issue has been created - <{data['html_url']}>.")
@@ -171,7 +171,7 @@ class GithubCommands(utils.Cog):
             }
             async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo)}/issues", json=json, headers=headers) as r:
                 data = await r.json()
-                self.logger.info(f"Received data from Gitlab - {data!s}")
+                self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
                 if str(r.status)[0] != '2':
                     return await ctx.send(f"I was unable to create an issue on that Gitlab repository - `{data}`.")
             await ctx.send(f"Your issue has been created - <{data['web_url']}>.")
