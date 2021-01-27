@@ -1,5 +1,6 @@
 import asyncio
 import re
+from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup, NavigableString
 import discord
@@ -57,15 +58,22 @@ class GithubCommands(utils.Cog):
 
         if repo.startswith("gh/"):
             _, owner, repo = repo.split('/')
+            host = "Github"
         elif "github.com" in repo.lower():
             match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
-            if not match:
-                raise utils.errors.MissingRequiredArgumentString("repo")
             owner, repo = match.group("user"), match.group("repo")
+            host = "Github"
+        elif repo.startswith("gl/"):
+            _, owner, repo = repo.split('/')
+            host = "Gitlab"
+        elif "gitlab.com" in repo.lower():
+            match = re.search(r"(?:https?://)?gitlab\.com/(?P<user>.+)/(?P<repo>.+)", repo)
+            owner, repo = match.group("user"), match.group("repo")
+            host = "Gitlab"
         else:
-            return await ctx.send("I couldn't find that Github repo.")
+            return await ctx.send("I couldn't find that git repo.")
         async with self.bot.database() as db:
-            await db("INSERT INTO github_repo_aliases (alias, owner, repo) VALUES (LOWER($1), $2, $3)", alias, owner, repo)
+            await db("INSERT INTO github_repo_aliases (alias, owner, repo, host) VALUES (LOWER($1), $2, $3, $4)", alias, owner, repo, host)
         await ctx.okay()
 
     @utils.command()
@@ -81,21 +89,28 @@ class GithubCommands(utils.Cog):
             # Validate the repo
             if repo.startswith("gh/"):
                 _, owner, repo = repo.split('/')
+                host = "Github"
             elif "github.com" in repo.lower():
                 match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
-                if not match:
-                    raise utils.errors.MissingRequiredArgumentString("repo")
                 owner, repo = match.group("user"), match.group("repo")
+                host = "Github"
+            if repo.startswith("gl/"):
+                _, owner, repo = repo.split('/')
+                host = "Gitlab"
+            elif "gitlab.com" in repo.lower():
+                match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
+                owner, repo = match.group("user"), match.group("repo")
+                host = "Gitlab"
             else:
                 repo_rows = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1)", repo)
                 if not repo_rows:
                     return await ctx.send("I couldn't find that Github repo.")
-                owner, repo = repo_rows[0]['owner'], repo_rows[0]['repo']
+                owner, repo, host = repo_rows[0]['owner'], repo_rows[0]['repo'], repo_rows[0]['host']
 
             # See if they have a connected Github account
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
-            if not user_rows or not user_rows[0]['github_username']:
-                return await ctx.send(f"You need to link your Github account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+            if not user_rows or not user_rows[0][f'{host.lower()}_username']:
+                return await ctx.send(f"You need to link your {host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
 
         # Ask if we want to do this
         embed = utils.Embed(title=title, use_random_colour=True).set_footer("Use the \N{HEAVY PLUS SIGN} emoji to add a body.")
@@ -137,22 +152,29 @@ class GithubCommands(utils.Cog):
             return await ctx.send("Alright, cancelling issue add.")
 
         # Create the issue
-        json = {
-            'title': title,
-            'body': body,
-        }
-        headers = {
-            'Accept': 'application/vnd.github.v3+json',
-            'Authorization': f"token {user_rows[0]['github_access_token']}",
-        }
-        async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", json=json, headers=headers) as r:
-            if str(r.status)[0] != '2':
-                return await ctx.send("I was unable to create an issue on that repository.")
-            data = await r.json()
-            self.logger.info(f"Received data from Github - {data!s}")
-
-        # And done
-        await ctx.send(f"Your issue has been created - <{data['html_url']}>.")
+        if host == "Github":
+            json = {'title': title, 'body': body}
+            headers = {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': f"token {user_rows[0]['github_access_token']}",
+            }
+            async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", json=json, headers=headers) as r:
+                data = await r.json()
+                if str(r.status)[0] != '2':
+                    return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.")
+                self.logger.info(f"Received data from Github - {data!s}")
+            await ctx.send(f"Your issue has been created - <{data['html_url']}>.")
+        elif host == "Gitlab":
+            json = {'title': title, 'description': body}
+            headers = {
+                'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}",
+            }
+            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{urlencode(owner + '/' + repo)}/issues", json=json, headers=headers) as r:
+                data = await r.json()
+                if str(r.status)[0] != '2':
+                    return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.")
+                self.logger.info(f"Received data from Github - {data!s}")
+            await ctx.send(f"Your issue has been created - <{data['web_url']}>.")
 
     @utils.Cog.listener("on_message")
     async def github_message_answer_listener(self, message:discord.Message):
