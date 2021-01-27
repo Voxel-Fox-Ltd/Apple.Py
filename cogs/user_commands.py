@@ -37,6 +37,7 @@ class UserCommands(utils.Cog):
         Add a custom ship percentage.
         """
 
+        user2 = user2 or ctx.author
         percentage = max([min([percentage * 100, 30_000]), -30_000])
         async with self.bot.database() as db:
             await db("INSERT INTO ship_percentages (user_id_1, user_id_2, percentage) VALUES ($1, $2, $3)", *sorted([user1.id, user2.id]), percentage)
