@@ -146,6 +146,8 @@ class GithubCommands(utils.Cog):
             'Authorization': f"token {user_rows[0]['github_access_token']}",
         }
         async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", json=json, headers=headers) as r:
+            if str(r.status)[0] != '2':
+                return await ctx.send("I was unable to create an issue on that repository.")
             data = await r.json()
             self.logger.info(f"Received data from Github - {data!s}")
 
