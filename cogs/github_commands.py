@@ -1,6 +1,6 @@
 import asyncio
 import re
-from urllib.parse import urlencode
+from urllib.parse import quote
 
 from bs4 import BeautifulSoup, NavigableString
 import discord
@@ -169,7 +169,7 @@ class GithubCommands(utils.Cog):
             headers = {
                 'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}",
             }
-            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{urlencode(owner + '/' + repo)}/issues", json=json, headers=headers) as r:
+            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo)}/issues", json=json, headers=headers) as r:
                 data = await r.json()
                 if str(r.status)[0] != '2':
                     return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.")
