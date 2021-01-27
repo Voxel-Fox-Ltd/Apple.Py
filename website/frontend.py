@@ -34,7 +34,7 @@ async def index(request:Request):
     }
 
     # Gitlab login URL params
-    github_login_url_params = {
+    gitlab_login_url_params = {
         'client_id': request.app['config']['gitlab_oauth']['client_id'],
         'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/gitlab_login_processor',
         'response_type': 'code',
@@ -61,6 +61,6 @@ async def index(request:Request):
         'twitch_username': twitch_username,
         'github_login_url': f'https://github.com/login/oauth/authorize?{urlencode(github_login_url_params)}',
         'github_username': github_username,
-        'gitlab_login_url': f'https://gitlab.com/oauth/authorize?{urlencode(github_login_url_params)}',
+        'gitlab_login_url': f'https://gitlab.com/oauth/authorize?{urlencode(gitlab_login_url_params)}',
         'gitlab_username': gitlab_username,
     }
