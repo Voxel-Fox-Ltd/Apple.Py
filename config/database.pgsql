@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS this_or_that(
 );
 
 
-CREATE TABLE ship_percentages(
+CREATE TABLE IF NOT EXISTS ship_percentages(
     user_id_1 BIGINT,
     user_id_2 BIGINT,
     percentage SMALLINT,
@@ -92,7 +92,7 @@ CREATE TABLE ship_percentages(
 );
 
 
-CREATE TABLE github_repo_aliases(
+CREATE TABLE IF NOT EXISTS github_repo_aliases(
     alias VARCHAR(100) PRIMARY KEY,
     owner VARCHAR(300),
     repo VARCHAR(300)
