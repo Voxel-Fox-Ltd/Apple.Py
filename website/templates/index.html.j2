@@ -45,6 +45,16 @@
             </a>
         {% endif %}
 
+        {% if google_email %}
+            <a href="/google_logout">
+                <div class="button-holder">Logout of Google (<b>{{ google_email }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ google_login_url }}">
+                <div class="button-holder">Login with Google</div>
+            </a>
+        {% endif %}
+
     {% else %}
         <a href="{{ login_url }}">
             <div class="button-holder">Login with Discord</div>

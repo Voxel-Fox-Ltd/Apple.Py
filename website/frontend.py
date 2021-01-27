@@ -41,11 +41,20 @@ async def index(request:Request):
         'scope': 'read_user api read_api',
     }
 
+    # Google login URL params
+    google_login_url_params = {
+        'client_id': request.app['config']['google_oauth']['client_id'],
+        'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/google_login_processor',
+        'response_type': 'code',
+        'scope': 'email https://www.googleapis.com/auth/gmail.send',
+    }
+
     # Handle current logins
     session = await aiohttp_session.get_session(request)
     twitch_username = None
     github_username = None
     gitlab_username = None
+    google_email = None
     if session.get('logged_in'):
         async with request.app['database']() as db:
             rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
@@ -53,6 +62,7 @@ async def index(request:Request):
             twitch_username = rows[0]['twitch_username']
             github_username = rows[0]['github_username']
             gitlab_username = rows[0]['gitlab_username']
+            google_email = rows[0]['google_email']
 
     # Return items
     return {
@@ -63,4 +73,6 @@ async def index(request:Request):
         'github_username': github_username,
         'gitlab_login_url': f'https://gitlab.com/oauth/authorize?{urlencode(gitlab_login_url_params)}',
         'gitlab_username': gitlab_username,
+        'google_login_url': f'https://accounts.google.com/o/oauth2/v2/auth?{urlencode(google_login_url_params)}',
+        'google_email': google_email,
     }
