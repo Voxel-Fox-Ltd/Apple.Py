@@ -177,7 +177,7 @@ async def gitlab_logout(request:Request):
     session = await aiohttp_session.get_session(request)
     async with request.app['database']() as db:
         await db(
-            "UPDATE user_settings SET gitlab_username=NULL, gitlab_access_token=NULL WHERE user_id=$1",
+            "UPDATE user_settings SET gitlab_username=NULL, gitlab_bearer_token=NULL, gitlab_refresh_token=NULL WHERE user_id=$1",
             session['user_id']
         )
     return HTTPFound(location=session.pop('redirect_on_login', '/'))
