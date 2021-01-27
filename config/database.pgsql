@@ -82,3 +82,11 @@ CREATE TABLE IF NOT EXISTS this_or_that(
     user_id BIGINT,
     PRIMARY KEY (compare_1, compare_2, user_id)
 );
+
+
+CREATE TABLE ship_percentages(
+    user_id_1 BIGINT,
+    user_id_2 BIGINT,
+    percentage SMALLINT,
+    PRIMARY KEY (user_id_1, user_id_2)
+);
