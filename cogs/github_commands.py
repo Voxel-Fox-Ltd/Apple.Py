@@ -143,7 +143,7 @@ class GithubCommands(utils.Cog):
         }
         headers = {
             'Accept': 'application/vnd.github.v3+json',
-            'Authorization': f"token {rows[0]['github_access_token']}",
+            'Authorization': f"token {user_rows[0]['github_access_token']}",
         }
         async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", json=json, headers=headers) as r:
             data = await r.json()
