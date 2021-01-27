@@ -169,7 +169,7 @@ class GithubCommands(utils.Cog):
             headers = {
                 'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}",
             }
-            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo)}/issues", json=json, headers=headers) as r:
+            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo, safe='')}/issues", json=json, headers=headers) as r:
                 data = await r.json()
                 self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
                 if str(r.status)[0] != '2':
