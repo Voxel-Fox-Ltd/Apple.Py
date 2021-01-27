@@ -38,7 +38,7 @@ async def index(request:Request):
         'client_id': request.app['config']['gitlab_oauth']['client_id'],
         'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/gitlab_login_processor',
         'response_type': 'code',
-        'scope': 'read_user read_repository',
+        'scope': 'read_user api read_api',
     }
 
     # Handle current logins
