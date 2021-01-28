@@ -164,6 +164,7 @@ class MiscCommands(utils.Cog):
                     await ctx.send("That HTTP code doesn't exist.")
                 else:
                     await ctx.send('Image for HTTP code not found on provider.')
+                return
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_image(url=f'https://httpstatusdogs.com/img/{errorcode}.jpg')
         await ctx.send(embed=embed)
