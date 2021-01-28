@@ -110,6 +110,7 @@ class MiscCommands(utils.Cog):
             return await ctx.send(str(e))
         await ctx.okay()
 
+    # TODO: remove duplicate code between httpcat and httpdog commands?
     @utils.command(aliases=['http'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def httpcat(self, ctx:utils.Context, errorcode:str):
