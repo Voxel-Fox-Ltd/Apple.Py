@@ -17,7 +17,7 @@ class GmailCommands(utils.Cog):
             rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
         if not rows or not rows[0]['google_access_token']:
             return await ctx.send(f"You need to login to Google to use this API - see `{ctx.clean_prefix}website`.")
-        json = {"raw": b64encode(body)}
+        json = {"raw": b64encode(body.encode()).decode()}
         headers = {"Authorization": f"Bearer {rows[0]['google_access_token']}"}
         async with self.bot.session.get(f"https://gmail.googleapis.com/upload/gmail/v1/users/{email}/messages/send", json=json, headers=headers) as r:
             if str(r.status)[0] != '2':
