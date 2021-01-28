@@ -113,13 +113,16 @@ class MiscCommands(utils.Cog):
     @utils.command(aliases=['http'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def httpcat(self, ctx:utils.Context, errorcode:str):
-        """Gives you a cat based on a HTTP error code"""
-        try:
-            errorcode = int(errorcode)
-        except ValueError:
-            ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
-
+        """Gives you a cat based on an HTTP error code"""
         standard_errorcodes = [error.value for error in http.HTTPStatus]
+
+        if errorcode in ('random', 'rand', 'r'):
+            errorcode = random.choice(standard_errorcodes)
+        else:
+            try:
+                errorcode = int(errorcode)
+            except ValueError:
+                return ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
 
         await ctx.channel.trigger_typing()
         headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
@@ -140,13 +143,16 @@ class MiscCommands(utils.Cog):
     @utils.command()
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def httpdog(self, ctx:utils.Context, errorcode:str):
-        """Gives you a dog based on a HTTP error code"""
-        try:
-            errorcode = int(errorcode)
-        except ValueError:
-            ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
-
+        """Gives you a dog based on an HTTP error code"""
         standard_errorcodes = [error.value for error in http.HTTPStatus]
+
+        if errorcode in ('random', 'rand', 'r'):
+            errorcode = random.choice(standard_errorcodes)
+        else:
+            try:
+                errorcode = int(errorcode)
+            except ValueError:
+                return ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
 
         await ctx.channel.trigger_typing()
         headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
