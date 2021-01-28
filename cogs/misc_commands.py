@@ -58,7 +58,7 @@ class MiscCommands(utils.Cog):
             user3, user4, user5 = ctx.author, user3, user4
         user_list = [user1, user2, user3, user4, user5]
 
-        # Grab everyone's profile picutres
+        # Grab everyone's profile pictures
         avatar_bytes = []
         for user in user_list:
             async with self.bot.session.get(str(user.avatar_url_as(format="png", size=256))) as r:
