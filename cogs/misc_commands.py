@@ -2,6 +2,7 @@ import typing
 import random
 from urllib.parse import urlencode
 import io
+import http
 
 import discord
 from discord.ext import commands
@@ -111,17 +112,26 @@ class MiscCommands(utils.Cog):
 
     @utils.command(aliases=['http'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    async def httpcat(self, ctx:utils.Context, errorcode:int):
+    async def httpcat(self, ctx:utils.Context, errorcode:str):
         """Gives you a cat based on a HTTP error code"""
+        try:
+            errorcode = int(errorcode)
+        except ValueError:
+            ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
+
+        standard_errorcodes = [error.value for error in http.HTTPStatus]
 
         await ctx.channel.trigger_typing()
         headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
         async with self.bot.session.get(f"https://http.cat/{errorcode}", headers=headers) as r:
             if r.status == 404:
-                await ctx.send('That HTTP code doesnt exist.')
+                if errorcode not in standard_errorcodes:
+                    await ctx.send("That HTTP code doesn't exist.")
+                else:
+                    await ctx.send('Image for HTTP code not found on provider.')
                 return
             if r.status != 200:
-                await ctx.send('Something else went wrong, try again later.')
+                await ctx.send(f'Something went wrong, try again later. ({r.status})')
                 return
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_image(url=f'https://http.cat/{errorcode}')
@@ -129,14 +139,24 @@ class MiscCommands(utils.Cog):
 
     @utils.command()
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    async def httpdog(self, ctx:utils.Context, errorcode:int):
+    async def httpdog(self, ctx:utils.Context, errorcode:str):
         """Gives you a dog based on a HTTP error code"""
+        try:
+            errorcode = int(errorcode)
+        except ValueError:
+            ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
+
+        standard_errorcodes = [error.value for error in http.HTTPStatus]
 
         await ctx.channel.trigger_typing()
         headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
-        async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg", headers=headers, allow_redirects=False) as r:
+        async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg",
+                                        headers=headers, allow_redirects=False) as r:
             if str(r.status)[0] != "2":
-                return await ctx.send("That HTTP code doesnt exist.")
+                if errorcode not in standard_errorcodes:
+                    await ctx.send("That HTTP code doesn't exist.")
+                else:
+                    await ctx.send('Image for HTTP code not found on provider.')
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_image(url=f'https://httpstatusdogs.com/img/{errorcode}.jpg')
         await ctx.send(embed=embed)
