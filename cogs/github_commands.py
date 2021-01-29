@@ -76,7 +76,7 @@ class GithubCommands(utils.Cog):
             await db("INSERT INTO github_repo_aliases (alias, owner, repo, host) VALUES (LOWER($1), $2, $3, $4)", alias, owner, repo, host)
         await ctx.okay()
 
-    @utils.command()
+    @utils.command(aliases=['ci'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     async def createissue(self, ctx:utils.Context, repo:str, *, title:str):
         """
@@ -94,7 +94,7 @@ class GithubCommands(utils.Cog):
                 match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
                 owner, repo = match.group("user"), match.group("repo")
                 host = "Github"
-            if repo.startswith("gl/"):
+            elif repo.startswith("gl/"):
                 _, owner, repo = repo.split('/')
                 host = "Gitlab"
             elif "gitlab.com" in repo.lower():
@@ -104,7 +104,7 @@ class GithubCommands(utils.Cog):
             else:
                 repo_rows = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1)", repo)
                 if not repo_rows:
-                    return await ctx.send("I couldn't find that Github repo.")
+                    return await ctx.send("I couldn't find that git repo.")
                 owner, repo, host = repo_rows[0]['owner'], repo_rows[0]['repo'], repo_rows[0]['host']
 
             # See if they have a connected Github account
