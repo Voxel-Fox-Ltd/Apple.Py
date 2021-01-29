@@ -36,7 +36,11 @@ class QuoteCommands(utils.Cog):
 
         # Make sure a message was passed
         if not messages:
-            return await ctx.send("I couldn't find any references to messages in your command call.")
+            if ctx.message.reference is not None:
+                message_from_reply = await ctx.fetch_message(ctx.message.reference.message_id)
+                messages = [message_from_reply]
+            else:
+                return await ctx.send("I couldn't find any references to messages in your command call.")
 
         # Recreate the message list without duplicates
         unique_messages = []
