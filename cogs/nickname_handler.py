@@ -136,7 +136,7 @@ class NicknameHandler(utils.Cog):
             if member.nick == new_nickname:
                 return
             try:
-                await member.edit(nick=new_nickname,reason= "Changed by Apple.Py automagically")
+                await member.edit(nick=new_nickname, reason="Changed by Apple.Py automagically")
                 self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} to '{new_nickname}' from member update")
             except discord.Forbidden as e:
                 self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
@@ -199,6 +199,8 @@ class NicknameHandler(utils.Cog):
             # Try and fix their name
             new_name_with_zalgo = current_name.translate(translator)
             new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
+            # remove obnoxious exclamation marks to boost to top of member list
+            new_name = new_name.lstrip('! ')
 
             # See if they have enough valid characters
             if not self.consecutive_character_regex:
