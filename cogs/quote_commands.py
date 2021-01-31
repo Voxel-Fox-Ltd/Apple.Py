@@ -195,8 +195,14 @@ class QuoteCommands(utils.Cog):
         except (AssertionError, discord.HTTPException):
             return await ctx.send("I wasn't able to get your quote message.")
 
+        # try to refresh the user name and icon of the embed by getting the user from the user ID in the DB
+        quote_embed = message.embeds[0]
+        quote_author = self.bot.get_user(data['user_id'])
+        if quote_author:
+            quote_embed.set_author(name=quote_author.name, icon_url=quote_author.avatar_url)
+
         # Output to user
-        return await ctx.send(embed=message.embeds[0])
+        return await ctx.send(embed=quote_embed)
 
     @quote.command(name="random")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
