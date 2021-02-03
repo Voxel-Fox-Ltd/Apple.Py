@@ -98,7 +98,7 @@ class NicknameHandler(utils.Cog):
             )
         if data:
             try:
-                await member.edit(nick=data[0]["nickname"],reason= "Changed by Apple.Py automagically")
+                await member.edit(nick=data[0]["nickname"], reason="Changed by Apple.Py automagically")
                 self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} from member join")
             except discord.Forbidden as e:
                 self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
@@ -186,9 +186,14 @@ class NicknameHandler(utils.Cog):
         """Fix the nickname of a user"""
 
         current_name = user.nick or user.name
+        new_name = current_name
 
         # See if we should even bother trying to translate it
         if force_to_animal is False:
+
+            # See if every other character is a space
+            if new_name[1::2].strip() == "":
+                new_name = new_name[::2]
 
             # Read the letter replacements file
             replacements = self.get_letter_replacements()
@@ -197,10 +202,12 @@ class NicknameHandler(utils.Cog):
             translator = str.maketrans(replacements)
 
             # Try and fix their name
-            new_name_with_zalgo = current_name.translate(translator)
+            new_name_with_zalgo = new_name.translate(translator)
             new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
-            # remove obnoxious exclamation marks to boost to top of member list
-            new_name = new_name.lstrip('! ')
+
+            # Remove obnoxious exclamation marks to boost to top of member list
+            if current_name.startswith("! "):
+                new_name = new_name.lstrip("! ")
 
             # See if they have enough valid characters
             if not self.consecutive_character_regex:
