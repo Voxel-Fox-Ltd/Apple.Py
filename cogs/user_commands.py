@@ -38,9 +38,13 @@ class UserCommands(utils.Cog):
         """
 
         user2 = user2 or ctx.author
-        percentage = max([min([percentage * 100, 30_000]), -30_000])
+        percentage = max([min([percentage * 100, 10_000]), -10_000])
         async with self.bot.database() as db:
-            await db("INSERT INTO ship_percentages (user_id_1, user_id_2, percentage) VALUES ($1, $2, $3)", *sorted([user1.id, user2.id]), percentage)
+            await db(
+                """INSERT INTO ship_percentages (user_id_1, user_id_2, percentage) VALUES ($1, $2, $3)
+                ON CONFLICT (user_id_1, user_id_2) DO UPDATE SET percentage=excluded.percentage""",
+                *sorted([user1.id, user2.id]), percentage,
+            )
         await ctx.okay()
 
 
