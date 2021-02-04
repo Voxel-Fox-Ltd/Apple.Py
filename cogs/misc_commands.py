@@ -27,13 +27,41 @@ class MiscCommands(utils.Cog):
 
     @utils.command()
     async def fpf(self, ctx:utils.Context, *, text:commands.clean_content):
-        """"""
+        """
+        Give you some fluffy pink font text.
+        """
 
         if len(text) > 50:
             return await ctx.send("Your text input is too long.")
         base_url = "https://flamingtext.com/net-fu/proxy_form.cgi"
         params = {
             "script": "fluffy-logo",
+            "fillTextColor": "#fde",
+            "outlineSize": "3",
+            "fillOutlineColor": "#ffcdcd",
+            "shadowType": "0",
+            "shadowXOffset": "-20",
+            "shadowBlur": "0",
+            "backgroundRadio": "0",
+            "text": text,
+            "_loc": "generate",
+            "imageoutput": "true",
+        }
+        url = base_url + '?' + urlencode(params)
+        embed = utils.Embed(use_random_colour=True).set_image(url)
+        return await ctx.send(embed=embed)
+
+    @utils.command()
+    async def hpf(self, ctx:utils.Context, *, text:commands.clean_content):
+        """
+        Give you some Harry Potter font text.
+        """
+
+        if len(text) > 50:
+            return await ctx.send("Your text input is too long.")
+        base_url = "https://flamingtext.com/net-fu/proxy_form.cgi"
+        params = {
+            "script": "harry-potter-logo",
             "fillTextColor": "#fde",
             "outlineSize": "3",
             "fillOutlineColor": "#ffcdcd",
