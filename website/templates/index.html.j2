@@ -45,13 +45,23 @@
             </a>
         {% endif %}
 
-        {% if google_email %}
+        {# {% if google_email %}
             <a href="/google_logout">
                 <div class="button-holder">Logout of Google (<b>{{ google_email }}</b>)</div>
             </a>
         {% else %}
             <a href="{{ google_login_url }}">
                 <div class="button-holder">Login with Google</div>
+            </a>
+        {% endif %} #}
+
+        {% if tumblr_username %}
+            <a href="/tumblr_logout">
+                <div class="button-holder">Logout of Tumblr (<b>{{ tumblr_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ tumblr_login_url }}">
+                <div class="button-holder">Login with Tumblr</div>
             </a>
         {% endif %}
 

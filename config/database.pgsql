@@ -33,7 +33,11 @@ CREATE TABLE IF NOT EXISTS user_settings(
 
     google_email VARCHAR(40),
     google_access_token VARCHAR(300),
-    google_refresh_token VARCHAR(300)
+    google_refresh_token VARCHAR(300),
+
+    tumblr_username VARCHAR(100),
+    tumblr_oauth_token VARCHAR(100),
+    tumblr_oauth_token_secret VARCHAR(100)
 );
 
 
