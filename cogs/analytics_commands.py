@@ -8,10 +8,29 @@ import voxelbotutils as utils
 
 
 DISCORD_EMOTE_REGEX = re.compile(r'<:(\w*):\d*>')
+RATELIMIT_MESSAGE_PER_SECOND = 100
+PROGRESS_REPORT_INTERVAL_DEFAULT = 1000
 
 
 class AnalyticsCommands(utils.Cog):
-    # todo: add progress printouts
+    progress_report_interval = PROGRESS_REPORT_INTERVAL_DEFAULT
+
+    def progress_report(self, ctx:commands.Context, messages_processed:int, current_channel:discord.TextChannel):
+        if messages_processed == 0:
+            await ctx.send(f'Processing... ({RATELIMIT_MESSAGE_PER_SECOND} messages/second - Discord ratelimit)')
+        elif messages_processed % self.progress_report_interval == 0:
+            await ctx.send(f'Processed {messages_processed} so far, currently in #{current_channel.name}')
+
+    @utils.command(name='set-analytics-progress-report-interval', aliases=['sapri'])
+    @commands.has_permissions(manage_guild=True)
+    @utils.cooldown.cooldown(1, 10, commands.BucketType.channel)
+    @commands.bot_has_permissions(send_message=True)
+    def set_interval(self, ctx:utils.Context, interval:int):
+        await ctx.send(f'Previous interval: {self.progress_report_interval}, '
+                       f'Default: {PROGRESS_REPORT_INTERVAL_DEFAULT}')
+        self.progress_report_interval = interval
+        await ctx.send(f'Set interval to {self.progress_report_interval}')
+
     @utils.command()
     @utils.cooldown.cooldown(1, 6000, commands.BucketType.guild)
     @commands.bot_has_permissions(read_message_history=True, send_messages=True, attach_files=True)
@@ -29,16 +48,20 @@ class AnalyticsCommands(utils.Cog):
             except re.error:
                 return await ctx.send('Bad regex.')
 
-        await ctx.send('Processing...')
         all_links = []
+        messages_processed = 0
         for target_channel in target_channels:
             for message in target_channel.history(limit=None):
+                self.progress_report(ctx, messages_processed, target_channel)
+
                 for embed in message.embeds:
                     if regex is not None:
                         if re.fullmatch(regex, embed.url):
                             all_links.append(embed.url)
                     else:
                         all_links.append(embed.url)
+
+                messages_processed += 1
 
         with io.StringIO('\n'.join(all_links)) as file_stream:
             discord_file = discord.File(file_stream, filename='links.txt')
@@ -59,16 +82,19 @@ class AnalyticsCommands(utils.Cog):
         if target_channels is None:
             target_channels = ctx.guild.channels
 
-        await ctx.send('Processing...')
-
         with io.StringIO as file_stream:
             csvw = csv.writer(file_stream)
-            for channel in target_channels:
-                if channel.type == discord.ChannelType.text:
-                    for message in channel.history(limit=None):
+            messages_processed = 0
+            for target_channel in target_channels:
+                if target_channel.type == discord.ChannelType.text:
+                    for message in target_channel.history(limit=None):
+                        self.progress_report(ctx, messages_processed, target_channel)
+
                         emotes_used = re.findall(DISCORD_EMOTE_REGEX, message.content)
                         message_timestamp = message.created_at.timestamp()
                         csvw.writerows([[message_timestamp, emote_used] for emote_used in emotes_used])
+
+                        messages_processed += 1
 
             discord_file = discord.File(file_stream, filename='emotes.csv')
             return await ctx.send('Here are all the emotes used in this guild (server):', file=discord_file)
