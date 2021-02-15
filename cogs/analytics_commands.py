@@ -11,25 +11,34 @@ DISCORD_EMOTE_REGEX = re.compile(r'<:(\w*):\d*>')
 
 
 class AnalyticsCommands(utils.Cog):
+    # todo: add progress printouts
     @utils.command()
     @utils.cooldown.cooldown(1, 6000, commands.BucketType.guild)
     @commands.bot_has_permissions(read_message_history=True, send_messages=True, attach_files=True)
-    def linkdump(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None):
+    def linkdump(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None, regex=None):
         """
         Get all links ever sent in a channel and dump them to a txt file.
 
         Takes channels as arguments, or defaults to the channel in which the command was invoked.
         """
-        # todo: add `regex` argument takes a regular expression and only returns links that match
         if target_channels is None:
             target_channels = [ctx.channel]
+        if regex is not None:
+            try:
+                regex = re.compile(regex)
+            except re.error:
+                return await ctx.send('Bad regex.')
 
         await ctx.send('Processing...')
         all_links = []
         for target_channel in target_channels:
             for message in target_channel.history(limit=None):
                 for embed in message.embeds:
-                    all_links.append(embed.url)
+                    if regex is not None:
+                        if re.fullmatch(regex, embed.url):
+                            all_links.append(embed.url)
+                    else:
+                        all_links.append(embed.url)
 
         with io.StringIO('\n'.join(all_links)) as file_stream:
             discord_file = discord.File(file_stream, filename='links.txt')
