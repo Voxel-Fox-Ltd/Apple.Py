@@ -33,7 +33,7 @@ class AnalyticsCommands(utils.Cog):
 
         with io.StringIO('\n'.join(all_links)) as file_stream:
             discord_file = discord.File(file_stream, filename='links.txt')
-            return await ctx.send(f'Here are all the links ever sent in the {target_channel.name} channel:',
+            return await ctx.send(f'Here are all the links ever sent in the channels:',
                                   file=discord_file)
 
     @utils.command(name='analyse-emote-usage')
