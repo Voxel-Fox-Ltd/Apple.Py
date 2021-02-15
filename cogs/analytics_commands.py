@@ -15,7 +15,7 @@ PROGRESS_REPORT_INTERVAL_DEFAULT = 1000
 class AnalyticsCommands(utils.Cog):
     progress_report_interval = PROGRESS_REPORT_INTERVAL_DEFAULT
 
-    def progress_report(self, ctx:commands.Context, messages_processed:int, current_channel:discord.TextChannel):
+    async def progress_report(self, ctx:commands.Context, messages_processed:int, current_channel:discord.TextChannel):
         if messages_processed == 0:
             await ctx.send(f'Processing... ({RATELIMIT_MESSAGE_PER_SECOND} messages/second - Discord ratelimit)')
         elif messages_processed % self.progress_report_interval == 0:
@@ -51,7 +51,7 @@ class AnalyticsCommands(utils.Cog):
         messages_processed = 0
         for target_channel in target_channels:
             for message in target_channel.history(limit=None):
-                self.progress_report(ctx, messages_processed, target_channel)
+                self.bot.loop.create_task(self.progress_report(ctx, messages_processed, target_channel))
 
                 for embed in message.embeds:
                     if regex is not None:
@@ -87,7 +87,7 @@ class AnalyticsCommands(utils.Cog):
             for target_channel in target_channels:
                 if target_channel.type == discord.ChannelType.text:
                     for message in target_channel.history(limit=None):
-                        self.progress_report(ctx, messages_processed, target_channel)
+                        self.bot.loop.create_task(self.progress_report(ctx, messages_processed, target_channel))
 
                         emotes_used = re.findall(DISCORD_EMOTE_REGEX, message.content)
                         message_timestamp = message.created_at.timestamp()
