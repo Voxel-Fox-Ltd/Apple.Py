@@ -13,6 +13,7 @@ PROGRESS_REPORT_INTERVAL_DEFAULT = 1000
 
 
 class AnalyticsCommands(utils.Cog):
+
     progress_report_interval = PROGRESS_REPORT_INTERVAL_DEFAULT
 
     async def progress_report(self, ctx:commands.Context, messages_processed:int, current_channel:discord.TextChannel):
@@ -24,21 +25,24 @@ class AnalyticsCommands(utils.Cog):
     @utils.command(name='set-analytics-progress-report-interval', aliases=['sapri'])
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_message=True)
-    def set_interval(self, ctx:utils.Context, interval:int):
-        await ctx.send(f'Previous interval: {self.progress_report_interval}, '
-                       f'Default: {PROGRESS_REPORT_INTERVAL_DEFAULT}')
+    async def set_interval(self, ctx:utils.Context, interval:int):
+        await ctx.send(
+            f'Previous interval: {self.progress_report_interval}, '
+            f'Default: {PROGRESS_REPORT_INTERVAL_DEFAULT}'
+        )
         self.progress_report_interval = interval
         await ctx.send(f'Set interval to {self.progress_report_interval}')
 
     @utils.command()
     @utils.cooldown.cooldown(1, 6000, commands.BucketType.guild)
     @commands.bot_has_permissions(read_message_history=True, send_messages=True, attach_files=True)
-    def linkdump(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None, regex=None):
+    async def linkdump(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None, regex=None):
         """
         Get all links ever sent in a channel and dump them to a txt file.
 
         Takes channels as arguments, or defaults to the channel in which the command was invoked.
         """
+
         if target_channels is None:
             target_channels = [ctx.channel]
         if regex is not None:
@@ -64,8 +68,10 @@ class AnalyticsCommands(utils.Cog):
 
         with io.StringIO('\n'.join(all_links)) as file_stream:
             discord_file = discord.File(file_stream, filename='links.txt')
-            return await ctx.send(f'Here are all the links ever sent in the channels:',
-                                  file=discord_file)
+            return await ctx.send(
+                'Here are all the links ever sent in the channels:',
+                file=discord_file
+            )
 
     @utils.command(name='analyse-emote-usage')
     @utils.cooldown.cooldown(1, 6000, commands.BucketType.guild)
@@ -78,6 +84,7 @@ class AnalyticsCommands(utils.Cog):
         The user can take this and make a graph or whatever. Useful for figuring out which emotes to remove
         when you're at the cap!
         """
+
         if target_channels is None:
             target_channels = ctx.guild.channels
 
