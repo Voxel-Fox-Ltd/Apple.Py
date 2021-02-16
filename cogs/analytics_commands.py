@@ -24,7 +24,8 @@ class AnalyticsCommands(utils.Cog):
     @utils.command(name='set-analytics-progress-report-interval', aliases=['sapri'])
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_message=True)
-    def set_interval(self, ctx:utils.Context, interval:int):
+    async def set_interval(self, ctx:utils.Context, interval:int):
+        """Set the interval in messages scanned for giving progress outputs."""
         await ctx.send(f'Previous interval: {self.progress_report_interval}, '
                        f'Default: {PROGRESS_REPORT_INTERVAL_DEFAULT}')
         self.progress_report_interval = interval
@@ -33,7 +34,7 @@ class AnalyticsCommands(utils.Cog):
     @utils.command()
     @utils.cooldown.cooldown(1, 6000, commands.BucketType.guild)
     @commands.bot_has_permissions(read_message_history=True, send_messages=True, attach_files=True)
-    def linkdump(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None, regex=None):
+    async def linkdump(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None, regex=None):
         """
         Get all links ever sent in a channel and dump them to a txt file.
 
@@ -70,7 +71,7 @@ class AnalyticsCommands(utils.Cog):
     @utils.command(name='analyse-emote-usage')
     @utils.cooldown.cooldown(1, 6000, commands.BucketType.guild)
     @commands.bot_has_permissions(read_message_history=True, send_messages=True, attach_files=True)
-    def emotes(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None):
+    async def emotes(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None):
         """
         Get a csv containing the timestamp of every discord emote ever sent in a guild.
 
