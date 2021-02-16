@@ -24,7 +24,7 @@ class AnalyticsCommands(utils.Cog):
 
     @utils.command(name='set-analytics-progress-report-interval', aliases=['sapri'])
     @commands.has_permissions(manage_guild=True)
-    @commands.bot_has_permissions(send_message=True)
+    @commands.bot_has_permissions(send_messages=True)
     async def set_interval(self, ctx:utils.Context, interval:int):
         await ctx.send(
             f'Previous interval: {self.progress_report_interval}, '
