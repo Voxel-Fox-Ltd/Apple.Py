@@ -1,5 +1,5 @@
 import time
-from urllib.parse import quote, parse_qs
+from urllib.parse import quote, parse_qs, urlparse
 import hmac
 from base64 import b64encode
 import hashlib
@@ -362,7 +362,7 @@ async def tumblr_login_processor(request:Request):
             """INSERT INTO user_settings (user_id, tumblr_username, tumblr_oauth_token, tumblr_oauth_token_secret) VALUES ($1, $2, $3, $4)
             ON CONFLICT (user_id) DO UPDATE SET tumblr_username=excluded.tumblr_username, tumblr_oauth_token=excluded.tumblr_oauth_token,
             tumblr_oauth_token_secret=excluded.tumblr_oauth_token_secret""",
-            session['user_id'], user_data['response']['user']['name'], token_data['oauth_token'][0], token_data['oauth_token_secret'][0],
+            session['user_id'], urlparse(user_data['response']['user']['blogs'][0]['url']).hostname, token_data['oauth_token'][0], token_data['oauth_token_secret'][0],
         )
     return HTTPFound(location=session.pop('redirect_on_login', '/'))
 
