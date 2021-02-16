@@ -34,7 +34,7 @@ class AnalyticsCommands(utils.Cog):
         await ctx.send(f'Set interval to {self.progress_report_interval}')
 
     @utils.command()
-    @utils.cooldown.cooldown(1, 6000, commands.BucketType.guild)
+    @utils.cooldown.cooldown(1, 60 * 60, commands.BucketType.guild)
     @commands.bot_has_permissions(read_message_history=True, send_messages=True, attach_files=True)
     async def linkdump(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None, regex=None):
         """
@@ -54,16 +54,14 @@ class AnalyticsCommands(utils.Cog):
         all_links = []
         messages_processed = 0
         for target_channel in target_channels:
-            for message in target_channel.history(limit=None):
+            async for message in target_channel.history(limit=None):
                 self.bot.loop.create_task(self.progress_report(ctx, messages_processed, target_channel))
-
                 for embed in message.embeds:
                     if regex is not None:
                         if re.fullmatch(regex, embed.url):
                             all_links.append(embed.url)
                     else:
                         all_links.append(embed.url)
-
                 messages_processed += 1
 
         with io.StringIO('\n'.join(all_links)) as file_stream:
@@ -74,7 +72,7 @@ class AnalyticsCommands(utils.Cog):
             )
 
     @utils.command(name='analyse-emote-usage')
-    @utils.cooldown.cooldown(1, 6000, commands.BucketType.guild)
+    @utils.cooldown.cooldown(1, 60 * 60, commands.BucketType.guild)
     @commands.bot_has_permissions(read_message_history=True, send_messages=True, attach_files=True)
     async def emotes(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None):
         """
@@ -93,15 +91,12 @@ class AnalyticsCommands(utils.Cog):
             messages_processed = 0
             for target_channel in target_channels:
                 if target_channel.type == discord.ChannelType.text:
-                    for message in target_channel.history(limit=None):
+                    async for message in target_channel.history(limit=None):
                         self.bot.loop.create_task(self.progress_report(ctx, messages_processed, target_channel))
-
                         emotes_used = re.findall(DISCORD_EMOTE_REGEX, message.content)
                         message_timestamp = message.created_at.timestamp()
                         csvw.writerows([[message_timestamp, emote_used] for emote_used in emotes_used])
-
                         messages_processed += 1
-
             discord_file = discord.File(file_stream, filename='emotes.csv')
             return await ctx.send('Here are all the emotes used in this guild:', file=discord_file)
 
