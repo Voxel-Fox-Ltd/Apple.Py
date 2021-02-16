@@ -76,7 +76,7 @@ class AnalyticsCommands(utils.Cog):
     @utils.command(name='analyse-emote-usage')
     @utils.cooldown.cooldown(1, 6000, commands.BucketType.guild)
     @commands.bot_has_permissions(read_message_history=True, send_messages=True, attach_files=True)
-    def emotes(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None):
+    async def emotes(self, ctx:utils.Context, target_channels:commands.Greedy[discord.TextChannel]=None):
         """
         Get a csv containing the timestamp of every discord emote ever sent in a guild.
 
@@ -103,7 +103,7 @@ class AnalyticsCommands(utils.Cog):
                         messages_processed += 1
 
             discord_file = discord.File(file_stream, filename='emotes.csv')
-            return await ctx.send('Here are all the emotes used in this guild (server):', file=discord_file)
+            return await ctx.send('Here are all the emotes used in this guild:', file=discord_file)
 
 
 def setup(bot:utils.Bot):
