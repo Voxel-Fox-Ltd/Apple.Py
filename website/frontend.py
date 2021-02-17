@@ -49,13 +49,14 @@ async def index(request:Request):
         'scope': 'email https://www.googleapis.com/auth/gmail.send',
     }
 
-    # # Google login URL params
-    # tumblr_login_url_params = {
-    #     'client_id': request.app['config']['google_oauth']['client_id'],
-    #     'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/google_login_processor',
-    #     'response_type': 'code',
-    #     'scope': 'email https://www.googleapis.com/auth/gmail.send',
-    # }
+    # Reddit login URL params
+    reddit_login_url_params = {
+        'client_id': request.app['config']['reddit_oauth']['client_id'],
+        'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/reddit_login_processor',
+        'response_type': 'code',
+        'scope': 'identify submit',
+        'duration': 'permanent',
+    }
 
     # Handle current logins
     session = await aiohttp_session.get_session(request)
@@ -64,6 +65,7 @@ async def index(request:Request):
     gitlab_username = None
     google_email = None
     tumblr_username = None
+    reddit_username = None
     if session.get('logged_in'):
         async with request.app['database']() as db:
             rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
@@ -73,18 +75,27 @@ async def index(request:Request):
             gitlab_username = rows[0]['gitlab_username']
             google_email = rows[0]['google_email']
             tumblr_username = rows[0]['tumblr_username']
+            reddit_username = rows[0]['reddit_username']
 
     # Return items
     return {
         'login_url': webutils.get_discord_login_url(request),
+
         'twitch_login_url': f'https://id.twitch.tv/oauth2/authorize?{urlencode(twitch_login_url_params)}',
         'twitch_username': twitch_username,
+
         'github_login_url': f'https://github.com/login/oauth/authorize?{urlencode(github_login_url_params)}',
         'github_username': github_username,
+
         'gitlab_login_url': f'https://gitlab.com/oauth/authorize?{urlencode(gitlab_login_url_params)}',
         'gitlab_username': gitlab_username,
+
         'google_login_url': f'https://accounts.google.com/o/oauth2/v2/auth?{urlencode(google_login_url_params)}',
         'google_email': google_email,
+
         'tumblr_login_url': request.app['config']['website_base_url'].rstrip('/') + '/get_tumblr_login_url',
         'tumblr_username': tumblr_username,
+
+        'reddit_login_url': f'https://www.reddit.com/api/v1/authorize?{urlencode(reddit_login_url_params)}',
+        'reddit_username': reddit_username,
     }

@@ -30,6 +30,14 @@ oauth_scopes = [ "identify", "guilds", ]  # The scopes that should be added to t
     client_id = ""
     client_secret = ""
 
+[tumblr_oauth]
+    client_key = ""
+    client_secret = ""
+
+[reddit_oauth]
+    client_id = ""
+    client_secret = ""
+
 # This data is passed directly over to asyncpg.connect()
 [database]
     enabled = true
