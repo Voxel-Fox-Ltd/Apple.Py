@@ -32,6 +32,7 @@ class GithubCommands(utils.Cog):
 
         # Find matches in the message
         m = re.finditer(r'(?P<ident>g[hl])/(?P<url>(?P<user>\S{1,255})/(?P<repo>\S{1,255}))', message.content)
+        n = re.finditer(r'(?P<ident>g[hl]) (?P<alias>\S{1,255})', message.content)
 
         # Dictionary of possible Git() links
         git_dict = {
@@ -45,6 +46,12 @@ class GithubCommands(utils.Cog):
             url = i.group("url")
             ident = i.group("ident")
             sendable += f"<https://git{git_dict[ident]}.com/{url}>\n"
+        if n:
+            async with self.bot.database() as db:
+                for i in n:
+                    rows = await db("SELECT * FROM github_repo_aliases WHERE alias=$1", i.group("alias"))
+                    if rows:
+                        sendable += f"<https://{rows[0]['host'].lower()}.com/{rows[0]['owner']}/{rows[0]['repo']}>\n"
 
         # Send the GitHub links if there's any output
         if sendable:
