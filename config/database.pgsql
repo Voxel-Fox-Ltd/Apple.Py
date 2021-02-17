@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS user_settings(
     tumblr_oauth_token_secret VARCHAR(100),
 
     reddit_username VARCHAR(100),
-    reddit_bearer_token VARCHAR(100),
+    reddit_access_token VARCHAR(100),
     reddit_refresh_token VARCHAR(100)
 );
 

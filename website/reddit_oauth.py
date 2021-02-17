@@ -27,22 +27,26 @@ async def reddit_login_processor(request:Request):
             'grant_type': 'authorization_code',
             'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/reddit_login_processor',
         }
-        async with web_session.post("https://www.reddit.com/api/v1/access_token", json=params, headers=headers) as r:
+        async with web_session.post("https://www.reddit.com/api/v1/access_token", data=params, headers=headers) as r:
             token_data = await r.json()
             if r.status != 200:
                 return HTTPFound(location=session.pop('redirect_on_login', '/'))
-        # async with web_session.get("https://id.twitch.tv/oauth2/validate", headers={"Authorization": f"Bearer {token_data['access_token']}"}) as r:
-        #     validate_data = await r.json()
-        #     if r.status != 200:
-        #         return HTTPFound(location=session.pop('redirect_on_login', '/'))
+        headers = {
+            "Authorization": f"bearer {token_data['access_token']}",
+            "User-Agent": "Apple.py Discord Bot (kae@voxelfox.co.uk)",
+        }
+        async with web_session.get("https://oauth.reddit.com/api/v1/me", headers=headers) as r:
+            user_data = await r.json()
+            if r.status != 200:
+                return HTTPFound(location=session.pop('redirect_on_login', '/'))
 
     # Store that
     async with request.app['database']() as db:
         await db(
-            """INSERT INTO user_settings (user_id, reddit_username, reddit_bearer_token, reddit_refresh_token) VALUES ($1, $2, $3, $4)
-            ON CONFLICT (user_id) DO UPDATE SET reddit_username=excluded.reddit_username, reddit_bearer_token=excluded.reddit_bearer_token,
+            """INSERT INTO user_settings (user_id, reddit_username, reddit_access_token, reddit_refresh_token) VALUES ($1, $2, $3, $4)
+            ON CONFLICT (user_id) DO UPDATE SET reddit_username=excluded.reddit_username, reddit_access_token=excluded.reddit_access_token,
             reddit_refresh_token=excluded.reddit_refresh_token""",
-            session['user_id'], "Inserted", token_data['bearer_token'], token_data['refresh_token'],
+            session['user_id'], user_data['name'], token_data['access_token'], token_data['refresh_token'],
         )
 
     return HTTPFound(location=session.pop('redirect_on_login', '/'))
@@ -57,7 +61,7 @@ async def reddit_logout(request:Request):
     session = await aiohttp_session.get_session(request)
     async with request.app['database']() as db:
         await db(
-            "UPDATE user_settings SET twitch_user_id=NULL, twitch_username=NULL, twitch_bearer_token=NULL WHERE user_id=$1",
+            "UPDATE user_settings SET reddit_username=NULL, reddit_access_token=NULL, reddit_refresh_token=NULL WHERE user_id=$1",
             session['user_id']
         )
     return HTTPFound(location=session.pop('redirect_on_login', '/'))

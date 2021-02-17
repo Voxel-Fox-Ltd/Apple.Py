@@ -1,4 +1,6 @@
 from urllib.parse import urlencode
+import string
+import random
 
 from aiohttp.web import HTTPFound, Request, RouteTableDef
 from voxelbotutils import web as webutils
@@ -54,8 +56,9 @@ async def index(request:Request):
         'client_id': request.app['config']['reddit_oauth']['client_id'],
         'redirect_uri': request.app['config']['website_base_url'].rstrip('/') + '/reddit_login_processor',
         'response_type': 'code',
-        'scope': 'identify submit',
+        'scope': 'identity submit',
         'duration': 'permanent',
+        'state': ''.join(random.choices(string.ascii_letters, k=64)),
     }
 
     # Handle current logins
