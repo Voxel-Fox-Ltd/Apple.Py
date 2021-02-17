@@ -25,6 +25,8 @@ class GithubCommands(utils.Cog):
         Sends GitHub/Lab links if a message sent in the server matches the format `gh/user/repo`.
         """
 
+        if message.author.bot:
+            return
         if (await self.bot.get_context(message)).command is not None:
             return
 
