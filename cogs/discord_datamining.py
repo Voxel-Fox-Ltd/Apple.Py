@@ -88,7 +88,7 @@ class DiscordDatamining(utils.Cog):
         # Format one into an embed
         with utils.Embed(use_random_colour=True) as embed:
             embed.title = embed_title
-            embed.description = descriptionarray.pop()
+            embed.description = descriptionarray.pop(0)
             for sha, body in comment_text:
                 embed.add_field(sha, body, inline=False)
 
