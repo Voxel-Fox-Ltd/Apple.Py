@@ -58,8 +58,8 @@ class GithubCommands(utils.Cog):
             await message.channel.send(sendable)
 
     @utils.command()
+    @utils.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True, add_reactions=True)
-    @commands.is_owner()
     async def addrepoalias(self, ctx:utils.Context, alias:str, repo:str):
         """
         Add a Github repo alias to the database.

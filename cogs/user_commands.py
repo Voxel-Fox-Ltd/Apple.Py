@@ -30,8 +30,8 @@ class UserCommands(utils.Cog):
         return await ctx.send(f"{user.mention} \N{REVOLVING HEARTS} **{percentage:.2f}%** \N{REVOLVING HEARTS} {user2.mention}", allowed_mentions=discord.AllowedMentions(users=False))
 
     @utils.command()
+    @utils.checks.is_bot_support()
     @commands.bot_has_permissions(add_reactions=True)
-    @commands.is_owner()
     async def addship(self, ctx:utils.Context, user1:discord.Member, user2:typing.Optional[discord.Member]=None, percentage:float=0):
         """
         Add a custom ship percentage.

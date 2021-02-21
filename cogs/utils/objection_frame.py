@@ -21,7 +21,7 @@ class ObjectionFrame(object):
 
     COUNSEL_CHARACTERS = {
         "Diego Armando": 45,
-        "Ema Skye": 353,
+        # "Ema Skye": 353,
         "Kristoph Gavin": 459,
         "Maggey Byrde": 370,
         "Marvin Grossberg": 360,
@@ -58,7 +58,7 @@ class ObjectionFrame(object):
         "Director Hotti": 672,
         "Drew Misham": 655,
         "Elise Deuxnim": 678,
-        "Ema Skye": 142,
+        "Ema Skye": 496,
         "Frank Sahwit": 71,
         "Franziska von Karma": 361,
         "Furio Tigre": 285,
