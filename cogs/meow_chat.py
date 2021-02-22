@@ -1,3 +1,5 @@
+import discord
+from discord.ext import commands
 import voxelbotutils as utils
 
 
@@ -8,14 +10,14 @@ class MeowChat(utils.Cog):
         self.meow_chats = set()
 
     @utils.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message:discord.Message):
         await self.check_message(message)
 
     @utils.Cog.listener()
-    async def on_message_edit(self, before, after):
+    async def on_message_edit(self, before:discord.Message, after:discord.Message):
         await self.check_message(after)
 
-    async def check_message(self, message):
+    async def check_message(self, message:discord.Message):
         """
         Handles deleting any messages that aren't meow-friendly.
         """
