@@ -1,9 +1,23 @@
+import re
+
 import discord
 from discord.ext import commands
 import voxelbotutils as utils
 
 
 class MeowChat(utils.Cog):
+
+    VALID_KEYWORDS = (
+        "mew",
+        "meow",
+        "nya",
+        "uwu",
+        "owo",
+        "x3",
+        ":3",
+        ";3",
+    )
+    EMOJI_REGEX = re.compile(r"<a?:.+?:\d+?>")
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
@@ -28,16 +42,8 @@ class MeowChat(utils.Cog):
             return
         if message.author.id in self.bot.owner_ids:
             return
-        content = message.content.lower()
-        if any([
-                "mew" in content,
-                "meow" in content,
-                "nya" in content,
-                "uwu" in content,
-                "owo" in content,
-                "x3" in content,
-                ":3" in content,
-                ]):
+        content = self.EMOJI_REGEX.sub("", message.content.lower())
+        if any([i in content for i in self.VALID_KEYWORDS]):
             return
         try:
             await message.delete()
