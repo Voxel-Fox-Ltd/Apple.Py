@@ -7,6 +7,29 @@ import voxelbotutils as utils
 
 class UserCommands(utils.Cog):
 
+    EIGHT_BALL_ANSWERS = (
+        "It is certain.",
+        "It is decidedly so.",
+        "Without a doubt.",
+        "Yes – definitely.",
+        "You may rely on it.",
+        "As I see it, yes.",
+        "Most likely.",
+        "Outlook good.",
+        "Yes.",
+        "Signs point to yes.",
+        "Reply hazy, try again.",
+        "Ask again later.",
+        "Better not tell you now.",
+        "Cannot predict now.",
+        "Concentrate and ask again.",
+        "Don't count on it.",
+        "My reply is no.",
+        "My sources say no.",
+        "Outlook not so good.",
+        "Very doubtful. ",
+    )
+
     @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     async def ship(self, ctx:utils.Context, user:discord.Member, user2:discord.Member=None):
@@ -48,6 +71,18 @@ class UserCommands(utils.Cog):
                 *sorted([user1.id, user2.id]), percentage,
             )
         await ctx.okay()
+
+    @utils.command(aliases=['8ball'])
+    @commands.bot_has_permissions(send_messages=True)
+    async def eightball(self, ctx:utils.Context, *, message:str=None):
+        """
+        Gives you an 8ball answer.
+        """
+
+        if not message:
+            raise utils.errors.MissingRequiredArgumentString("message")
+        index = sum([ord(i) for i in message]) % len(self.EIGHT_BALL_ANSWERS)
+        return await ctx.send(self.EIGHT_BALL_ANSWERS[index])
 
 
 def setup(bot:utils.Bot):
