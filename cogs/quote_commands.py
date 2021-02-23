@@ -73,7 +73,7 @@ class QuoteCommands(utils.Cog):
         for message in messages:
             if (quote_is_url and message.content) or (message.content and message.attachments and message.content != message.attachments[0].url):
                 return await ctx.send("You can't quote both messages and images.")
-            elif message.embeds:
+            elif message.embeds and getattr(message.embeds[0].thumbnail, "url", None) != message.content:
                 return await ctx.send("You can't quote embeds.")
             elif len(message.attachments) > 1:
                 return await ctx.send("Multiple images can't be quoted.")
