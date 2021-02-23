@@ -244,6 +244,7 @@ class QuoteCommands(utils.Cog):
         return await ctx.send(embed=message.embeds[0])
 
     @quote.group(name="alias", invoke_without_command=True)
+    @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def quote_alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias:commands.clean_content):
@@ -266,6 +267,7 @@ class QuoteCommands(utils.Cog):
         await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
     @quote_alias.command(name="remove", aliases=["delete"])
+    @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
     async def quote_alias_remove(self, ctx:utils.Context, alias:commands.clean_content):
@@ -279,6 +281,7 @@ class QuoteCommands(utils.Cog):
         return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
     @quote.command(name="delete")
+    @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def quote_delete(self, ctx:utils.Context, *quote_ids:str):
