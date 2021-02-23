@@ -221,8 +221,9 @@ class QuoteCommands(utils.Cog):
         user = user or ctx.author
         async with self.bot.database() as db:
             quote_rows = await db(
-                """SELECT quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes WHERE user_id=$1 ORDER BY RANDOM() LIMIT 1""",
-                user.id,
+                """SELECT quote_id as quote_id, user_id, channel_id, message_id
+                FROM user_quotes WHERE user_id=$1 AND guild_id=$2 ORDER BY RANDOM() LIMIT 1""",
+                user.id, ctx.guild.id,
             )
         if not quote_rows:
             return await ctx.send(f"{user.mention} has no available quotes.", allowed_mentions=discord.AllowedMentions.none())
@@ -254,7 +255,7 @@ class QuoteCommands(utils.Cog):
 
         # Grab data from db
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
+            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1 AND guild_id=$1", quote_id.lower(), ctx.guild.id)
         if not rows:
             return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
 
@@ -277,6 +278,14 @@ class QuoteCommands(utils.Cog):
 
         # Grab data from db
         async with self.bot.database() as db:
+            quote_rows = await db(
+                """SELECT user_quotes.quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes LEFT JOIN
+                quote_aliases ON user_quotes.quote_id=quote_aliases.quote_id
+                WHERE quote_aliases.alias=$1 AND guild_id=$2""",
+                alias.lower(), ctx.guild.id
+            )
+            if not quote_rows:
+                return await ctx.send(f"There's no quote with the alias `{alias.upper()}`.")
             await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
         return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
@@ -317,7 +326,7 @@ class QuoteCommands(utils.Cog):
                 await ctx.send(e)
 
         async with self.bot.database() as db:
-            await db("DELETE FROM user_quotes WHERE quote_id=ANY($1)", quote_ids)
+            await db("DELETE FROM user_quotes WHERE quote_id=ANY($1) AND guild_id=$2", quote_ids, ctx.guild.id)
         return await ctx.send("Deleted quote(s).")
 
 
