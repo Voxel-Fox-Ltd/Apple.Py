@@ -1,4 +1,5 @@
 import typing
+import string
 
 import discord
 from discord.ext import commands
@@ -81,7 +82,7 @@ class UserCommands(utils.Cog):
 
         if not message:
             raise utils.errors.MissingRequiredArgumentString("message")
-        index = sum([ord(i) for i in message]) % len(self.EIGHT_BALL_ANSWERS)
+        index = sum([ord(i) for i in message.lower().strip(string.punctuation + string.whitespace)]) % len(self.EIGHT_BALL_ANSWERS)
         return await ctx.send(self.EIGHT_BALL_ANSWERS[index])
 
 
