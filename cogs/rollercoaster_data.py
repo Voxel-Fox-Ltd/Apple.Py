@@ -1,20 +1,18 @@
 import typing
 
 from bs4 import BeautifulSoup
-from discord.ext import commands
 import voxelbotutils as utils
 
 
 class RollercoasterData(utils.Cog):
 
-    HEADERS = {
-        "User-Agent": "ApplePy/0.0.1 callum@voxelfox.co.uk"
-    }
     BASE = "https://rcdb.com/r.htm"
 
     @staticmethod
     def get_data_from_search(soup) -> dict:
-        """Parse the data from a search and return it in a dictionary"""
+        """
+        Parse the data from a search and return it in a dictionary.
+        """
 
         q = soup.find(class_="rer").find("table")
         w = q.find_all("td")
@@ -31,14 +29,18 @@ class RollercoasterData(utils.Cog):
 
     @utils.command()
     async def coaster(self, ctx:utils.Context, *, name:typing.Union[int, str]):
-        """Finds you the data of a rollercoaster"""
+        """
+        Finds you the data of a rollercoaster.
+        """
 
         if isinstance(name, int):
             return await self.coaster_data(ctx, int(name))
         return await self.coaster_search(ctx, name)
 
     async def coaster_data(self, ctx:utils.Context, coaster_id:int):
-        """Get data for a specific coaster"""
+        """
+        Get data for a specific coaster.
+        """
 
         # Grab page data
         async with self.bot.session.get(f"https://rcdb.com/{coaster_id}.htm", headers=self.HEADERS) as r:
@@ -97,9 +99,12 @@ class RollercoasterData(utils.Cog):
     async def coaster_search(self, ctx, name:str):
         params = {
             "nc": name,
-            "ot": 2
+            "ot": 2,
         }
-        async with self.bot.session.get(self.BASE, params=params, headers=self.HEADERS) as r:
+        headers = {
+            "User-Agent": self.bot.user_agent,
+        }
+        async with self.bot.session.get(self.BASE, params=params, headers=headers) as r:
             text = await r.text()
         soup = BeautifulSoup(text, "html.parser")
         data = self.get_data_from_search(soup)

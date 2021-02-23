@@ -10,7 +10,9 @@ class YagsYoutubeMessage(utils.Cog):
 
     @utils.Cog.listener()
     async def on_message(self, message:discord.Message):
-        """Send a message to people who subscribe via Upgrade.chat"""
+        """
+        Send a message to people who subscribe via Upgrade.chat.
+        """
 
         if message.guild is None or message.guild.id != self.GUILD_ID:
             return

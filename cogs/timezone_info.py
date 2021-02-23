@@ -14,12 +14,13 @@ class TimezoneInfo(utils.Cog):
         The parent group for timezone commands.
         """
 
-        pass
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
 
     @timezone.command(name="set")
     async def timezone_set(self, ctx:utils.Context, *, offset:str=None):
         """
-        Sets and stores your UTC offset into the bot
+        Sets and stores your UTC offset into the bot.
         """
 
         # Ask them the question

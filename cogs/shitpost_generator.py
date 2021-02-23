@@ -1,6 +1,5 @@
 import random
 
-from discord.ext import commands
 import voxelbotutils as utils
 
 
@@ -14,7 +13,9 @@ class ShitpostGenerator(utils.Cog):
 
     @utils.command()
     async def shitpost(self, ctx:utils.Context):
-        """SHIHTFS"""
+        """
+        Outputs a classic Tumblr-style shitpost.
+        """
 
         text = ' '.join([
             random.choice(arr1),

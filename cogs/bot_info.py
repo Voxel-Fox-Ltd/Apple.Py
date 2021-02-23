@@ -1,5 +1,4 @@
 import discord
-from discord.ext import commands
 import voxelbotutils as utils
 
 
@@ -7,7 +6,9 @@ class BotInfo(utils.Cog):
 
     @utils.command()
     async def bot(self, ctx:utils.Context, bot:discord.User):
-        """Gives you information about a bot"""
+        """
+        Gives you information about a bot.
+        """
 
         if bot.bot is False:
             return await ctx.send("That isn't even a bot.")

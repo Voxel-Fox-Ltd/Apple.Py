@@ -20,7 +20,10 @@ class WolframAlpha(utils.Cog):
             "format": "image",
             "output": "json",
         }
-        async with self.bot.session.get("https://api.wolframalpha.com/v2/query", params=params) as r:
+        headers = {
+            "User-Agent": self.bot.user_agent,
+        }
+        async with self.bot.session.get("https://api.wolframalpha.com/v2/query", params=params, heaers=headers) as r:
             data = json.loads(await r.text())
         try:
             pod = data['queryresult']['pods'][1]

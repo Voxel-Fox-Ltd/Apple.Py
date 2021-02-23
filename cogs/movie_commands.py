@@ -9,7 +9,9 @@ class MovieCommand(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'omdb')
     async def movie(self, ctx:utils.Context, *, name:str):
-        """Searches for a movie on the OMDB API"""
+        """
+        Searches for a movie on the OMDB API.
+        """
 
         # See if we gave a year
         original_name = name
@@ -60,11 +62,13 @@ class MovieCommand(utils.Cog):
                 embed.set_thumbnail(data['Poster'])
         return await ctx.send(embed=embed)
 
-    @movie.group()
+    @movie.group(name="search")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'omdb')
-    async def search(self, ctx:utils.Context, *, name:str):
-        """Searches for a movie on the OMDB API"""
+    async def movie_search(self, ctx:utils.Context, *, name:str):
+        """
+        Searches for a movie on the OMDB API.
+        """
 
         # See if we gave a year
         original_name = name
@@ -82,9 +86,10 @@ class MovieCommand(utils.Cog):
         }
         if year:
             params.update({'year': year})
+        headers = {"User-Agent": self.bot.user_agent}
 
         # Send the request
-        async with self.bot.session.get("http://www.omdbapi.com/", params=params) as r:
+        async with self.bot.session.get("http://www.omdbapi.com/", params=params, headers=headers) as r:
             data = await r.json()
 
         # See if we got anything

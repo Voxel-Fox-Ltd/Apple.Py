@@ -18,7 +18,7 @@ class MarriageBotHelper(utils.Cog):
 
     async def get_access_token(self):
         """
-        Get the Dialogflow access token for the bot
+        Get the Dialogflow access token for the bot.
         """
 
         # See if we have an existing valid token

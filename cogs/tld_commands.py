@@ -11,33 +11,35 @@ class TLDCommands(utils.Cog):
         super().__init__(bot)
         self.tld_list = None
 
-    async def load_tlds(self):
+    async def get_tlds(self):
         """
-        Loads tlds into the cache.
+        Loads TLDs into the cache.
         """
 
-        async with self.bot.session.get(self.TLD_URL) as r:
+        if self.tld_list:
+            return self.tld_list
+        headers = {"User-Agent": self.bot.user_agent}
+        async with self.bot.session.get(self.TLD_URL, headers=headers) as r:
             data = await r.text()
-        self.tld_list = data.split("\n")
+        self.tld_list = [i for i in data.strip().split("\n") if not i.startswith(("# ", ".XN--"))]
+        return self.tld_list
 
     @utils.group(aliases=['tld'])
     async def tlds(self, ctx):
         """
-        Allows some functions on tlds. 
+        The parent group for the TLD commands.
         """
 
-        pass
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
 
     @tlds.command()
     async def random(self, ctx:utils.Context, domain:str=None):
         """
-        Get a random tld.
+        Get a random TLD.
         """
 
-        if self.tld_list is None:
-            await self.load_tlds()
-
-        tld = random.choice(self.tld_list)
+        tld = random.choice(await self.get_tlds())
         if not tld.startswith("XN--"):
             if domain is None:
                 await ctx.send(f"`{tld.lower()}`")
@@ -47,18 +49,15 @@ class TLDCommands(utils.Cog):
     @tlds.command()
     async def check(self, ctx:utils.Context, tld_check:str=None):
         """
-        Checks if a tld exists.
+        Checks if a TLD exists.
         """
 
-        if self.tld_list is None:
-            await self.load_tlds()
-
         tld_check = tld_check.upper()
-        if tld_check in self.tld_list:
-            await ctx.send(f"Is a tld. (`.{tld_check.lower()}`) \N{WHITE HEAVY CHECK MARK}.")
+        if tld_check in await self.get_tlds():
+            await ctx.send(f"Is a TLD. (`.{tld_check.lower()}`) \N{WHITE HEAVY CHECK MARK}.")
         else:
-            await ctx.send(f"Not a tld. (`.{tld_check.lower()}`) \N{CROSS MARK}.")
-    
+            await ctx.send(f"Not a TLD. (`.{tld_check.lower()}`) \N{CROSS MARK}.")
+
 
 def setup(bot:utils.Bot):
     x = TLDCommands(bot)

@@ -62,17 +62,22 @@ class NicknameHandler(utils.Cog):
         self.consecutive_character_regex = None
 
     async def get_animal_names(self):
-        """Grabs all names from the Github page"""
+        """
+        Grabs all names from the Github page.
+        """
 
         if self.animal_names:
             return self.animal_names
-        async with self.bot.session.get(ANIMAL_NAMES) as r:
+        headers = {"User-Agent": self.bot.user_agent}
+        async with self.bot.session.get(ANIMAL_NAMES, headers=headers) as r:
             text = await r.text()
         self.animal_names = text.strip().split('\n')
         return await self.get_animal_names()
 
     def get_letter_replacements(self):
-        """Grabs all names from the Github page"""
+        """
+        Grabs all names from the Github page.
+        """
 
         if self.letter_replacements:
             return self.letter_replacements
@@ -84,7 +89,9 @@ class NicknameHandler(utils.Cog):
 
     @utils.Cog.listener()
     async def on_member_join(self, member:discord.Member):
-        """Pings a member nickname update on member join"""
+        """
+        Pings a member nickname update on member join.
+        """
 
         # Check if they are a bot
         if member.bot:
@@ -111,7 +118,9 @@ class NicknameHandler(utils.Cog):
 
     @utils.Cog.listener()
     async def on_member_update(self, before:discord.Member, member:discord.Member):
-        """Pings a member nickname update on nickname update"""
+        """
+        Pings a member nickname update on nickname update.
+        """
 
         # Only ping if they've change nicknames/usernames
         if before.display_name == member.display_name:
@@ -183,7 +192,9 @@ class NicknameHandler(utils.Cog):
             await self.fix_user_nickname(member)
 
     async def fix_user_nickname(self, user:discord.Member, *, force_to_animal:bool=False) -> str:
-        """Fix the nickname of a user"""
+        """
+        Fix the nickname of a user.
+        """
 
         current_name = user.nick or user.name
         new_name = current_name
@@ -228,10 +239,12 @@ class NicknameHandler(utils.Cog):
         return new_name
 
     @utils.group(aliases=['fun'], invoke_without_subcommand=False)
-    @commands.has_permissions(manage_nicknames=True)
+    @utils.checks.is_bot_support()
     @commands.bot_has_permissions(manage_nicknames=True)
     async def fixunzalgoname(self, ctx:utils.Context, user:discord.Member, force_to_animal:bool=False):
-        """Fixes a user's nickname to remove dumbass characters"""
+        """
+        Fixes a user's nickname to remove dumbass characters.
+        """
 
         user = await ctx.guild.fetch_member(user.id)
         current_name = user.nick or user.name
@@ -239,10 +252,12 @@ class NicknameHandler(utils.Cog):
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
 
     @fixunzalgoname.command(name='text')
-    @commands.has_permissions(manage_nicknames=True)
+    @utils.checks.is_bot_support()
     @commands.bot_has_permissions(manage_nicknames=True)
     async def fixunzalgoname_text(self, ctx:utils.Context, text:str):
-        """Fixes a user's nickname to remove dumbass characters"""
+        """
+        Fixes a user's nickname to remove dumbass characters.
+        """
 
         # Read the letter replacements file
         replacements = self.get_letter_replacements()
@@ -265,7 +280,7 @@ class NicknameHandler(utils.Cog):
         return await ctx.send(f"I would change that from `{text}` to `{new_name}`.")
 
     @utils.command()
-    @commands.is_owner()
+    @utils.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
     async def addfixablename(self, ctx:utils.Context, user:discord.Member, *, fixed_name:str):
         """Adds a given user's name to the fixable letters"""
@@ -274,7 +289,7 @@ class NicknameHandler(utils.Cog):
         await ctx.invoke(self.bot.get_command("fixunzalgoname"), user)
 
     @utils.command(ignore_extra=False)
-    @commands.is_owner()
+    @utils.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
     async def addfixableletters(self, ctx:utils.Context, phrase1:str, phrase2:str):
         """Adds fixable letters to the replacement list"""
@@ -294,31 +309,6 @@ class NicknameHandler(utils.Cog):
             return await ctx.send(f"Could not open letter replacement file to write to it - `{e}`.")
         self.letter_replacements = None
         return await ctx.send("Written to file successfully.")
-
-    # @commands.command(cls=utils.Command)
-    # @commands.has_permissions(manage_nicknames=True)
-    # @commands.bot_has_permissions(manage_nicknames=True)
-    # async def setpermanentnickname(self, ctx:utils.Context, user:discord.Member, *, name:str=None):
-    #     """Sets the permanent nickname for a user"""
-
-    #     # Update db
-    #     async with self.bot.database() as db:
-    #         if name:
-    #             await db(
-    #                 """INSERT INTO permanent_nicknames (guild_id, user_id, nickname)
-    #                 VALUES ($1, $2, $3)
-    #                 ON CONFLICT (guild_id, user_id) DO UPDATE SET nickname=$3""",
-    #                 ctx.guild.id, user.id, name
-    #             )
-    #         else:
-    #             await db("DELETE FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2", ctx.guild.id, user.id)
-
-    #     # Edit and respond
-    #     await user.edit(nick=name)
-    #     if name:
-    #         await ctx.send(f"The nickname of {user.mention} has been set to `{name}`.")
-    #     else:
-    #         await ctx.send(f"{user.mention} no longer has a permanent nickname.")
 
 
 def setup(bot:utils.Bot):

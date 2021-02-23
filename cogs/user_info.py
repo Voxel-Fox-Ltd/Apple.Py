@@ -14,8 +14,7 @@ class UserInfo(utils.Cog):
         Shows you the avatar of a given user.
         """
 
-        if user is None:
-            user = ctx.author
+        user = user or ctx.author
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
@@ -30,9 +29,11 @@ class UserInfo(utils.Cog):
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
             account_creation_time_humanized = utils.TimeValue((dt.utcnow() - user.created_at).total_seconds()).clean_full
-            embed.add_field("Account Creation Time", f"{user.created_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{account_creation_time_humanized} ago", inline=False)
+            create_value = f"{user.created_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{account_creation_time_humanized} ago"
+            embed.add_field("Account Creation Time", create_value, inline=False)
             guild_join_time_humanized = utils.TimeValue((dt.utcnow() - user.joined_at).total_seconds()).clean_full
-            embed.add_field("Guild Join Time", f"{user.joined_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{guild_join_time_humanized} ago", inline=False)
+            join_value = f"{user.joined_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{guild_join_time_humanized} ago"
+            embed.add_field("Guild Join Time", join_value, inline=False)
             embed.set_thumbnail(user.avatar_url_as(size=1024))
         return await ctx.send(embed=embed)
 

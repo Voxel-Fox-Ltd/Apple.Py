@@ -1,6 +1,7 @@
 import asyncio
 import random
 
+import discord
 from discord.ext import commands
 import voxelbotutils as utils
 
@@ -24,7 +25,7 @@ class ThisOrThat(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, add_reactions=True)
     async def thisorthat(self, ctx:utils.Context):
         """
-        Shows you two VFL bots. Asks which you prefer.
+        Shows you two VFL bots and asks which you prefer.
         """
 
         # Get two unique choices

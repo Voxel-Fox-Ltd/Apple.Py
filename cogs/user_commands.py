@@ -10,7 +10,9 @@ class UserCommands(utils.Cog):
     @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     async def ship(self, ctx:utils.Context, user:discord.Member, user2:discord.Member=None):
-        """Gives you a ship percentage between two users"""
+        """
+        Gives you a ship percentage between two users.
+        """
 
         # Fix attrs
         if user2 is None:
@@ -23,7 +25,7 @@ class UserCommands(utils.Cog):
         # Get percentage
         async with self.bot.database() as db:
             rows = await db("SELECT * FROM ship_percentages WHERE user_id_1=ANY($1::BIGINT[]) AND user_id_2=ANY($1::BIGINT[])", [user.id, user2.id])
-        if rows:
+        if rows and rows[0]['percentage']:
             percentage = rows[0]['percentage'] / 100
         else:
             percentage = ((user.id + user2.id + 4500) % 10001) / 100

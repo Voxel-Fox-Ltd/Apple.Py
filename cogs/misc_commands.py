@@ -77,10 +77,12 @@ class MiscCommands(utils.Cog):
         embed = utils.Embed(use_random_colour=True).set_image(url)
         return await ctx.send(embed=embed)
 
-    @utils.command(ignore_extra=False, aliases=['imposter', 'crewmate', 'amongus'])
+    @utils.command(ignore_extra=False, aliases=['imposter', 'crewmate', 'amongus', 'amogus'])
     @commands.bot_has_permissions(send_messages=True, attach_files=True)
     async def impostor(self, ctx:utils.Context, user1:discord.User, user2:discord.User, user3:discord.User, user4:discord.User, user5:discord.User=None):
-        """Puts you and your friends into an impostor image"""
+        """
+        Puts you and your friends into an impostor image.
+        """
 
         # Fix up input args
         if user5 is None:
@@ -121,7 +123,9 @@ class MiscCommands(utils.Cog):
     @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     async def topic(self, ctx:utils.Context):
-        """Gives you a conversation topic"""
+        """
+        Gives you a conversation topic.
+        """
 
         return await ctx.send(random.choice(self.get_topics()))
 
@@ -130,7 +134,9 @@ class MiscCommands(utils.Cog):
     @commands.has_permissions(manage_channels=True)
     @commands.guild_only()
     async def slowmode(self, ctx:utils.Context, seconds:int):
-        """Sets slowmode for a channel"""
+        """
+        Sets slowmode for a channel.
+        """
 
         try:
             await ctx.channel.edit(slowmode_delay=seconds)
@@ -138,11 +144,13 @@ class MiscCommands(utils.Cog):
             return await ctx.send(str(e))
         await ctx.okay()
 
-    # TODO: remove duplicate code between httpcat and httpdog commands?
     @utils.command(aliases=['http'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def httpcat(self, ctx:utils.Context, errorcode:str):
-        """Gives you a cat based on an HTTP error code"""
+        """
+        Gives you a cat based on an HTTP error code.
+        """
+
         standard_errorcodes = [error.value for error in http.HTTPStatus]
 
         if errorcode in ('random', 'rand', 'r'):
@@ -154,7 +162,7 @@ class MiscCommands(utils.Cog):
                 return ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get(f"https://http.cat/{errorcode}", headers=headers) as r:
             if r.status == 404:
                 if errorcode not in standard_errorcodes:
@@ -172,7 +180,10 @@ class MiscCommands(utils.Cog):
     @utils.command()
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
     async def httpdog(self, ctx:utils.Context, errorcode:str):
-        """Gives you a dog based on an HTTP error code"""
+        """
+        Gives you a dog based on an HTTP error code.
+        """
+
         standard_errorcodes = [error.value for error in http.HTTPStatus]
 
         if errorcode in ('random', 'rand', 'r'):
@@ -184,7 +195,7 @@ class MiscCommands(utils.Cog):
                 return ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
 
         await ctx.channel.trigger_typing()
-        headers = {"User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"}
+        headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg",
                                         headers=headers, allow_redirects=False) as r:
             if str(r.status)[0] != "2":
@@ -200,7 +211,9 @@ class MiscCommands(utils.Cog):
     @utils.command(aliases=['pip'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def pypi(self, ctx:utils.Context, module:commands.clean_content):
-        """Grab data from PyPi"""
+        """
+        Grab data from PyPi.
+        """
 
         # Get data
         async with self.bot.session.get(f"https://pypi.org/pypi/{module}/json") as r:
@@ -217,7 +230,9 @@ class MiscCommands(utils.Cog):
 
     @utils.command(aliases=['npmjs'])
     async def npm(self, ctx:utils.Context, package_name:str):
-        """Check NPM for a package"""
+        """
+        Check NPM for a package.
+        """
 
         # Get our data
         async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
@@ -237,7 +252,9 @@ class MiscCommands(utils.Cog):
 
     @utils.command()
     async def nuget(self, ctx:utils.Context, package_name:str):
-        """Check nuget for a package"""
+        """
+        Check nuget for a package.
+        """
 
         # Get our data
         async with self.bot.session.get(f"https://azuresearch-usnc.nuget.org/query?q={package_name}") as e:
@@ -260,7 +277,9 @@ class MiscCommands(utils.Cog):
     @utils.command(aliases=['color'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def colour(self, ctx:utils.Context, *, colour:typing.Union[discord.Role, discord.Colour, discord.Member]):
-        """Get you a colour"""
+        """
+        Get you a colour.
+        """
 
         # https://www.htmlcsscolor.com/preview/gallery/5dadec.png
         if isinstance(colour, discord.Role):
@@ -278,9 +297,8 @@ class MiscCommands(utils.Cog):
     @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     async def charinfo(self, ctx, *, characters: str):
-        """Shows you information about a number of characters.
-
-        Only up to 25 characters at a time.
+        """
+        Shows you information about a number of characters.
         """
 
         def to_string(c):
@@ -297,7 +315,9 @@ class MiscCommands(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.guild)
     async def spam(self, ctx:utils.Context, amount:int, *, text:str):
-        """Spams a message a given amount of times"""
+        """
+        Spams a message a given amount of times.
+        """
 
         if amount > 10:
             return await ctx.send("That's too much to spam.")
@@ -309,7 +329,9 @@ class MiscCommands(utils.Cog):
     @commands.bot_has_guild_permissions(move_members=True)
     @commands.bot_has_permissions(send_messages=True)
     async def emptyvc(self, ctx:utils.Context, channel:discord.VoiceChannel):
-        """Removes all the people from a given VC"""
+        """
+        Removes all the people from a given VC.
+        """
 
         if not channel.members:
             return await ctx.send("There are no people in that VC for me to remove.")
@@ -323,7 +345,9 @@ class MiscCommands(utils.Cog):
 
     @utils.command()
     async def square(self, ctx:utils.Context, *, text:commands.clean_content):
-        """Makes your input into a sexy lil square"""
+        """
+        Makes your input into a sexy lil square.
+        """
 
         builder = [' '.join(text)]
         space_count = ((len(text) - 2) * 2) + 1
@@ -333,12 +357,14 @@ class MiscCommands(utils.Cog):
         output = '\n'.join(builder)
         returned_string = f"```\n{output}```"
         if len(returned_string) > 2000:
-            return await ctx.send("your shits too fucked yo")
+            return await ctx.send("The output square for this is too many characters.")
         return await ctx.send(returned_string)
 
     @utils.command()
     async def getinterval(self, ctx:utils.Context, message1:int, message2:int):
-        """Get the interval between two messages"""
+        """
+        Get the interval between two messages.
+        """
 
         timestamps = sorted([discord.Object(message1).created_at, discord.Object(message2).created_at], reverse=True)
         return await ctx.send(timestamps[0] - timestamps[1])
@@ -346,7 +372,9 @@ class MiscCommands(utils.Cog):
     @utils.command()
     @commands.bot_has_permissions(send_messages=True, attach_files=True)
     async def randompicture(self, ctx:utils.Context, x_size:int=256, y_size:int=None):
-        """Let's make a random picture why not"""
+        """
+        Sends some random noise into chat.
+        """
 
         await ctx.trigger_typing()
         y_size = y_size or x_size
@@ -362,7 +390,7 @@ class MiscCommands(utils.Cog):
         handle = io.BytesIO()
         y.save(handle, format="PNG")
         handle.seek(0)
-        return await ctx.send(file=discord.File(handle, filename="Wowowowowowow.png"))
+        return await ctx.send(file=discord.File(handle, filename="random.png"))
 
 
 def setup(bot:utils.Bot):
