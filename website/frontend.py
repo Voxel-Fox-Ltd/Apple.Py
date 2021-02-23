@@ -69,6 +69,7 @@ async def index(request:Request):
     google_email = None
     tumblr_username = None
     reddit_username = None
+    trello_username = None
     if session.get('logged_in'):
         async with request.app['database']() as db:
             rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
@@ -79,6 +80,7 @@ async def index(request:Request):
             google_email = rows[0]['google_email']
             tumblr_username = rows[0]['tumblr_username']
             reddit_username = rows[0]['reddit_username']
+            trello_username = rows[0]['trello_username']
 
     # Return items
     return {
@@ -101,4 +103,7 @@ async def index(request:Request):
 
         'reddit_login_url': f'https://www.reddit.com/api/v1/authorize?{urlencode(reddit_login_url_params)}',
         'reddit_username': reddit_username,
+
+        'trello_login_url': request.app['config']['website_base_url'].rstrip('/') + '/get_trello_login_url',
+        'trello_username': trello_username,
     }

@@ -75,6 +75,16 @@
             </a>
         {% endif %}
 
+        {% if trello_username %}
+            <a href="/trello_logout">
+                <div class="button-holder">Logout of Trello (<b>{{ trello_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ trello_login_url }}">
+                <div class="button-holder">Login with Trello</div>
+            </a>
+        {% endif %}
+
     {% else %}
         <a href="{{ login_url }}">
             <div class="button-holder">Login with Discord</div>
