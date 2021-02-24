@@ -133,6 +133,9 @@ class DNDCommands(utils.Cog):
         async with ctx.typing():
             data = await self.send_web_request("monsters", monster_name)
         if not data:
+            if monster_name == 'bigrat':
+                return await ctx.send('https://bigrat.monster')
+
             return await ctx.send("I couldn't find any information for that monster.")
         embed = utils.Embed(
             use_random_colour=True,
