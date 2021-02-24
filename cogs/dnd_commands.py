@@ -1,6 +1,7 @@
 import re
 import typing
 import random
+import string
 from urllib.parse import quote
 
 from discord.ext import commands
@@ -10,10 +11,18 @@ import voxelbotutils as utils
 class DNDCommands(utils.Cog):
 
     DICE_REGEX = re.compile(r"^(?P<count>\d+)?[dD](?P<type>\d+) *(?P<modifier>(?P<modifier_parity>[+-]) *(?P<modifier_amount>\d+))?$")
+    ATTRIBUTES = {
+        "strength": "STR",
+        "dexterity": "DEX",
+        "constitution": "CON",
+        "intelligence": "INT",
+        "wisdom": "WIS",
+        "charisma": "CHR",
+    }
 
     @utils.command(aliases=['roll'])
     @commands.bot_has_permissions(send_messages=True)
-    async def dice(self, ctx:utils.Context, *, dice:str=None):
+    async def dice(self, ctx:utils.Context, *, dice:str):
         """
         Rolls a dice for you.
         """
@@ -112,6 +121,43 @@ class DNDCommands(utils.Cog):
             embed.add_field(
                 "Damage", text.strip(), inline=False,
             )
+        return await ctx.send(embed=embed)
+
+    @dnd.command(name="monster", aliases=["monsters"])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def dnd_monster(self, ctx:utils.Context, *, monster_name:str):
+        """
+        Gives you information on a D&D monster.
+        """
+
+        async with ctx.typing():
+            data = await self.send_web_request("monsters", monster_name)
+        if not data:
+            return await ctx.send("I couldn't find any information for that monster.")
+        embed = utils.Embed(
+            use_random_colour=True,
+            title=data['name'],
+            description="\n".join([
+                f"{data['size']} | {data['type']} | {data['alighnment']} | {data['xp']} XP",
+                ", ".join([f"{o} {data[i]}" for i, o in self.ATTRIBUTES.items()]),
+            ])
+        ).add_field(
+            "Proficiencies", ", ".join(data['proficiencies']) or "None",
+        ).add_field(
+            "Damage Vulnerabilities", ", ".join(data['damage_vulnerabilities']) or "None",
+        ).add_field(
+            "Damage Resistances", ", ".join(data['damage_resistances']) or "None",
+        ).add_field(
+            "Damage Immunities", ", ".join(data['damage_immunities']) or "None",
+        ).add_field(
+            "Condition Immunities", ", ".join([i['name'] for i in data['condition_immunities']]) or "None",
+        ).add_field(
+            "Proficiencies", ", ".join(data['proficiencies']) or "None",
+        ).add_field(
+            "Senses", "\n".join([f"{i.replace('_', ' ').title()} {o}" for i, o in data['senses']]) or "None",
+        ).add_field(
+            "Actions", "\n".join([f"{i['name']} ({i['desc'].strip(string.punctuation)})." for i in data['actions']]) or "None",
+        )
         return await ctx.send(embed=embed)
 
 
