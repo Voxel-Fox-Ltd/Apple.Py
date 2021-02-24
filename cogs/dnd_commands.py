@@ -185,7 +185,7 @@ class DNDCommands(utils.Cog):
         embed = utils.Embed(
             use_random_colour=True,
             title=data['name'],
-            description=data['desc'][0],
+            description="\n".join(data['desc']),
         )
         return await ctx.send(embed=embed)
 
