@@ -142,7 +142,7 @@ class DNDCommands(utils.Cog):
                 ", ".join([f"{o} {data[i]}" for i, o in self.ATTRIBUTES.items()]),
             ])
         ).add_field(
-            "Proficiencies", ", ".join(data['proficiencies']).title() or "None",
+            "Proficiencies", ", ".join([i['name'] for i in data['proficiencies']]).title() or "None",
         ).add_field(
             "Damage Vulnerabilities", ", ".join(data['damage_vulnerabilities']).title() or "None",
         ).add_field(
@@ -151,8 +151,6 @@ class DNDCommands(utils.Cog):
             "Damage Immunities", ", ".join(data['damage_immunities']).title() or "None",
         ).add_field(
             "Condition Immunities", ", ".join([i['name'] for i in data['condition_immunities']]).title() or "None",
-        ).add_field(
-            "Proficiencies", ", ".join([i['name'] for i in data['proficiencies']]).title() or "None",
         ).add_field(
             "Senses", "\n".join([f"{i.replace('_', ' ').title()} {o}" for i, o in data['senses'].items()]) or "None",
         ).add_field(
