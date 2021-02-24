@@ -138,7 +138,7 @@ class DNDCommands(utils.Cog):
             use_random_colour=True,
             title=data['name'],
             description="\n".join([
-                f"{data['size']} | {data['type']} | {data['alighnment']} | {data['xp']} XP",
+                f"{data['size']} | {data['type']} | {data['alignment']} | {data['xp']} XP",
                 ", ".join([f"{o} {data[i]}" for i, o in self.ATTRIBUTES.items()]),
             ])
         ).add_field(
