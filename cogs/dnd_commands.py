@@ -158,7 +158,7 @@ class DNDCommands(utils.Cog):
         action_text = [f"**{i['name']}**\n{i['desc']}" for i in data['actions']]
         start = 0
         for index, text in enumerate(action_text):
-            combined_text = "\n\n".join(action_text[start:indx])
+            combined_text = "\n\n".join(action_text[start:index])
             if len(combined_text) <= 1024:
                 continue
             embed.add_field(
