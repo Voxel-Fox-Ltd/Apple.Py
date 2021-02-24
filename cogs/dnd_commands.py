@@ -138,7 +138,7 @@ class DNDCommands(utils.Cog):
             use_random_colour=True,
             title=data['name'],
             description="\n".join([
-                f"{data['size']} | {data['type']} | {data['alignment']} | {data['xp']} XP",
+                f"{data['size']} | {data['type']} | {data['alignment']} | {data['xp']:,} XP",
                 ", ".join([f"{o} {data[i]}" for i, o in self.ATTRIBUTES.items()]),
             ])
         ).add_field(
@@ -157,19 +157,36 @@ class DNDCommands(utils.Cog):
         field_name = "Actions"
         action_text = [f"**{i['name']}**\n{i['desc']}" for i in data['actions']]
         add_text = ""
-        start = 0
         for index, text in enumerate(action_text):
             if len(add_text) + len(text) + 1 > 1024:
                 embed.add_field(
                     field_name, add_text, inline=False,
                 )
-                field_name = "\u200b"
+                field_name = "Actions Continued"
                 add_text = ""
             add_text += "\n" + text
         if add_text:
             embed.add_field(
                 field_name, add_text, inline=False,
             )
+        return await ctx.send(embed=embed)
+
+    @dnd.command(name="condition", aliases=["conditions"])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def dnd_condition(self, ctx:utils.Context, *, spell_name:str):
+        """
+        Gives you information on a D&D condition.
+        """
+
+        async with ctx.typing():
+            data = await self.send_web_request("spells", spell_name)
+        if not data:
+            return await ctx.send("I couldn't find any information for that condition.")
+        embed = utils.Embed(
+            use_random_colour=True,
+            title=data['name'],
+            description=data['desc'][0],
+        )
         return await ctx.send(embed=embed)
 
 
