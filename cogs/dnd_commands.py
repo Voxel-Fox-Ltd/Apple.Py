@@ -62,7 +62,7 @@ class DNDCommands(utils.Cog):
         ).add_field(
             "Concentration", data['concentration'],
         )
-        if i.get('damage'):
+        if data.get('damage'):
             damage_type = data['damage']['damage_type']['name'].lower()
             embed.add_field(
                 "Damage", "\n".join([f"Level {i}: {o} {damage_type} damage" for i, o in data['damage']['damage_at_character_level'].items()]),
