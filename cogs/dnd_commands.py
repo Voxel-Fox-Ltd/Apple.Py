@@ -50,7 +50,7 @@ class DNDCommands(utils.Cog):
         ).add_field(
             "Range", data['range'],
         ).add_field(
-            "Components", f"{', '.join(data[''])} ({data['material']})",
+            "Components", f"{', '.join(data['components'])} ({data['material']})",
         ).add_field(
             "Duration", data['duration'],
         ).add_field(
