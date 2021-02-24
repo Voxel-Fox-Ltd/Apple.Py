@@ -32,7 +32,7 @@ class DNDCommands(utils.Cog):
             raise utils.errors.MissingRequiredArgumentString(dice)
         match = self.DICE_REGEX.search(dice)
         if not match:
-            raise commands.BadArgument(f"Your dice was not in the format `AdB+C`.")
+            raise commands.BadArgument("Your dice was not in the format `AdB+C`.")
 
         # Roll em
         dice_count = int(match.group("count") or 1)
@@ -64,6 +64,28 @@ class DNDCommands(utils.Cog):
         if v.get("error"):
             return None
         return v
+
+    @staticmethod
+    def group_field_descriptions(embed, field_name, input_list) -> None:
+        """
+        Add fields grouped to the embed character limit.
+        """
+
+        original_field_name = field_name
+        action_text = [f"**{i['name']}**\n{i['desc']}" for i in input_list]
+        add_text = ""
+        for index, text in enumerate(action_text):
+            if len(add_text) + len(text) + 1 > 1024:
+                embed.add_field(
+                    field_name, add_text, inline=False,
+                )
+                field_name = f"{original_field_name} Continued"
+                add_text = ""
+            add_text += "\n" + text
+        if add_text:
+            embed.add_field(
+                field_name, add_text, inline=False,
+            )
 
     @utils.group(name="d&d", aliases=["dnd"])
     @commands.bot_has_permissions(send_messages=True)
@@ -144,42 +166,38 @@ class DNDCommands(utils.Cog):
         ).add_field(
             "Proficiencies", ", ".join([f"{i['proficiency']['name']} {i['value']}" for i in data['proficiencies']]) or "None",
         ).add_field(
-            "Damage Vulnerabilities", ", ".join(data['damage_vulnerabilities']).title() or "None",
+            "Damage Vulnerabilities", "\n".join(data['damage_vulnerabilities']).capitalize() or "None",
         ).add_field(
-            "Damage Resistances", ", ".join(data['damage_resistances']).title() or "None",
+            "Damage Resistances", "\n".join(data['damage_resistances']).capitalize() or "None",
         ).add_field(
-            "Damage Immunities", ", ".join(data['damage_immunities']).title() or "None",
+            "Damage Immunities", "\n".join(data['damage_immunities']).capitalize() or "None",
         ).add_field(
-            "Condition Immunities", ", ".join([i['name'] for i in data['condition_immunities']]).title() or "None",
+            "Condition Immunities", "\n".join([i['name'] for i in data['condition_immunities']]).capitalize() or "None",
         ).add_field(
-            "Senses", "\n".join([f"{i.replace('_', ' ').title()} {o}" for i, o in data['senses'].items()]) or "None",
+            "Senses", "\n".join([f"{i.replace('_', ' ').capitalize()} {o}" for i, o in data['senses'].items()]) or "None",
         )
-        field_name = "Actions"
-        action_text = [f"**{i['name']}**\n{i['desc']}" for i in data['actions']]
-        add_text = ""
-        for index, text in enumerate(action_text):
-            if len(add_text) + len(text) + 1 > 1024:
-                embed.add_field(
-                    field_name, add_text, inline=False,
-                )
-                field_name = "Actions Continued"
-                add_text = ""
-            add_text += "\n" + text
-        if add_text:
+        self.group_field_descriptions(embed, "Actions", data['actions'])
+        self.group_field_descriptions(embed, "Legendary Actions", data.get('legendary_actions', list()))
+        embed.add_field(
+            "Special Abilities", "\n".join([f"**{i['name']}**\n{i['desc']}" for i in data['special_abilities'] if i['name'] != 'Spellcasting']) or "None", inline=False,
+        )
+        spellcasting = [i for i in data.get('special_abilities', list()) if i['name'] == 'Spellcasting']
+        if spellcasting:
+            spellcasting = spellcasting[0]
             embed.add_field(
-                field_name, add_text, inline=False,
+                "Special Abilities - Spellcasting", spellcasting['desc'], inline=False,
             )
         return await ctx.send(embed=embed)
 
     @dnd.command(name="condition", aliases=["conditions"])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def dnd_condition(self, ctx:utils.Context, *, spell_name:str):
+    async def dnd_condition(self, ctx:utils.Context, *, condition_name:str):
         """
         Gives you information on a D&D condition.
         """
 
         async with ctx.typing():
-            data = await self.send_web_request("conditions", spell_name)
+            data = await self.send_web_request("conditions", condition_name)
         if not data:
             return await ctx.send("I couldn't find any information for that condition.")
         embed = utils.Embed(
