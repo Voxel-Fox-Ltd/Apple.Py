@@ -34,8 +34,8 @@ class DNDCommands(utils.Cog):
         # Output formatted
         if dice_count > 1:
             if modifier:
-                return await ctx.send(f"Total **{total}** ({sum(rolls)}{modifier:+})\n({rolls})")
-            return await ctx.send(f"Total **{total}**\n({rolls})")
+                return await ctx.send(f"Total **{total}** ({sum(rolls)}{modifier:+})\n({', '.join([str(i) for i in rolls])})")
+            return await ctx.send(f"Total **{total}**\n({', '.join([str(i) for i in rolls])})")
         if modifier:
             return await ctx.send(f"Total **{total}**\n({sum(rolls)}{modifier:+})")
         return await ctx.send(f"Total **{total}**")
