@@ -156,19 +156,19 @@ class DNDCommands(utils.Cog):
         )
         field_name = "Actions"
         action_text = [f"**{i['name']}**\n{i['desc']}" for i in data['actions']]
+        add_text = ""
         start = 0
         for index, text in enumerate(action_text):
-            combined_text = "\n\n".join(action_text[start:index])
-            if len(combined_text) <= 1024:
-                continue
+            if len(add_text) + len(text) + 1 > 1024:
+                embed.add_field(
+                    field_name, add_text, inline=False,
+                )
+                field_name = "\u200b"
+                add_text = ""
+            add_text += "\n" + text
+        if add_text:
             embed.add_field(
-                field_name, combined_text, inline=False,
-            )
-            field_name = "\u200b"
-            start = index
-        else:
-            embed.add_field(
-                field_name, combined_text, inline=False,
+                field_name, add_text, inline=False,
             )
         return await ctx.send(embed=embed)
 
