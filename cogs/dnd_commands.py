@@ -62,16 +62,20 @@ class DNDCommands(utils.Cog):
         ).add_field(
             "Concentration", data['concentration'],
         )
-        if data.get('damage'):
+        if data.get('higher_level'):
+            embed.add_field(
+                "Damage", "\n".join(data['higher_level']),
+            )
+        elif data.get('damage'):
+            text = ""
             damage_type = data['damage']['damage_type']['name'].lower()
             if data['damage'].get('damage_at_character_level'):
-                embed.add_field(
-                    "Damage", "\n".join([f"Character level {i}: {o} {damage_type} damage" for i, o in data['damage']['damage_at_character_level'].items()]),
-                )
+                text += "\nCharacter level " + ", ".join([f"{i}: {o}" for i, o in data['damage']['damage_at_character_level'].items()])
             if data['damage'].get('damage_at_slot_level'):
-                embed.add_field(
-                    "Damage", "\n".join([f"Slot level {i}: {o} {damage_type} damage" for i, o in data['damage']['damage_at_slot_level'].items()]),
-                )
+                text += "\nSlot level " + ", ".join([f"{i}: {o}" for i, o in data['damage']['damage_at_slot_level'].items()])
+            embed.add_field(
+                "Damage", text.strip()
+            )
         return await ctx.send(embed=embed)
 
 
