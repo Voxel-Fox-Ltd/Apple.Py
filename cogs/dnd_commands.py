@@ -72,7 +72,8 @@ class DNDCommands(utils.Cog):
         """
 
         original_field_name = field_name
-        action_text = [f"**{i['name']}**\n{i['desc']}" for i in input_list]
+        joiner = "\n"
+        action_text = [f"**{i['name']}**{joiner}{i['desc']}" for i in input_list]
         add_text = ""
         for index, text in enumerate(action_text):
             if len(add_text) + len(text) + 1 > 1024:
@@ -81,7 +82,7 @@ class DNDCommands(utils.Cog):
                 )
                 field_name = f"{original_field_name} Continued"
                 add_text = ""
-            add_text += "\n" + text
+            add_text += joiner + text
         if add_text:
             embed.add_field(
                 field_name, add_text, inline=False,
@@ -184,7 +185,7 @@ class DNDCommands(utils.Cog):
         if spellcasting:
             spellcasting = spellcasting[0]
             embed.add_field(
-                "Special Abilities - Spellcasting", spellcasting['desc'], inline=False,
+                "Spellcasting", spellcasting['desc'].replace('\n\n', '\n'), inline=False,
             )
         return await ctx.send(embed=embed)
 
