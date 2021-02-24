@@ -239,7 +239,7 @@ class NicknameHandler(utils.Cog):
         return new_name
 
     @utils.group(aliases=['fun'], invoke_without_subcommand=False)
-    @utils.checks.is_bot_support()
+    @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     async def fixunzalgoname(self, ctx:utils.Context, user:discord.Member, force_to_animal:bool=False):
         """
