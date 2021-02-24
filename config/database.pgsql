@@ -37,7 +37,14 @@ CREATE TABLE IF NOT EXISTS user_settings(
 
     tumblr_username VARCHAR(100),
     tumblr_oauth_token VARCHAR(100),
-    tumblr_oauth_token_secret VARCHAR(100)
+    tumblr_oauth_token_secret VARCHAR(100),
+
+    reddit_username VARCHAR(100),
+    reddit_access_token VARCHAR(100),
+    reddit_refresh_token VARCHAR(100),
+
+    trello_username VARCHAR(100),
+    trello_token VARCHAR(100)
 );
 
 

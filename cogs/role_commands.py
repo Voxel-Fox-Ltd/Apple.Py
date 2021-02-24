@@ -11,23 +11,26 @@ class RoleCommands(utils.Cog):
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
     async def copyrolepermissions(self, ctx:utils.Context, copy_role:discord.Role, paste_role:discord.Role):
-        """Copies the permissions from one role onto another"""
+        """
+        Copies the permissions from one role onto another.
+        """
 
         try:
             await paste_role.edit(permissions=copy_role.permissions)
         except discord.HTTPException:
             return await ctx.send("Unable to edit role.")
-        return await ctx.send("Edited.")
+        return await ctx.send("Copied the permissions from {copy_role.mention} to {paste_role.mention}.", allowed_mentions=discord.AllowedMentions.none())
 
     @utils.command()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def permissions(self, ctx:utils.Context, user:typing.Union[discord.Member, discord.Role], channel:typing.Optional[discord.TextChannel]):
-        """See all the permissions for a given user"""
+        """
+        See all the permissions for a given user.
+        """
 
         if channel is None:
             channel = ctx.channel
-        # channel_permissions = channel.permissions_for(user)
         channel_permissions = channel.overwrites_for(user)
         if isinstance(user, discord.Role):
             guild_permissions = user.permissions
@@ -51,8 +54,6 @@ class RoleCommands(utils.Cog):
             permission_name = permission_api_name.title().replace('Vc', 'VC').replace('Tts', 'TTS').replace('_', ' ')
             if permission_api_name in ['connect', 'view_channel']:
                 continue
-            # elif permission_api_name in ['deafen_members', 'move_members', 'mute_members', 'priority_speaker', 'speak', 'stream', 'use_voice_activation'] or has_channel_permission is None:
-            #     output.append(f"Guild({green_circle if has_guild_permission else red_circle}) Channel({cross_emoji}) - **{permission_name}**")
             else:
                 output.append(f"Guild({green_circle if has_guild_permission else red_circle}) Channel({green_circle if has_channel_permission is True else red_circle if has_channel_permission is False else cross_emoji}) - **{permission_name}**")
         await ctx.send('\n'.join(output), allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
@@ -61,7 +62,9 @@ class RoleCommands(utils.Cog):
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def dumpmessage(self, ctx:utils.Context, message:discord.Message):
-        """Dumps a message out into chat"""
+        """
+        Dumps a message out into chat.
+        """
 
         await ctx.send(f'```\n{message.content}\n```')
 
@@ -69,7 +72,9 @@ class RoleCommands(utils.Cog):
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def dumpmessagelist(self, ctx:utils.Context, message:discord.Message):
-        """Dumps a message out into chat"""
+        """
+        Dumps a message out into chat.
+        """
 
         await ctx.send(f'```py\n{[i.encode("unicode_escape").decode() for i in list(message.content)]}\n```')
 

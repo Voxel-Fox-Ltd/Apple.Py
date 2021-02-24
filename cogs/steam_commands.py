@@ -1,7 +1,6 @@
-import re as regex
+import re
 
 import discord
-from discord.ext import commands
 import voxelbotutils as utils
 
 
@@ -9,7 +8,7 @@ class SteamCommand(utils.Cog):
 
     ALL_GAMES_URL = "https://api.steampowered.com/ISteamApps/GetAppList/v2/"
     GAME_DATA_URL = "https://store.steampowered.com/api/appdetails"
-    GAME_URL_REGEX = regex.compile(r"https:\/\/store\.steampowered\.com\/app\/(\d+)")
+    GAME_URL_REGEX = re.compile(r"https:\/\/store\.steampowered\.com\/app\/(\d+)")
     headers = {
         "User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"
     }
@@ -20,7 +19,9 @@ class SteamCommand(utils.Cog):
         self.sent_message_cache = {}  # MessageID: {embed: Embed, index: ScreenshotIndex, screenshots: List[str]}
 
     async def load_game_cache(self):
-        """Loads the games from Steam into cache"""
+        """
+        Loads the games from Steam into cache.
+        """
 
         params = {
             "key": self.bot.config['api_keys']['steam']
@@ -36,7 +37,9 @@ class SteamCommand(utils.Cog):
     @utils.command(aliases=['steam'])
     @utils.checks.is_config_set('api_keys', 'steam')
     async def steamsearch(self, ctx:utils.Context, *, app_name:str):
-        """Search Steam for an item"""
+        """
+        Search Steam for an item.
+        """
 
         # Load cache
         if self.game_cache is None:
@@ -68,9 +71,11 @@ class SteamCommand(utils.Cog):
             if full_title_match:
                 valid_items = [full_title_match[0]]
             if len(valid_items) > 1:
-                return await ctx.send("There are multiple results with that name.")  # TODO
+                output_items = valid_items[:10]
+                output_ids = [f"`{i['appid']}` - {i['name']}" for i in output_items]
+                return await ctx.send("There are multiple results with that name:\n" + "\n".join(output_ids))  # TODO
             elif len(valid_items) == 0:
-                return await ctx.send("There are no results with that name.")  # TODO
+                return await ctx.send("There are no results with that name.")
             app_object = valid_items[0]
             appid = app_object['appid']
 

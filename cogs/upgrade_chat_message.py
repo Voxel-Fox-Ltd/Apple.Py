@@ -7,16 +7,16 @@ import voxelbotutils as utils
 class DonatorMessage(utils.Cog):
 
     GUILD_ID = 208895639164026880
-
     UPGRADE_CHAT_MATCHER = re.compile(r"^<@!?(?P<userid>\d+)> just (purchased the role|Upgraded to) (?:\*\*)?(?P<rolename>.+)(?:\*\*)?(\.|!)$")
-
     UPGRADE_CHAT_USER_ID = 543974987795791872
     UPGRADE_CHAT_CHANNEL_ID = 743346070368813106
     BOT_COMMANDS_CHANNEL_ID = 490991441255071745
 
     @utils.Cog.listener()
     async def on_message(self, message:discord.Message):
-        """Send a message to people who subscribe via Upgrade.chat"""
+        """
+        Send a message to people who subscribe via Upgrade.chat.
+        """
 
         if message.guild is None or message.guild.id != self.GUILD_ID:
             return

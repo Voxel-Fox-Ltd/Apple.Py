@@ -14,12 +14,13 @@ class TimezoneInfo(utils.Cog):
         The parent group for timezone commands.
         """
 
-        pass
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
 
     @timezone.command(name="set")
     async def timezone_set(self, ctx:utils.Context, *, offset:str=None):
         """
-        Sets and stores your UTC offset into the bot
+        Sets and stores your UTC offset into the bot.
         """
 
         # Ask them the question
@@ -63,7 +64,7 @@ class TimezoneInfo(utils.Cog):
                 DO UPDATE SET timezone_offset=excluded.timezone_offset""",
                 ctx.author.id, total_minute_offset,
             )
-        await ctx.send(f"I think you're somewhere around **UTC{hour_offset:=+03d}:{minute_offset:=02d}** - I've stored this in the database.")
+        await ctx.send(f"Your time is estimated to be **UTC{hour_offset:=+03d}:{minute_offset:=02d}** - I've stored this in the database.")
 
     @timezone.command(name="get")
     async def timezone_get(self, ctx:utils.Context, user:discord.Member=None):
@@ -82,7 +83,7 @@ class TimezoneInfo(utils.Cog):
         if not rows or rows[0]['timezone_offset'] is None:
             return await ctx.send(f"{user.mention} hasn't set up their timezone information! They can set it with `{ctx.clean_prefix}timezone set`.")
         formatted_time = (dt.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%-I:%M %p')
-        await ctx.send(f"The current time for {user.mention} _should_ be somewhere around **{formatted_time}**.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"The current time for {user.mention} is estimated to be **{formatted_time}**.", allowed_mentions=discord.AllowedMentions.none())
 
 
 def setup(bot:utils.Bot):

@@ -42,7 +42,9 @@ class DiscordDatamining(utils.Cog):
         await self.bot.wait_until_ready()
 
     async def commit_poster_loop(self, embed_title:str, api_url:str, repo_url:str):
-        """Grab the data from the Discord datamining repo and post it to the coding channel of VFL"""
+        """
+        Grab the data from the Discord datamining repo and post it to the coding channel of VFL.
+        """
 
         # Grab the data
         self.logger.info(f"Grabbing repo data from {api_url}")
@@ -76,19 +78,19 @@ class DiscordDatamining(utils.Cog):
         self.logger.info(f"Logging info of {len(comment_text)} comments")
 
         # Get the full description
-        descriptionunsplit =  '\n'.join([f"{i['commit']['message']} - [Link]({repo_url}commit/{i['sha']})" for i in new_commits])
+        description_unsplit = '\n'.join([f"{i['commit']['message']} - [Link]({repo_url}commit/{i['sha']})" for i in new_commits])
 
         # Inform the bot owner that the description is larger than allowed by discord
-        if len(descriptionunsplit) > 2048:
+        if len(description_unsplit) > 2048:
             self.logger.info(f"Our description is longer than 2048 characters and this isnt really poggers, we need to make it in multiple embeds. It was {len(descriptionunsplit)} characters.")
 
         # Split the description into a list of descriptions each 2048 or less
-        descriptionarray = [descriptionunsplit[i:i+2048] for i in range(0, len(descriptionunsplit), 2048)]
+        descriptionarray = [description_unsplit[i:i + 2048] for i in range(0, len(description_unsplit), 2048)]
 
         # Format one into an embed
         with utils.Embed(use_random_colour=True) as embed:
             embed.title = embed_title
-            embed.description = descriptionarray.pop()
+            embed.description = descriptionarray.pop(0)
             for sha, body in comment_text:
                 embed.add_field(sha, body, inline=False)
 
@@ -99,11 +101,11 @@ class DiscordDatamining(utils.Cog):
 
         # If there are more than 2048 characters send the other parts
         for description in descriptionarray:
-            with utils.Embed(use_random_colour=True) as newembed:
-                embed.title ="Continuation of "+ embed_title
+            with utils.Embed(use_random_colour=True) as embed:
+                embed.title = "Continuation of " + embed_title
                 embed.description = description
-                nm = await channel.send(embed=embed)
-                await nm.publish()
+            m = await channel.send(embed=embed)
+            await m.publish()
 
         # We are done PogChamp
         self.logger.info("Sent data to channel")

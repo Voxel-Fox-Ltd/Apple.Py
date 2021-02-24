@@ -11,7 +11,9 @@ class ImageUrl(commands.Converter):
     regex = re.compile(r"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)")
 
     async def convert(self, ctx:utils.Context, argument:str):
-        """Make sure a given string argument is an image URL"""
+        """
+        Make sure a given string argument is an image URL.
+        """
 
         v = self.regex.search(argument)
         if v is None:
@@ -26,7 +28,9 @@ class EmojiCommands(utils.Cog):
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.guild_only()
     async def stealemoji(self, ctx:utils.Context, emoji:typing.Union[discord.PartialEmoji, int, ImageUrl], name:str=None, animated:bool=False):
-        """Copies an emoji and uploads it to your server"""
+        """
+        Copies an emoji and uploads it to your server.
+        """
 
         # See if we gave an emoji ID
         if isinstance(emoji, int):

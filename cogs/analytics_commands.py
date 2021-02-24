@@ -86,7 +86,7 @@ class AnalyticsCommands(utils.Cog):
         if target_channels is None:
             target_channels = ctx.guild.channels
 
-        with io.StringIO as file_stream:
+        with io.StringIO() as file_stream:
             csvw = csv.writer(file_stream)
             messages_processed = 0
             for target_channel in target_channels:

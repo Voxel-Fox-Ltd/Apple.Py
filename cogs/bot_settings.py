@@ -9,7 +9,9 @@ class BotSettings(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
     async def setup(self, ctx:utils.Context):
-        """Run the bot setup"""
+        """
+        Run the bot setup.
+        """
 
         # Make sure it's only run as its own command, not a parent
         if ctx.invoked_subcommand is not None:
@@ -41,11 +43,6 @@ class BotSettings(utils.Cog):
                 'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'nickname_banned_role_id'),
             },
             {
-                'display': lambda c: "Enable Github answer dumping (currently {0})".format(c.bot.guild_settings[c.guild.id]['dump_stackoverflow_answers']),
-                'converter_args': [("Do you want to enable dumping Stackoverflow answers?", "dump SO answers", utils.converters.BooleanConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'dump_stackoverflow_answers'),
-            },
-            {
                 'display': "Set up VC max members",
                 'callback': self.bot.get_command("setup vcmaxmembers"),
             },
@@ -59,7 +56,9 @@ class BotSettings(utils.Cog):
     @setup.command()
     @utils.checks.meta_command()
     async def vcmaxmembers(self, ctx:utils.Context):
-        """Run the bot setup"""
+        """
+        Run the bot setup.
+        """
 
         # Create settings menu
         key_display_function = lambda k: getattr(ctx.bot.get_channel(k), 'mention', 'none')
@@ -75,7 +74,9 @@ class BotSettings(utils.Cog):
     @utils.cooldown.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     async def usersettings(self, ctx:utils.Context):
-        """Run the bot setup"""
+        """
+        Run the bot setup.
+        """
 
         # Make sure it's only run as its own command, not a parent
         if ctx.invoked_subcommand is not None:

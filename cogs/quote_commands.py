@@ -10,7 +10,9 @@ import voxelbotutils as utils
 
 
 def create_id(n:int=5):
-    """Generates a generic 5 character-string to use as an ID"""
+    """
+    Generates a generic 5 character-string to use as an ID.
+    """
 
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=n)).lower()
 
@@ -24,7 +26,9 @@ class QuoteCommands(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
     async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
-        """Qutoes a user babeyyyyy lets GO"""
+        """
+        Quotes a user's message to the guild's quote channel.
+        """
 
         # Make sure no subcommand is passed
         if ctx.invoked_subcommand is not None:
@@ -69,7 +73,7 @@ class QuoteCommands(utils.Cog):
         for message in messages:
             if (quote_is_url and message.content) or (message.content and message.attachments and message.content != message.attachments[0].url):
                 return await ctx.send("You can't quote both messages and images.")
-            elif message.embeds:
+            elif message.embeds and getattr(message.embeds[0].thumbnail, "url", None) != message.content:
                 return await ctx.send("You can't quote embeds.")
             elif len(message.attachments) > 1:
                 return await ctx.send("Multiple images can't be quoted.")
@@ -169,7 +173,9 @@ class QuoteCommands(utils.Cog):
     @quote.command(name="get")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def quote_get(self, ctx:utils.Context, identifier:commands.clean_content):
-        """Gets a quote from the database"""
+        """
+        Gets a quote from the guild's quote channel.
+        """
 
         # Get quote from database
         async with self.bot.database() as db:
@@ -207,14 +213,17 @@ class QuoteCommands(utils.Cog):
     @quote.command(name="random")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def quote_random(self, ctx:utils.Context, user:discord.User=None):
-        """Gets a random quote for a given user"""
+        """
+        Gets a random quote for a given user.
+        """
 
         # Get quote from database
         user = user or ctx.author
         async with self.bot.database() as db:
             quote_rows = await db(
-                """SELECT quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes WHERE user_id=$1 ORDER BY RANDOM() LIMIT 1""",
-                user.id,
+                """SELECT quote_id as quote_id, user_id, channel_id, message_id
+                FROM user_quotes WHERE user_id=$1 AND guild_id=$2 ORDER BY RANDOM() LIMIT 1""",
+                user.id, ctx.guild.id,
             )
         if not quote_rows:
             return await ctx.send(f"{user.mention} has no available quotes.", allowed_mentions=discord.AllowedMentions.none())
@@ -236,14 +245,17 @@ class QuoteCommands(utils.Cog):
         return await ctx.send(embed=message.embeds[0])
 
     @quote.group(name="alias", invoke_without_command=True)
+    @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def quote_alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias:commands.clean_content):
-        """Adds an alias to a quote"""
+        """
+        Adds an alias to a quote.
+        """
 
         # Grab data from db
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1", quote_id.lower())
+            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1 AND guild_id=$1", quote_id.lower(), ctx.guild.id)
         if not rows:
             return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
 
@@ -256,48 +268,35 @@ class QuoteCommands(utils.Cog):
         await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
     @quote_alias.command(name="remove", aliases=["delete"])
+    @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
     async def quote_alias_remove(self, ctx:utils.Context, alias:commands.clean_content):
-        """Deletes an alias from a quote"""
+        """
+        Deletes an alias from a quote.
+        """
 
         # Grab data from db
         async with self.bot.database() as db:
+            quote_rows = await db(
+                """SELECT user_quotes.quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes LEFT JOIN
+                quote_aliases ON user_quotes.quote_id=quote_aliases.quote_id
+                WHERE quote_aliases.alias=$1 AND guild_id=$2""",
+                alias.lower(), ctx.guild.id
+            )
+            if not quote_rows:
+                return await ctx.send(f"There's no quote with the alias `{alias.upper()}`.")
             await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
         return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
-    @quote.command(name="search", enabled=False)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def quote_search(self, ctx:utils.Context, user:typing.Optional[discord.Member]=None, *, search_term:str=""):
-        """Searches the datbase for a quote with some text in it babeyeyeyey"""
-
-        # Grab data from the database
-        async with self.bot.database() as db:
-            if user is None:
-                rows = await db("SELECT * FROM user_quotes WHERE text LIKE CONCAT('%', $1::text, '%') ORDER BY timestamp DESC LIMIT 10", search_term)
-            else:
-                rows = await db("SELECT * FROM user_quotes WHERE user_id=$1 AND text LIKE CONCAT('%', $2::text, '%') ORDER BY timestamp DESC LIMIT 10", user.id, search_term)
-        if not rows:
-            if search_term:
-                return await ctx.send("I couldn't find any text matching that pattern.")
-            return await ctx.send(f"{(user or ctx.author).mention} hasn't been featured in any quotes.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
-
-        # Format output
-        rows = rows[:10]
-        embed = utils.Embed(use_random_colour=True)
-        for row in rows:
-            if len(row['text']) <= self.QUOTE_SEARCH_CHARACTER_CUTOFF:
-                text = row['text']
-            else:
-                text = f"{row['text'][:self.QUOTE_SEARCH_CHARACTER_CUTOFF]}..."
-            embed.add_field(name=row['quote_id'].upper(), value=text, inline=len(text) < 100)
-        return await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
-
     @quote.command(name="delete")
+    @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def quote_delete(self, ctx:utils.Context, *quote_ids:str):
-        """Deletes a quote from your server"""
+        """
+        Deletes a quote from your server.
+        """
 
         quote_ids = [i.lower() for i in quote_ids]
         quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
@@ -327,11 +326,8 @@ class QuoteCommands(utils.Cog):
                 await ctx.send(e)
 
         async with self.bot.database() as db:
-            await db("DELETE FROM user_quotes WHERE quote_id=ANY($1)", quote_ids)
-            # if rows:
-            #     await db("DELETE FROM user_quotes WHERE quote_id=$1", quote_id.lower())
+            await db("DELETE FROM user_quotes WHERE quote_id=ANY($1) AND guild_id=$2", quote_ids, ctx.guild.id)
         return await ctx.send("Deleted quote(s).")
-        # return await ctx.send(f"No quote with ID `{quote_id.upper()}` exists.")
 
 
 def setup(bot:utils.Bot):

@@ -16,11 +16,15 @@ class LiveVCPermissionHandler(utils.Cog):
         -7: 690161286251675826,  # Cerberus 6
         -8: 726234884997251162,  # Cerberus 7
         -9: 744128973608452106,  # Cerberus 8
+        -10: 793687621335384104,  # Cerberus 9
+        -11: 793689594067288104,  # Cerberus 10
     }
 
     @utils.Cog.listener()
     async def on_guild_channel_update(self, before:discord.TextChannel, after:discord.TextChannel):
-        """Update permissions for the live VC based on the name dab"""
+        """
+        Update permissions for the live VC based on the name.
+        """
 
         # Check the channel
         if after.id != self.LIVE_VC_CHANNEL_ID:

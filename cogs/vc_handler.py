@@ -11,7 +11,9 @@ class VCHandler(utils.Cog):
 
     @utils.Cog.listener()
     async def on_voice_state_update(self, member:discord.Member, before:discord.VoiceState, after:discord.VoiceState):
-        """Pinged when a user joins/leaves a voice chat"""
+        """
+        Pinged when a user joins/leaves a voice chat.
+        """
 
         # Check how many people are in the VC
         channels = list(set([i for i in [after.channel, before.channel] if i is not None]))
@@ -29,10 +31,6 @@ class VCHandler(utils.Cog):
 
             # See how many are muted
             current_muted_member_count = len([i for i in channel.members if user_counts_as_muted(i.voice)])
-
-            # # See if we need to add our newly-cached member to that
-            # if after.channel == channel:
-            # TODO
 
             new_limit = allowed_members_for_channel + current_muted_member_count
             try:

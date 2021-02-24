@@ -7,16 +7,18 @@ import voxelbotutils as utils
 class UserIDPinger(utils.Cog):
 
     GUILD_ID = 208895639164026880
-    STAFF_CHANNELS_LIST = [528827626907762689, 739197834145824880]
+    STAFF_CATEGORY_LIST = 512137728066977802
     ID_IN_MESSAGE_MATCHER = re.compile(r"(?<!<@)(?P<uid>[0-9]{15,23})(?!>)$")
 
     @utils.Cog.listener()
     async def on_message(self, message:discord.Message):
-        """Resends any message that countains a user ID sent in staff-commands with the mentioned user"""
+        """
+        Resends any message that countains a user ID sent in staff-commands with the mentioned user.
+        """
 
         if message.guild is None or message.guild.id != self.GUILD_ID:
             return
-        if message.channel.id not in self.STAFF_CHANNELS_LIST:
+        if message.channel.category_id != self.STAFF_CATEGORY_LIST:
             return
 
         # Regex Match
@@ -25,7 +27,7 @@ class UserIDPinger(utils.Cog):
             return
         user_id = m.group("uid")
 
-        # Send the ping-y boi
+        # Send the pingy boi
         await message.channel.send(f"<@{user_id}>")
 
 
