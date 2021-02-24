@@ -1,4 +1,6 @@
+import re
 import typing
+import random
 from urllib.parse import quote
 
 from discord.ext import commands
@@ -6,6 +8,37 @@ import voxelbotutils as utils
 
 
 class DNDCommands(utils.Cog):
+
+    DICE_REGEX = re.compile(r"^(?P<count>\d+)?[dD](?P<type>\d+) *(?P<modifier>(?P<modifier_parity>[+-]) *(?P<modifier_amount>\d+))?$")
+
+    @utils.command(aliases=['dice'])
+    async def dice(self, ctx:utils.Context, *, dice:str=None):
+        """
+        Rolls a dice for you.
+        """
+
+        # Validate the dice
+        if not dice:
+            raise utils.errors.MissingRequiredArgumentString(dice)
+        match = self.DICE_REGEX.search(dice)
+        if not match:
+            raise commands.BadArgument(f"Your dice was not in the format `AdB+C`.")
+
+        # Roll em
+        dice_count = int(match.group("count") or 1)
+        dice_type = int(match.group("type"))
+        modifier = int((match.group("modifier") or "+0").replace(" ", ""))
+        rolls = [random.randint(1, dice_type) for _ in range(dice_count)]
+        total = sum(rolls) + modifier
+
+        # Output formatted
+        if dice_count > 1:
+            if modifier:
+                return await ctx.send(f"Total **{total}** ({sum(rolls)}{modifier:+})\n({rolls})")
+            return await ctx.send(f"Total **{total}**\n({rolls})")
+        if modifier:
+            return await ctx.send(f"Total **{total}**\n({sum(rolls)}{modifier:+})")
+        return await ctx.send(f"Total **{total}**")
 
     async def send_web_request(self, resource:str, item:str) -> typing.Optional[dict]:
         """
@@ -64,7 +97,7 @@ class DNDCommands(utils.Cog):
         )
         if data.get('higher_level'):
             embed.add_field(
-                "Higher Levels", "\n".join(data['higher_level']), inline=False,
+                "Higher Level", "\n".join(data['higher_level']), inline=False,
             )
         elif data.get('damage'):
             text = ""
