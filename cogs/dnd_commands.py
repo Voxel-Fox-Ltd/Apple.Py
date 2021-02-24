@@ -11,7 +11,7 @@ class DNDCommands(utils.Cog):
 
     DICE_REGEX = re.compile(r"^(?P<count>\d+)?[dD](?P<type>\d+) *(?P<modifier>(?P<modifier_parity>[+-]) *(?P<modifier_amount>\d+))?$")
 
-    @utils.command(aliases=['dice'])
+    @utils.command(aliases=['roll'])
     async def dice(self, ctx:utils.Context, *, dice:str=None):
         """
         Rolls a dice for you.
