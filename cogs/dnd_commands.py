@@ -57,7 +57,16 @@ class DNDCommands(utils.Cog):
             "Duration", data['duration'],
         ).add_field(
             "Classes", ', '.join([i['name'] for i in data['classes']]),
+        ).add_field(
+            "Ritual", data['ritual'],
+        ).add_field(
+            "Concentration", data['concentration'],
         )
+        if i.get('damage'):
+            damage_type = data['damage']['damage_type']['name'].lower()
+            embed.add_field(
+                "Damage", "\n".join([f"Level {i}: {o} {damage_type} damage" for i, o in data['damage']['damage_at_character_level'].items()]),
+            )
         return await ctx.send(embed=embed)
 
 
