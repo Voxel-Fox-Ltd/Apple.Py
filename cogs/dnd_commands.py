@@ -142,17 +142,17 @@ class DNDCommands(utils.Cog):
                 ", ".join([f"{o} {data[i]}" for i, o in self.ATTRIBUTES.items()]),
             ])
         ).add_field(
-            "Proficiencies", ", ".join(data['proficiencies']) or "None",
+            "Proficiencies", ", ".join(data['proficiencies']).title() or "None",
         ).add_field(
-            "Damage Vulnerabilities", ", ".join(data['damage_vulnerabilities']) or "None",
+            "Damage Vulnerabilities", ", ".join(data['damage_vulnerabilities']).title() or "None",
         ).add_field(
-            "Damage Resistances", ", ".join(data['damage_resistances']) or "None",
+            "Damage Resistances", ", ".join(data['damage_resistances']).title() or "None",
         ).add_field(
-            "Damage Immunities", ", ".join(data['damage_immunities']) or "None",
+            "Damage Immunities", ", ".join(data['damage_immunities']).title() or "None",
         ).add_field(
-            "Condition Immunities", ", ".join([i['name'] for i in data['condition_immunities']]) or "None",
+            "Condition Immunities", ", ".join([i['name'] for i in data['condition_immunities']]).title() or "None",
         ).add_field(
-            "Proficiencies", ", ".join(data['proficiencies']) or "None",
+            "Proficiencies", ", ".join(data['proficiencies']).title() or "None",
         ).add_field(
             "Senses", "\n".join([f"{i.replace('_', ' ').title()} {o}" for i, o in data['senses'].items()]) or "None",
         ).add_field(
