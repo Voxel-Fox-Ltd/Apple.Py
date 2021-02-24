@@ -142,7 +142,7 @@ class DNDCommands(utils.Cog):
                 ", ".join([f"{o} {data[i]}" for i, o in self.ATTRIBUTES.items()]),
             ])
         ).add_field(
-            "Proficiencies", ", ".join([i['name'] for i in data['proficiencies']]).title() or "None",
+            "Proficiencies", ", ".join([f"{i['proficiency']['name']} {i['value']}" for i in data['proficiencies']]) or "None",
         ).add_field(
             "Damage Vulnerabilities", ", ".join(data['damage_vulnerabilities']).title() or "None",
         ).add_field(
