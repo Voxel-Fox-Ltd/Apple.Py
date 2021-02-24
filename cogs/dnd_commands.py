@@ -179,7 +179,7 @@ class DNDCommands(utils.Cog):
         """
 
         async with ctx.typing():
-            data = await self.send_web_request("spells", spell_name)
+            data = await self.send_web_request("conditions", spell_name)
         if not data:
             return await ctx.send("I couldn't find any information for that condition.")
         embed = utils.Embed(
