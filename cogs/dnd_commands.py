@@ -31,11 +31,17 @@ class DNDCommands(utils.Cog):
         modifier = int((match.group("modifier") or "+0").replace(" ", ""))
         rolls = [random.randint(1, dice_type) for _ in range(dice_count)]
         total = sum(rolls) + modifier
+        dice_string = f"{dice_count}d{dice_type}{modifier:+}"
+        if not modifier:
+            dice_string = dice_string[:-2]
 
         # Output formatted
-        if dice_count > 1:
-            return await ctx.send(f"Total **{total}**\n({', '.join([str(i) for i in rolls])}) = {sum(rolls)}")
-        return await ctx.send(f"Total **{total}**")
+        if dice_count > 1 or modifier:
+            equals_string = f"{sum(rolls)} {'+' if modifier > 0 else '-'} {abs(modifier)}"
+            if modifier:
+                return await ctx.send(f"Total **{total:,}** ({dice_string})\n({', '.join([str(i) for i in rolls])}) = {equals_string}")
+            return await ctx.send(f"Total **{total:,}** ({dice_string})\n({', '.join([str(i) for i in rolls])}) = {equals_string}")
+        return await ctx.send(f"Total **{total}** ({dice_string})")
 
     async def send_web_request(self, resource:str, item:str) -> typing.Optional[dict]:
         """
