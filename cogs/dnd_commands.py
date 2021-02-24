@@ -64,9 +64,14 @@ class DNDCommands(utils.Cog):
         )
         if data.get('damage'):
             damage_type = data['damage']['damage_type']['name'].lower()
-            embed.add_field(
-                "Damage", "\n".join([f"Level {i}: {o} {damage_type} damage" for i, o in data['damage']['damage_at_character_level'].items()]),
-            )
+            if data['damage'].get('damage_at_character_level'):
+                embed.add_field(
+                    "Damage", "\n".join([f"Character level {i}: {o} {damage_type} damage" for i, o in data['damage']['damage_at_character_level'].items()]),
+                )
+            if data['damage'].get('damage_at_slot_level'):
+                embed.add_field(
+                    "Damage", "\n".join([f"Slot level {i}: {o} {damage_type} damage" for i, o in data['damage']['damage_at_slot_level'].items()]),
+                )
         return await ctx.send(embed=embed)
 
 
