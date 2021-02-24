@@ -12,6 +12,7 @@ class DNDCommands(utils.Cog):
     DICE_REGEX = re.compile(r"^(?P<count>\d+)?[dD](?P<type>\d+) *(?P<modifier>(?P<modifier_parity>[+-]) *(?P<modifier_amount>\d+))?$")
 
     @utils.command(aliases=['roll'])
+    @commands.bot_has_permissions(send_messages=True)
     async def dice(self, ctx:utils.Context, *, dice:str=None):
         """
         Rolls a dice for you.
@@ -33,11 +34,7 @@ class DNDCommands(utils.Cog):
 
         # Output formatted
         if dice_count > 1:
-            if modifier:
-                return await ctx.send(f"Total **{total}** ({sum(rolls)}{modifier:+})\n({', '.join([str(i) for i in rolls])})")
-            return await ctx.send(f"Total **{total}**\n({', '.join([str(i) for i in rolls])})")
-        if modifier:
-            return await ctx.send(f"Total **{total}**\n({sum(rolls)}{modifier:+})")
+            return await ctx.send(f"Total **{total}**\n({', '.join([str(i) for i in rolls])}) = {sum(rolls)}")
         return await ctx.send(f"Total **{total}**")
 
     async def send_web_request(self, resource:str, item:str) -> typing.Optional[dict]:
