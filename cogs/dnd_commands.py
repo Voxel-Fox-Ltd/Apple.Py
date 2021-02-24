@@ -153,9 +153,23 @@ class DNDCommands(utils.Cog):
             "Condition Immunities", ", ".join([i['name'] for i in data['condition_immunities']]).title() or "None",
         ).add_field(
             "Senses", "\n".join([f"{i.replace('_', ' ').title()} {o}" for i, o in data['senses'].items()]) or "None",
-        ).add_field(
-            "Actions", "\n\n".join([f"**{i['name']}**\n{i['desc']}" for i in data['actions']]) or "None", inline=False,
         )
+        field_name = "Actions"
+        action_text = [f"**{i['name']}**\n{i['desc']}" for i in data['actions']]
+        start = 0
+        for index, text in enumerate(action_text):
+            combined_text = "\n\n".join(action_text[start:indx])
+            if len(combined_text) <= 1024:
+                continue
+            embed.add_field(
+                field_name, combined_text, inline=False,
+            )
+            field_name = "\u200b"
+            start = index
+        else:
+            embed.add_field(
+                field_name, combined_text, inline=False,
+            )
         return await ctx.send(embed=embed)
 
 
