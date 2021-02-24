@@ -135,7 +135,6 @@ class DNDCommands(utils.Cog):
             )
         elif data.get('damage'):
             text = ""
-            damage_type = data['damage']['damage_type']['name'].lower()
             if data['damage'].get('damage_at_character_level'):
                 text += "\nCharacter level " + ", ".join([f"{i}: {o}" for i, o in data['damage']['damage_at_character_level'].items()])
             if data['damage'].get('damage_at_slot_level'):
@@ -204,6 +203,29 @@ class DNDCommands(utils.Cog):
             use_random_colour=True,
             title=data['name'],
             description="\n".join(data['desc']),
+        )
+        return await ctx.send(embed=embed)
+
+    @dnd.command(name="class", aliases=["classes"])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def dnd_class(self, ctx:utils.Context, *, class_name:str):
+        """
+        Gives you information on a D&D class.
+        """
+
+        async with ctx.typing():
+            data = await self.send_web_request("classes", class_name)
+        if not data:
+            return await ctx.send("I couldn't find any information for that class.")
+        embed = utils.Embed(
+            use_random_colour=True,
+            title=data['name'],
+        ).add_field(
+            "Proficiencies", ", ".join([i['name'] for i in data['proficiencies']]),
+        ).add_field(
+            "Saving Throws", ", ".join([i['name'] for i in data['saving_throws']]),
+        ).add_field(
+            "Starting Equipment", "\n".join([f"{i['quantity']}x {i['equipment']['name']}" for i in data['starting_equipment']]),
         )
         return await ctx.send(embed=embed)
 
