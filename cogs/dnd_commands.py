@@ -152,7 +152,7 @@ class DNDCommands(utils.Cog):
         ).add_field(
             "Condition Immunities", ", ".join([i['name'] for i in data['condition_immunities']]).title() or "None",
         ).add_field(
-            "Proficiencies", ", ".join(data['proficiencies']).title() or "None",
+            "Proficiencies", ", ".join([i['name'] for i in data['proficiencies']]).title() or "None",
         ).add_field(
             "Senses", "\n".join([f"{i.replace('_', ' ').title()} {o}" for i, o in data['senses'].items()]) or "None",
         ).add_field(
