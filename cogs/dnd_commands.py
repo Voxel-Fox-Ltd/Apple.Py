@@ -64,7 +64,7 @@ class DNDCommands(utils.Cog):
         )
         if data.get('higher_level'):
             embed.add_field(
-                "Damage", "\n".join(data['higher_level']),
+                "Higher Levels", "\n".join(data['higher_level']), inline=False,
             )
         elif data.get('damage'):
             text = ""
@@ -74,7 +74,7 @@ class DNDCommands(utils.Cog):
             if data['damage'].get('damage_at_slot_level'):
                 text += "\nSlot level " + ", ".join([f"{i}: {o}" for i, o in data['damage']['damage_at_slot_level'].items()])
             embed.add_field(
-                "Damage", text.strip()
+                "Damage", text.strip(), inline=False,
             )
         return await ctx.send(embed=embed)
 
