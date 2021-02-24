@@ -82,15 +82,15 @@ class DiscordDatamining(utils.Cog):
 
         # Inform the bot owner that the description is larger than allowed by discord
         if len(description_unsplit) > 2048:
-            self.logger.info(f"Our description is longer than 2048 characters and this isnt really poggers, we need to make it in multiple embeds. It was {len(descriptionunsplit)} characters.")
+            self.logger.info(f"Our description is longer than 2048 characters and this isnt really poggers, we need to make it in multiple embeds. It was {len(description_unsplit)} characters.")
 
         # Split the description into a list of descriptions each 2048 or less
-        descriptionarray = [description_unsplit[i:i + 2048] for i in range(0, len(description_unsplit), 2048)]
+        description_array = [description_unsplit[i:i + 2048] for i in range(0, len(description_unsplit), 2048)]
 
         # Format one into an embed
         with utils.Embed(use_random_colour=True) as embed:
             embed.title = embed_title
-            embed.description = descriptionarray.pop(0)
+            embed.description = description_array.pop(0)
             for sha, body in comment_text:
                 embed.add_field(sha, body, inline=False)
 
@@ -100,7 +100,7 @@ class DiscordDatamining(utils.Cog):
         await m.publish()
 
         # If there are more than 2048 characters send the other parts
-        for description in descriptionarray:
+        for description in description_array:
             with utils.Embed(use_random_colour=True) as embed:
                 embed.title = "Continuation of " + embed_title
                 embed.description = description
