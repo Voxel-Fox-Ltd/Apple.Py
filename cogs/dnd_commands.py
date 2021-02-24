@@ -45,6 +45,16 @@ class DNDCommands(utils.Cog):
             use_random_colour=True,
             title=data['name'],
             description=data['desc'][0],
+        ).add_field(
+            "Casting Time", data['casting_time'],
+        ).add_field(
+            "Range", data['range'],
+        ).add_field(
+            "Components", f"{', '.join(data[''])} ({data['material']})",
+        ).add_field(
+            "Duration", data['duration'],
+        ).add_field(
+            "Classes", ', '.join([i['name'] for i in data['classes']]),
         )
         return await ctx.send(embed=embed)
 
