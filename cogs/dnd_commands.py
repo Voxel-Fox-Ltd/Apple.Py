@@ -154,7 +154,7 @@ class DNDCommands(utils.Cog):
         ).add_field(
             "Proficiencies", ", ".join(data['proficiencies']) or "None",
         ).add_field(
-            "Senses", "\n".join([f"{i.replace('_', ' ').title()} {o}" for i, o in data['senses']]) or "None",
+            "Senses", "\n".join([f"{i.replace('_', ' ').title()} {o}" for i, o in data['senses'].items()]) or "None",
         ).add_field(
             "Actions", "\n".join([f"{i['name']} ({i['desc'].strip(string.punctuation)})." for i in data['actions']]) or "None",
         )
