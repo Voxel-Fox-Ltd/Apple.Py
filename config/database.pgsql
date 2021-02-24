@@ -44,8 +44,7 @@ CREATE TABLE IF NOT EXISTS user_settings(
     reddit_refresh_token VARCHAR(100),
 
     trello_username VARCHAR(100),
-    trello_oauth_token VARCHAR(100),
-    trello_oauth_token_secret VARCHAR(100)
+    trello_token VARCHAR(100)
 );
 
 

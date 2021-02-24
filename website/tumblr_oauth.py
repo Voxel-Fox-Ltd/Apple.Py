@@ -122,9 +122,7 @@ async def tumblr_login_processor(request:Request):
     query_data = session['tumblr_oauth']
     query_data.update(request.query)
     token_data = await get_tumblr_user_oauth1_token(request, query_data)
-    # return json_response({'query_data': query_data, 'token_data': token_data})
     user_data = await send_tumblr_oauth1_request(request, "GET", "/user/info", token_data)
-    # return json_response({'user_data': user_data, 'query_data': query_data, 'token_data': token_data})
 
     # Store that
     async with request.app['database']() as db:

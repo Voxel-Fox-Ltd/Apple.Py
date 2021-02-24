@@ -5,7 +5,7 @@ from base64 import b64encode
 import hashlib
 
 import aiohttp
-from aiohttp.web import HTTPFound, Request, RouteTableDef, json_response
+from aiohttp.web import HTTPFound, Request, RouteTableDef, json_response, Response
 import aiohttp_session
 
 
@@ -72,41 +72,17 @@ async def get_trello_oauth1_authorize_token(request):
         return parse_qs(await site.text())
 
 
-def get_trello_oauth1_login_url(request, token_data):
+def get_trello_oauth1_login_url(request):
     params = {
-        # 'key': token_data['oauth_token'][0],
         'key': request.app['config']['trello_oauth']['client_key'],
-        'return_url': request.app['config']['website_base_url'].rstrip('/') + '/trello_login_processor',
+        'return_url': request.app['config']['website_base_url'].rstrip('/') + '/trello_login_callback',
         'callback_method': 'fragment',
         'scope': 'read,write,account',
         'expiration': 'never',
         'name': 'Apple.py',
-        'response_type': 'fragment',
+        'response_type': 'token',
     }
     return f"https://www.trello.com/1/authorize?{urlencode(params)}"
-
-
-async def get_trello_user_oauth1_token(request, oauth_data):
-    params, headers = get_trello_oauth1_headers_and_params(request, "POST", "https://trello.com/1/OAuthGetAccessToken", **oauth_data)
-    async with aiohttp.ClientSession() as session:
-        site = await session.post(
-            "https://trello.com/1/OAuthGetAccessToken",
-            headers=headers,
-            params=params,
-        )
-        return parse_qs(await site.text())
-
-
-async def send_trello_oauth1_request(request, method, url, authed_user_params):
-    params, headers = get_trello_oauth1_headers_and_params(request, method.upper(), f"https://api.trello.com/1{url}", **authed_user_params)
-    async with aiohttp.ClientSession() as session:
-        site = await session.request(
-            method.upper(),
-            f"https://api.trello.com/v2{url}",
-            headers=headers,
-            params=params,
-        )
-        return await site.json()
 
 
 @routes.get('/get_trello_login_url')
@@ -115,11 +91,26 @@ async def get_trello_login_url(request:Request):
     Get the trello login url.
     """
 
-    session = await aiohttp_session.get_session(request)
-    auth_token = await get_trello_oauth1_authorize_token(request)
-    session['trello_oauth'] = auth_token
-    auth_url = get_trello_oauth1_login_url(request, auth_token)
+    auth_url = get_trello_oauth1_login_url(request)
     return HTTPFound(location=auth_url)
+
+
+@routes.get('/trello_login_callback')
+async def trello_login_callback(request:Request):
+    """
+    Page the discord login redirects the user to when successfully logged in with trello.
+    """
+
+    text = (
+        "<script>"
+        "var params = new URLSearchParams ('?' + window.location.hash.slice(1)); "
+        "window.location = `/trello_login_processor?${params.toString()}`;"
+        "</script>"
+    )
+    return Response(
+        body=text,
+        content_type="text/html",
+    )
 
 
 @routes.get('/trello_login_processor')
@@ -129,22 +120,23 @@ async def trello_login_processor(request:Request):
     """
 
     session = await aiohttp_session.get_session(request)
-    # parsed_url = urlparse(request.url)
-    fragment_data = parse_qs(request.rel_url.fragment)
-    return json_response({'url': fragment_data})
-    query_data = {'token': fragment_data['token'][0]}
-    token_data = await get_trello_user_oauth1_token(request, query_data)
-    # return json_response({'query_data': query_data, 'token_data': token_data})
-    user_data = await send_trello_oauth1_request(request, "GET", "/members/me", token_data)
-    return json_response({'user_data': user_data, 'query_data': query_data, 'token_data': token_data})
+    token = request.query.get("token", "")
+
+    # Get their username
+    params = {
+        "token": token,
+        "key": request.app['config']['trello_oauth']['client_key'],
+    }
+    async with aiohttp.ClientSession() as web_session:
+        async with web_session.get("https://api.trello.com/1/members/me", params=params) as r:
+            user_data = await r.json()
 
     # Store that
     async with request.app['database']() as db:
         await db(
-            """INSERT INTO user_settings (user_id, trello_username, trello_oauth_token, trello_oauth_token_secret) VALUES ($1, $2, $3, $4)
-            ON CONFLICT (user_id) DO UPDATE SET trello_username=excluded.trello_username, trello_oauth_token=excluded.trello_oauth_token,
-            trello_oauth_token_secret=excluded.trello_oauth_token_secret""",
-            session['user_id'], urlparse(user_data['response']['user']['blogs'][0]['url']).hostname, token_data['oauth_token'][0], token_data['oauth_token_secret'][0],
+            """INSERT INTO user_settings (user_id, trello_username, trello_token) VALUES ($1, $2, $3)
+            ON CONFLICT (user_id) DO UPDATE SET trello_username=excluded.trello_username, trello_token=excluded.trello_token""",
+            session['user_id'], user_data['username'], token,
         )
     return HTTPFound(location=session.pop('redirect_on_login', '/'))
 
@@ -158,7 +150,7 @@ async def trello_logout(request:Request):
     session = await aiohttp_session.get_session(request)
     async with request.app['database']() as db:
         await db(
-            "UPDATE user_settings SET trello_username=NULL, trello_oauth_token=NULL, trello_oauth_token_secret=NULL WHERE user_id=$1",
+            "UPDATE user_settings SET trello_username=NULL, trello_token=NULL WHERE user_id=$1",
             session['user_id']
         )
     return HTTPFound(location=session.pop('redirect_on_login', '/'))

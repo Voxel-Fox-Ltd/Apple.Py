@@ -38,6 +38,9 @@ oauth_scopes = [ "identify", "guilds", ]  # The scopes that should be added to t
     client_id = ""
     client_secret = ""
 
+[trello_oauth]
+    client_key = ""
+
 # This data is passed directly over to asyncpg.connect()
 [database]
     enabled = true
