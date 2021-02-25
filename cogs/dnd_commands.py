@@ -160,7 +160,7 @@ class DNDCommands(utils.Cog):
             use_random_colour=True,
             title=data['name'],
             description="\n".join([
-                f"{data['size']} | {data['type']} | {data['hit_points']:,} HP | {data['xp']:,} XP",
+                f"{data['size'].capitalize()} | {data['type']} | {data['hit_points']:,} ({data['hit_dice']}) HP | {data['xp']:,} XP",
                 ", ".join([f"{o} {data[i]}" for i, o in self.ATTRIBUTES.items()]),
             ])
         ).add_field(
