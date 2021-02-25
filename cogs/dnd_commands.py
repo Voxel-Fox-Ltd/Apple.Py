@@ -178,9 +178,10 @@ class DNDCommands(utils.Cog):
         )
         self.group_field_descriptions(embed, "Actions", data['actions'])
         self.group_field_descriptions(embed, "Legendary Actions", data.get('legendary_actions', list()))
-        embed.add_field(
-            "Special Abilities", "\n".join([f"**{i['name']}**\n{i['desc']}" for i in data['special_abilities'] if i['name'] != 'Spellcasting']) or "None", inline=False,
-        )
+        if data.get('special_abilities'):
+            embed.add_field(
+                "Special Abilities", "\n".join([f"**{i['name']}**\n{i['desc']}" for i in data['special_abilities'] if i['name'] != 'Spellcasting']) or "None", inline=False,
+            )
         spellcasting = [i for i in data.get('special_abilities', list()) if i['name'] == 'Spellcasting']
         if spellcasting:
             spellcasting = spellcasting[0]
