@@ -18,6 +18,8 @@ class MeowChat(utils.Cog):
         ";3",
         "rawr",
         "purr",
+        "murr",
+        "nuzzle",
     )
     EMOJI_REGEX = re.compile(r"<a?:.+?:\d+?>")
 
