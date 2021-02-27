@@ -229,9 +229,9 @@ class GithubCommands(utils.Cog):
         with utils.Embed(use_random_colour=True, description="") as embed:
             for index, issue in enumerate(data):
                 if host == "Github":
-                    embed.description += f"* (#{issue.get('id')}) [{issue.get('title')}]({issue.get('html_url')})\n"
+                    embed.description += f"* (#{issue.get('number')}) [{issue.get('title')}]({issue.get('html_url')})\n"
                 elif host == "Gitlab":
-                    embed.description += f"* (#{issue.get('id')}) [{issue.get('title')}]({issue.get('web_url')})\n"
+                    embed.description += f"* (#{issue.get('iid')}) [{issue.get('title')}]({issue.get('web_url')})\n"
                 if index >= 10:
                     embed.description += "(Only showing the 10 most recent issues)"
                     break
