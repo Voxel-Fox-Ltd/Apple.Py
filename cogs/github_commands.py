@@ -24,7 +24,7 @@ class GitRepo(commands.Converter):
             _, owner, repo = value.split('/')
             host = "Gitlab"
         elif "gitlab.com" in value.lower():
-            match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", value)
+            match = re.search(r"(?:https?://)?gitlab\.com/(?P<user>.+)/(?P<repo>.+)", value)
             owner, repo = match.group("user"), match.group("repo")
             host = "Gitlab"
         else:
@@ -232,7 +232,8 @@ class GithubCommands(utils.Cog):
                     embed.description += f"* [{issue.get('title')}]({issue.get('html_url')})\n"
                 elif host == "Gitlab":
                     embed.description += f"* [{issue.get('title')}]({issue.get('web_url')})\n"
-                if index >= 30:
+                if index >= 15:
+                    embed.description += "(Only showing the 15 most recent issues)"
                     break
         return await ctx.send(embed=embed)
 
