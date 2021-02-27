@@ -232,8 +232,8 @@ class GithubCommands(utils.Cog):
                     embed.description += f"* [{issue.get('title')}]({issue.get('html_url')})\n"
                 elif host == "Gitlab":
                     embed.description += f"* [{issue.get('title')}]({issue.get('web_url')})\n"
-                if index >= 15:
-                    embed.description += "(Only showing the 15 most recent issues)"
+                if index >= 10:
+                    embed.description += "(Only showing the 10 most recent issues)"
                     break
         return await ctx.send(embed=embed)
 
