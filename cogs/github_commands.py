@@ -6,6 +6,36 @@ from discord.ext import commands
 import voxelbotutils as utils
 
 
+class GitRepo(commands.Converter):
+
+    async def convert(self, ctx:utils.Context, value:str):
+        """
+        Convert a string into an (host, owner, repo) string tuple.
+        """
+
+        if value.startswith("gh/"):
+            _, owner, repo = value.split('/')
+            host = "Github"
+        elif "github.com" in value.lower():
+            match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", value)
+            owner, repo = match.group("user"), match.group("repo")
+            host = "Github"
+        elif value.startswith("gl/"):
+            _, owner, repo = value.split('/')
+            host = "Gitlab"
+        elif "gitlab.com" in value.lower():
+            match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", value)
+            owner, repo = match.group("user"), match.group("repo")
+            host = "Gitlab"
+        else:
+            async with ctx.bot.database() as db:
+                repo_rows = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1)", value)
+            if not repo_rows:
+                raise commands.BadArgument("I couldn't find that git repo.")
+            owner, repo, host = repo_rows[0]['owner'], repo_rows[0]['repo'], repo_rows[0]['host']
+        return (host, owner, repo)
+
+
 class GithubCommands(utils.Cog):
 
     @utils.Cog.listener()
@@ -49,63 +79,44 @@ class GithubCommands(utils.Cog):
     @utils.command()
     @utils.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True, add_reactions=True)
-    async def addrepoalias(self, ctx:utils.Context, alias:str, repo:str):
+    async def addrepoalias(self, ctx:utils.Context, alias:str, repo:GitRepo):
         """
         Add a Github repo alias to the database.
         """
 
-        if repo.startswith("gh/"):
-            _, owner, repo = repo.split('/')
-            host = "Github"
-        elif "github.com" in repo.lower():
-            match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
-            owner, repo = match.group("user"), match.group("repo")
-            host = "Github"
-        elif repo.startswith("gl/"):
-            _, owner, repo = repo.split('/')
-            host = "Gitlab"
-        elif "gitlab.com" in repo.lower():
-            match = re.search(r"(?:https?://)?gitlab\.com/(?P<user>.+)/(?P<repo>.+)", repo)
-            owner, repo = match.group("user"), match.group("repo")
-            host = "Gitlab"
-        else:
-            return await ctx.send("I couldn't find that git repo.")
         async with self.bot.database() as db:
-            await db("INSERT INTO github_repo_aliases (alias, owner, repo, host) VALUES (LOWER($1), $2, $3, $4)", alias, owner, repo, host)
+            await db("INSERT INTO github_repo_aliases (alias, owner, repo, host) VALUES (LOWER($1), $2, $3, $4)", alias, repo[1], repo[2], repo[0])
         await ctx.okay()
 
-    @utils.command(aliases=['ci'])
+    @utils.command(aliases=['ci'], hidden=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
-    async def createissue(self, ctx:utils.Context, repo:str, *, title:str):
+    async def createissue(self, ctx:utils.Context, repo:GitRepo, *, title:str):
+        """
+        Create a Github issue on a given repo.
+        """
+
+        return await ctx.invoke(self.bot.get_command("issue create"), repo, title=title)
+
+    @utils.group(aliases=['issues'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
+    async def issue(self, ctx:utils.Context):
+        """
+        The parent group for the git issue commands.
+        """
+
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
+
+    @issue.command(name='create', aliases=['make'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
+    async def issue_create(self, ctx:utils.Context, repo:GitRepo, *, title:str):
         """
         Create a Github issue on a given repo.
         """
 
         # Get the database because whatever why not
+        host, owner, repo = repo
         async with self.bot.database() as db:
-
-            # Validate the repo
-            if repo.startswith("gh/"):
-                _, owner, repo = repo.split('/')
-                host = "Github"
-            elif "github.com" in repo.lower():
-                match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
-                owner, repo = match.group("user"), match.group("repo")
-                host = "Github"
-            elif repo.startswith("gl/"):
-                _, owner, repo = repo.split('/')
-                host = "Gitlab"
-            elif "gitlab.com" in repo.lower():
-                match = re.search(r"(?:https?://)?github\.com/(?P<user>.+)/(?P<repo>.+)", repo)
-                owner, repo = match.group("user"), match.group("repo")
-                host = "Gitlab"
-            else:
-                repo_rows = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1)", repo)
-                if not repo_rows:
-                    return await ctx.send("I couldn't find that git repo.")
-                owner, repo, host = repo_rows[0]['owner'], repo_rows[0]['repo'], repo_rows[0]['host']
-
-            # See if they have a connected Github account
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{host.lower()}_username']:
                 return await ctx.send(f"You need to link your {host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
@@ -155,6 +166,7 @@ class GithubCommands(utils.Cog):
             headers = {
                 'Accept': 'application/vnd.github.v3+json',
                 'Authorization': f"token {user_rows[0]['github_access_token']}",
+                'User-Agent': self.bot.user_agent,
             }
             async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", json=json, headers=headers) as r:
                 data = await r.json()
@@ -166,6 +178,7 @@ class GithubCommands(utils.Cog):
             json = {'title': title, 'description': body}
             headers = {
                 'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}",
+                'User-Agent': self.bot.user_agent,
             }
             async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo, safe='')}/issues", json=json, headers=headers) as r:
                 data = await r.json()
@@ -173,6 +186,55 @@ class GithubCommands(utils.Cog):
                 if str(r.status)[0] != '2':
                     return await ctx.send(f"I was unable to create an issue on that Gitlab repository - `{data}`.")
             await ctx.send(f"Your issue has been created - <{data['web_url']}>.")
+
+    @issue.command(name="list")
+    async def issue_list(self, ctx:utils.Context, repo:GitRepo):
+        """
+        List all of the issues on a git repo.
+        """
+
+        # Get the database because whatever why not
+        host, owner, repo = repo
+        async with self.bot.database() as db:
+            user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
+            if not user_rows or not user_rows[0][f'{host.lower()}_username']:
+                return await ctx.send(f"You need to link your {host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+
+        # Get the issues
+        if host == "Github":
+            params = {'state': 'open'}
+            headers = {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': f"token {user_rows[0]['github_access_token']}",
+                'User-Agent': self.bot.user_agent,
+            }
+            async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", params=params, headers=headers) as r:
+                data = await r.json()
+                self.logger.info(f"Received data from Github {r.url!s} - {data!s}")
+                if 200 >= r.status > 299:
+                    return await ctx.send(f"I was unable to get the issues on that Github repository - `{data}`.")
+        elif host == "Gitlab":
+            params = {'state': 'opened'}
+            headers = {
+                'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}",
+                'User-Agent': self.bot.user_agent,
+            }
+            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo, safe='')}/issues", params=params, headers=headers) as r:
+                data = await r.json()
+                self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
+                if 200 >= r.status > 299:
+                    return await ctx.send(f"I was unable to get the issues on that Gitlab repository - `{data}`.")
+
+        # Format them into an embed
+        with utils.Embed(use_random_colour=True, description="") as embed:
+            for index, issue in enumerate(data):
+                if host == "Github":
+                    embed.description += f"* [{issue.get('title')}]({issue.get('html_url')})\n"
+                elif host == "Gitlab":
+                    embed.description += f"* [{issue.get('title')}]({issue.get('web_url')})\n"
+                if index >= 30:
+                    break
+        return await ctx.send(embed=embed)
 
 
 def setup(bot:utils.Bot):
