@@ -208,7 +208,7 @@ class GithubCommands(utils.Cog):
                 'Authorization': f"token {user_rows[0]['github_access_token']}",
                 'User-Agent': self.bot.user_agent,
             }
-            async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues", params=params, headers=headers) as r:
+            async with self.bot.session.get(f"https://api.github.com/repos/{owner}/{repo}/issues", params=params, headers=headers) as r:
                 data = await r.json()
                 self.logger.info(f"Received data from Github {r.url!s} - {data!s}")
                 if 200 >= r.status > 299:
@@ -219,7 +219,7 @@ class GithubCommands(utils.Cog):
                 'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}",
                 'User-Agent': self.bot.user_agent,
             }
-            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo, safe='')}/issues", params=params, headers=headers) as r:
+            async with self.bot.session.get(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo, safe='')}/issues", params=params, headers=headers) as r:
                 data = await r.json()
                 self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
                 if 200 >= r.status > 299:
