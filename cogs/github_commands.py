@@ -37,9 +37,11 @@ class GitRepo(commands.Converter):
 
 
 class GitIssueNumber(int):
-    async def convert(self, ctx:utils.Context, value:str):
+
+    @classmethod
+    async def convert(cls, ctx:utils.Context, value:str):
         value = value.lstrip('#')
-        return int(value)
+        return cls(value)
 
 
 class GithubCommands(utils.Cog):
