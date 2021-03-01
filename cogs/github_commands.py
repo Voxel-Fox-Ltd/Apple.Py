@@ -288,7 +288,7 @@ class GithubCommands(utils.Cog):
     @issue.command(name="close")
     async def issue_close(self, ctx:utils.Context, repo:GitRepo, issue:GitIssueNumber):
         """
-        Close a git issue
+        Close a git issue.
         """
 
         # Get the database because whatever why not
