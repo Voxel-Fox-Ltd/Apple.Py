@@ -283,12 +283,12 @@ class GithubCommands(utils.Cog):
                 self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
                 if 200 >= r.status > 299:
                     return await ctx.send(f"I was unable to get the issues on that Gitlab repository - `{data}`.")
-            return await ctx.send("Comment added!")
+            return await ctx.send(f"Comment added! <https://gitlab.com/{owner}/{repo}/-/issues/{issue}#note_{data['id']}>")
 
     @issue.command(name="close")
     async def issue_close(self, ctx:utils.Context, repo:GitRepo, issue:GitIssueNumber):
         """
-        Close a git issue.
+        Close a git issue
         """
 
         # Get the database because whatever why not
