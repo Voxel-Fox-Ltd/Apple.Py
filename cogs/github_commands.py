@@ -283,7 +283,46 @@ class GithubCommands(utils.Cog):
                 self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
                 if 200 >= r.status > 299:
                     return await ctx.send(f"I was unable to get the issues on that Gitlab repository - `{data}`.")
-            return await ctx.send(f"Comment added!")
+            return await ctx.send("Comment added!")
+
+    @issue.command(name="close")
+    async def issue_close(self, ctx:utils.Context, repo:GitRepo, issue:GitIssueNumber):
+        """
+        Close a git issue.
+        """
+
+        # Get the database because whatever why not
+        host, owner, repo = repo
+        async with self.bot.database() as db:
+            user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
+            if not user_rows or not user_rows[0][f'{host.lower()}_username']:
+                return await ctx.send(f"You need to link your {host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+
+        # Get the issues
+        if host == "Github":
+            json = {'state': 'closed'}
+            headers = {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': f"token {user_rows[0]['github_access_token']}",
+                'User-Agent': self.bot.user_agent,
+            }
+            async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues/{issue}", json=json, headers=headers) as r:
+                data = await r.json()
+                self.logger.info(f"Received data from Github {r.url!s} - {data!s}")
+                if 200 >= r.status > 299:
+                    return await ctx.send(f"I was unable to get the issues on that Github repository - `{data}`.")
+        elif host == "Gitlab":
+            json = {'state_event': 'close'}
+            headers = {
+                'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}",
+                'User-Agent': self.bot.user_agent,
+            }
+            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo, safe='')}/issues/{issue}", json=json, headers=headers) as r:
+                data = await r.json()
+                self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
+                if 200 >= r.status > 299:
+                    return await ctx.send(f"I was unable to get the issues on that Gitlab repository - `{data}`.")
+        return await ctx.send("Issue closed.")
 
 
 def setup(bot:utils.Bot):
