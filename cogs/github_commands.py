@@ -36,6 +36,12 @@ class GitRepo(commands.Converter):
         return (host, owner, repo)
 
 
+class GitIssueNumber(int):
+    async def convert(self, ctx:utils.Context, value:str):
+        value = value.lstrip('#')
+        return int(value)
+
+
 class GithubCommands(utils.Cog):
 
     @utils.Cog.listener()
@@ -236,6 +242,46 @@ class GithubCommands(utils.Cog):
                     embed.description += "(Only showing the 10 most recent issues)"
                     break
         return await ctx.send(embed=embed)
+
+    @issue.command(name="comment")
+    async def issue_comment(self, ctx:utils.Context, repo:GitRepo, issue:GitIssueNumber, *, comment:str):
+        """
+        Comment on a git issue.
+        """
+
+        # Get the database because whatever why not
+        host, owner, repo = repo
+        async with self.bot.database() as db:
+            user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
+            if not user_rows or not user_rows[0][f'{host.lower()}_username']:
+                return await ctx.send(f"You need to link your {host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+
+        # Get the issues
+        if host == "Github":
+            json = {'body': comment}
+            headers = {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': f"token {user_rows[0]['github_access_token']}",
+                'User-Agent': self.bot.user_agent,
+            }
+            async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues/{issue}/comments", json=json, headers=headers) as r:
+                data = await r.json()
+                self.logger.info(f"Received data from Github {r.url!s} - {data!s}")
+                if 200 >= r.status > 299:
+                    return await ctx.send(f"I was unable to get the issues on that Github repository - `{data}`.")
+            return await ctx.send(f"Comment added! <{data['html_url']}>")
+        elif host == "Gitlab":
+            json = {'body': comment}
+            headers = {
+                'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}",
+                'User-Agent': self.bot.user_agent,
+            }
+            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo, safe='')}/issues/{issue}/notes", json=json, headers=headers) as r:
+                data = await r.json()
+                self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
+                if 200 >= r.status > 299:
+                    return await ctx.send(f"I was unable to get the issues on that Gitlab repository - `{data}`.")
+            return await ctx.send(f"Comment added!")
 
 
 def setup(bot:utils.Bot):
