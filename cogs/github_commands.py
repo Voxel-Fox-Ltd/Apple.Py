@@ -2,6 +2,7 @@ import asyncio
 import re
 from urllib.parse import quote
 
+import discord
 from discord.ext import commands
 import voxelbotutils as utils
 
@@ -133,40 +134,48 @@ class GithubCommands(utils.Cog):
         embed = utils.Embed(title=title, use_random_colour=True).set_footer("Use the \N{HEAVY PLUS SIGN} emoji to add a body.")
         m = await ctx.send("Are you sure you want to create this issue?", embed=embed)
         valid_emojis = ["\N{THUMBS UP SIGN}", "\N{HEAVY PLUS SIGN}", "\N{THUMBS DOWN SIGN}"]
-        for e in valid_emojis:
-            self.bot.loop.create_task(m.add_reaction(e))
-        try:
-            check = lambda p: p.message_id == m.id and str(p.emoji) in valid_emojis and p.user_id == ctx.author.id
-            payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
-        except asyncio.TimeoutError:
-            return await ctx.send("Timed out asking for issue create confirmation.")
-
-        # Get the body
         body = None
-        if str(payload.emoji) == "\N{HEAVY PLUS SIGN}":
-            m = await ctx.send("What body content do you want to be added to your issue?")
-            try:
-                check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
-                body_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
-            except asyncio.TimeoutError:
-                return await ctx.send("Timed out asking for issue body text.")
-            body = body_message.content
-
-        if body:
-            embed = utils.Embed(title=title, description=body, use_random_colour=True)
-            m = await ctx.send("Are you sure you want to create this issue?", embed=embed)
-            valid_emojis = ["\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}"]
-            for e in valid_emojis:
-                self.bot.loop.create_task(m.add_reaction(e))
+        while True:
+            if body:
+                embed = utils.Embed(
+                    title=title, description=body, use_random_colour=True
+                ).set_footer("Use the \N{HEAVY PLUS SIGN} emoji to change the body.")
+            else:
+                for e in valid_emojis:
+                    self.bot.loop.create_task(m.add_reaction(e))
             try:
                 check = lambda p: p.message_id == m.id and str(p.emoji) in valid_emojis and p.user_id == ctx.author.id
                 payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
             except asyncio.TimeoutError:
                 return await ctx.send("Timed out asking for issue create confirmation.")
 
-        # Check the reaction
-        if str(payload.emoji) == "\N{THUMBS DOWN SIGN}":
-            return await ctx.send("Alright, cancelling issue add.")
+            # Get the body
+            if str(payload.emoji) == "\N{HEAVY PLUS SIGN}":
+                n = await ctx.send("What body content do you want to be added to your issue?")
+                try:
+                    check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
+                    body_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
+                except asyncio.TimeoutError:
+                    return await ctx.send("Timed out asking for issue body text.")
+                try:
+                    await n.delete()
+                    await body_message.delete()
+                except discord.HTTPException:
+                    pass
+                try:
+                    await m.remove_reaction("\N{HEAVY PLUS SIGN}", ctx.author)
+                except discord.HTTPException:
+                    pass
+                body = body_message.content
+
+                embed = utils.Embed(title=title, description=body, use_random_colour=True)
+                await m.edit(contnet="Are you sure you want to create this issue?", embed=embed)
+
+            # Check the reaction
+            if str(payload.emoji) == "\N{THUMBS DOWN SIGN}":
+                return await ctx.send("Alright, cancelling issue add.")
+            if str(payload.emoji) == "\N{THUMBS UP SIGN}":
+                break
 
         # Create the issue
         if host == "Github":
@@ -241,7 +250,7 @@ class GithubCommands(utils.Cog):
                 elif host == "Gitlab":
                     embed.description += f"* (#{issue.get('iid')}) [{issue.get('title')}]({issue.get('web_url')})\n"
                 if index >= 10:
-                    embed.description += "(Only showing the 10 most recent issues)"
+                    embed.description += "(Only showing the 10 most recent issues)"  # TODO paginate
                     break
         return await ctx.send(embed=embed)
 
