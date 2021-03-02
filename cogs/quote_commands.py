@@ -169,7 +169,8 @@ class QuoteCommands(utils.Cog):
 
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
-    
+
+    @utils.command()
     @commands.has_permissions(manage_messages=True)
     async def forcequote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
         """
