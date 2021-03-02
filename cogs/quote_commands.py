@@ -91,6 +91,16 @@ class QuoteCommands(utils.Cog):
             )
             if rows:
                 return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
+        
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author_to_user(user)
+            if quote_is_url:
+                embed.set_image(text)
+            else:
+                embed.description = text
+            # embed.set_footer(text=f"Quote ID {quote_id.upper()}")
+            embed.timestamp = timestamp
+            return embed
 
 
         
@@ -105,16 +115,9 @@ class QuoteCommands(utils.Cog):
               # Make sure no subcommand is passed
         if ctx.invoked_subcommand is not None:
             return
-        await startquote(self, ctx, messages)
+        embed = await startquote(self, ctx, messages)
                 # Make embed
-        with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author_to_user(user)
-            if quote_is_url:
-                embed.set_image(text)
-            else:
-                embed.description = text
-            # embed.set_footer(text=f"Quote ID {quote_id.upper()}")
-            embed.timestamp = timestamp
+        
 
         # See if we should bother saving it
         async with self.bot.database() as db:
@@ -184,17 +187,10 @@ class QuoteCommands(utils.Cog):
         if ctx.invoked_subcommand is not None:
             return
         
-        await startquote(self, ctx, messages)
+        embed = await startquote(self, ctx, messages)
 
         # Make embed
-        with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author_to_user(user)
-            if quote_is_url:
-                embed.set_image(text)
-            else:
-                embed.description = text
-            # embed.set_footer(text=f"Quote ID {quote_id.upper()}")
-            embed.timestamp = timestamp
+        
 
         # If we get here, we can save to db
         quote_id = create_id()
