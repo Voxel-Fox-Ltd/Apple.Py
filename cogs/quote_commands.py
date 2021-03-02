@@ -231,18 +231,31 @@ class QuoteCommands(utils.Cog):
         # Get the message
         data = quote_rows[0]
         if data['channel_id'] is None:
-            return await ctx.send("There's no quote channel set for that quote.")
+            self.logger.info(f"Deleting legacy quote - {data['quote_id']}")
+            async with self.bot.database() as db:
+                await db("DELETE FROM user_quotes WHERE quote_id=$1", data['quote_id'])
+            return await ctx.reinvoke()
         channel = self.bot.get_channel(data['channel_id'])
         if channel is None:
-            return await ctx.send("I wasn't able to get your quote channel.")
+            self.logger.info(f"Deleting quote from deleted channel - {data['quote_id']}")
+            async with self.bot.database() as db:
+                await db("DELETE FROM user_quotes WHERE quote_id=$1", data['quote_id'])
+            return await ctx.reinvoke()
         try:
             message = await channel.fetch_message(data['message_id'])
             assert message is not None
         except (AssertionError, discord.HTTPException):
-            return await ctx.send("I wasn't able to get your quote message.")
+            self.logger.info(f"Deleting quote from deleted message - {data['quote_id']}")
+            async with self.bot.database() as db:
+                await db("DELETE FROM user_quotes WHERE quote_id=$1", data['quote_id'])
+            return await ctx.reinvoke()
 
         # Output to user
-        return await ctx.send(embed=message.embeds[0])
+        quote_embed = message.embeds[0]
+        quote_author = self.bot.get_user(data['user_id'])
+        if quote_author:
+            quote_embed.set_author(name=quote_author.display_name, icon_url=quote_author.avatar_url)
+        return await ctx.send(embed=quote_embed)
 
     @quote.group(name="alias", invoke_without_command=True)
     @commands.guild_only()
