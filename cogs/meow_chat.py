@@ -51,7 +51,10 @@ class MeowChat(utils.Cog):
             return
         try:
             await message.delete()
-            return await message.channel.send(f"{message.author.mention}, your message needs to have a 'meow' in it to be valid :<", delete_after=3)
+            if (message.author.permissions_in(message.channel).manage_channels):
+                 return await message.channel.send(f"{message.author.mention}, your message needs to have a 'meow' in it to be valid :< (to disable, run `.meow off`)", delete_after=6)
+            else:
+                return await message.channel.send(f"{message.author.mention}, your message needs to have a 'meow' in it to be valid :<", delete_after=3)
         except discord.HTTPException:
             pass
 
