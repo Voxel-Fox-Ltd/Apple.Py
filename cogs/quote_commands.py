@@ -169,6 +169,126 @@ class QuoteCommands(utils.Cog):
 
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
+                                      
+    async def forcequote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
+        """
+        Quotes a user's message to the guild's quote channel.
+        """
+
+        # Make sure no subcommand is passed
+        if ctx.invoked_subcommand is not None:
+            return
+
+        # Make sure they have a quote channel
+        if self.bot.guild_settings[ctx.guild.id].get('quote_channel_id') is None:
+            return await ctx.send("You don't have a quote channel set!")
+
+        # Make sure a message was passed
+        if not messages:
+            if ctx.message.reference is not None:
+                message_from_reply = await ctx.fetch_message(ctx.message.reference.message_id)
+                messages = [message_from_reply]
+            else:
+                return await ctx.send("I couldn't find any references to messages in your command call.")
+
+        # Recreate the message list without duplicates
+        unique_messages = []
+        unique_message_ids = set()
+        for i in messages:
+            if i.id not in unique_message_ids:
+                unique_messages.append(i)
+            unique_message_ids.add(i.id)
+        messages = unique_messages
+
+        # Make sure they're all sent as a reasonable time apart
+        quote_is_url = False
+        messages = sorted(messages, key=lambda m: m.created_at)
+        for i, o in zip(messages, messages[1:]):
+            if o is None:
+                break
+            if (o.created_at - i.created_at).total_seconds() > 3 * 60:
+                return await ctx.send("Those messages are too far apart to quote together.")
+            if not i.content or i.attachments:
+                if len(i.attachments) == 0:
+                    return await ctx.send("Embeds can't be quoted.")
+                if i.attachments:
+                    return await ctx.send("You can't quote multiple messages when quoting images.")
+
+        # Validate the message content
+        for message in messages:
+            if (quote_is_url and message.content) or (message.content and message.attachments and message.content != message.attachments[0].url):
+                return await ctx.send("You can't quote both messages and images.")
+            elif message.embeds and getattr(message.embeds[0].thumbnail, "url", None) != message.content:
+                return await ctx.send("You can't quote embeds.")
+            elif len(message.attachments) > 1:
+                return await ctx.send("Multiple images can't be quoted.")
+            elif message.attachments:
+                if self.IMAGE_URL_REGEX.search(message.attachments[0].url) is None:
+                    return await ctx.send("The attachment in that image isn't a valid image URL.")
+                message.content = message.attachments[0].url
+                quote_is_url = True
+
+        # Validate input
+        timestamp = messages[0].created_at
+        user = messages[0].author
+        text = '\n'.join([m.content for m in messages])
+        if len(set([i.author.id for i in messages])) != 1:
+            return await ctx.send("You can only quote one person at a time.")
+
+        # Make sure they're not quoting themself
+        if ctx.author.id in [i.author.id for i in messages] and ctx.author.id not in self.bot.owner_ids:
+            return await ctx.send("You can't quote yourself :/")
+
+        # See if it's already been saved
+        async with self.bot.database() as db:
+            rows = await db(
+                "SELECT * FROM user_quotes WHERE guild_id=$1 AND user_id=$2 AND timestamp=$3 AND text=$4",
+                ctx.guild.id, user.id, timestamp, text
+            )
+            if rows:
+                return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
+
+        # Make embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author_to_user(user)
+            if quote_is_url:
+                embed.set_image(text)
+            else:
+                embed.description = text
+            # embed.set_footer(text=f"Quote ID {quote_id.upper()}")
+            embed.timestamp = timestamp
+
+        # If we get here, we can save to db
+        quote_id = create_id()
+
+        # See if they have a quotes channel
+        quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
+        embed.set_footer(text=f"Quote ID {quote_id.upper()}")
+        posted_message = None
+        if quote_channel_id:
+            channel = self.bot.get_channel(quote_channel_id)
+            try:
+                posted_message = await channel.send(embed=embed)
+            except (discord.Forbidden, AttributeError):
+                pass
+        if quote_channel_id is None or posted_message is None:
+            return await ctx.send("I couldn't send your quote into the quote channel.")
+
+        # And save it to the database
+        async with self.bot.database() as db:
+            rows = await db(
+                "SELECT * FROM user_quotes WHERE guild_id=$1 AND user_id=$2 AND timestamp=$3 AND text=$4",
+                ctx.guild.id, user.id, timestamp, text
+            )
+            if rows:
+                return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
+            await db(
+                "INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp) VALUES ($1, $2, $3, $4, $5, $6)",
+                quote_id, ctx.guild.id, posted_message.channel.id, posted_message.id, user.id, timestamp
+            )
+
+        # Output to user
+        await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
 
     @quote.command(name="get")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
