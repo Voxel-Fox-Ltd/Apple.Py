@@ -22,9 +22,7 @@ class QuoteCommands(utils.Cog):
     IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
     QUOTE_SEARCH_CHARACTER_CUTOFF = 100
     
-    async def startquote(self, ctx:utils.Context, messages:commands.Greedy[discord.message]):
-        
-
+    async def startquote(self, ctx, messages):
         # Make sure they have a quote channel
         if self.bot.guild_settings[ctx.guild.id].get('quote_channel_id') is None:
             return await ctx.send("You don't have a quote channel set!")
