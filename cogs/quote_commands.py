@@ -21,18 +21,9 @@ class QuoteCommands(utils.Cog):
 
     IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
     QUOTE_SEARCH_CHARACTER_CUTOFF = 100
-
-    @utils.group(invoke_without_command=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
-    @commands.guild_only()
-    async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
-        """
-        Quotes a user's message to the guild's quote channel.
-        """
-
-        # Make sure no subcommand is passed
-        if ctx.invoked_subcommand is not None:
-            return
+    
+    async def startquote(self, ctx:utils.Context, messages:commands.Greedy[discord.message]):
+        
 
         # Make sure they have a quote channel
         if self.bot.guild_settings[ctx.guild.id].get('quote_channel_id') is None:
@@ -103,7 +94,21 @@ class QuoteCommands(utils.Cog):
             if rows:
                 return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
 
-        # Make embed
+
+        
+        
+    @utils.group(invoke_without_command=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
+    @commands.guild_only()
+    async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
+        """
+        Quotes a user's message to the guild's quote channel.
+        """
+              # Make sure no subcommand is passed
+        if ctx.invoked_subcommand is not None:
+            return
+        await startquote(self, ctx, messages)
+                # Make embed
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
             if quote_is_url:
@@ -180,75 +185,8 @@ class QuoteCommands(utils.Cog):
         # Make sure no subcommand is passed
         if ctx.invoked_subcommand is not None:
             return
-
-        # Make sure they have a quote channel
-        if self.bot.guild_settings[ctx.guild.id].get('quote_channel_id') is None:
-            return await ctx.send("You don't have a quote channel set!")
-
-        # Make sure a message was passed
-        if not messages:
-            if ctx.message.reference is not None:
-                message_from_reply = await ctx.fetch_message(ctx.message.reference.message_id)
-                messages = [message_from_reply]
-            else:
-                return await ctx.send("I couldn't find any references to messages in your command call.")
-
-        # Recreate the message list without duplicates
-        unique_messages = []
-        unique_message_ids = set()
-        for i in messages:
-            if i.id not in unique_message_ids:
-                unique_messages.append(i)
-            unique_message_ids.add(i.id)
-        messages = unique_messages
-
-        # Make sure they're all sent as a reasonable time apart
-        quote_is_url = False
-        messages = sorted(messages, key=lambda m: m.created_at)
-        for i, o in zip(messages, messages[1:]):
-            if o is None:
-                break
-            if (o.created_at - i.created_at).total_seconds() > 3 * 60:
-                return await ctx.send("Those messages are too far apart to quote together.")
-            if not i.content or i.attachments:
-                if len(i.attachments) == 0:
-                    return await ctx.send("Embeds can't be quoted.")
-                if i.attachments:
-                    return await ctx.send("You can't quote multiple messages when quoting images.")
-
-        # Validate the message content
-        for message in messages:
-            if (quote_is_url and message.content) or (message.content and message.attachments and message.content != message.attachments[0].url):
-                return await ctx.send("You can't quote both messages and images.")
-            elif message.embeds and getattr(message.embeds[0].thumbnail, "url", None) != message.content:
-                return await ctx.send("You can't quote embeds.")
-            elif len(message.attachments) > 1:
-                return await ctx.send("Multiple images can't be quoted.")
-            elif message.attachments:
-                if self.IMAGE_URL_REGEX.search(message.attachments[0].url) is None:
-                    return await ctx.send("The attachment in that image isn't a valid image URL.")
-                message.content = message.attachments[0].url
-                quote_is_url = True
-
-        # Validate input
-        timestamp = messages[0].created_at
-        user = messages[0].author
-        text = '\n'.join([m.content for m in messages])
-        if len(set([i.author.id for i in messages])) != 1:
-            return await ctx.send("You can only quote one person at a time.")
-
-        # Make sure they're not quoting themself
-        if ctx.author.id in [i.author.id for i in messages] and ctx.author.id not in self.bot.owner_ids:
-            return await ctx.send("You can't quote yourself :/")
-
-        # See if it's already been saved
-        async with self.bot.database() as db:
-            rows = await db(
-                "SELECT * FROM user_quotes WHERE guild_id=$1 AND user_id=$2 AND timestamp=$3 AND text=$4",
-                ctx.guild.id, user.id, timestamp, text
-            )
-            if rows:
-                return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
+        
+        await startquote(self, ctx, messages)
 
         # Make embed
         with utils.Embed(use_random_colour=True) as embed:
