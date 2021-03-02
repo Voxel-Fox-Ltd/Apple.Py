@@ -169,12 +169,13 @@ class QuoteCommands(utils.Cog):
 
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
-                                      
+    
+    @commands.has_permissions(manage_messages=True)
     async def forcequote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
         """
         Quotes a user's message to the guild's quote channel.
         """
-
+        
         # Make sure no subcommand is passed
         if ctx.invoked_subcommand is not None:
             return
