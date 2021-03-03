@@ -51,15 +51,15 @@ class MeowChat(utils.Cog):
             return
         try:
             await message.delete()
-            if (message.author.permissions_in(message.channel).manage_channels):
-                 return await message.channel.send(f"{message.author.mention}, your message needs to have a 'meow' in it to be valid :< (to disable, run `.meow off`)", delete_after=6)
+            if message.author.permissions_in(message.channel).manage_messages:
+                await message.channel.send(f"{message.author.mention}, your message needs to have a 'meow' in it to be valid (to disable, run the `meow off` command).", delete_after=6)
             else:
-                return await message.channel.send(f"{message.author.mention}, your message needs to have a 'meow' in it to be valid :<", delete_after=3)
+                await message.channel.send(f"{message.author.mention}, your message needs to have a 'meow' in it to be valid :<", delete_after=3)
         except discord.HTTPException:
             pass
 
     @utils.group()
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True)
     async def meow(self, ctx:utils.Context):
         """
@@ -70,7 +70,7 @@ class MeowChat(utils.Cog):
             return await ctx.send_help(ctx.command)
 
     @meow.command(name="enable", aliases=["start", "on"])
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True)
     async def meow_enable(self, ctx:utils.Context):
         """
@@ -81,7 +81,7 @@ class MeowChat(utils.Cog):
         await ctx.send(f"Meow chat has been enabled for {ctx.channel.mention} owo")
 
     @meow.command(name="disable", aliases=["stop", "off"])
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True)
     async def meow_disable(self, ctx:utils.Context):
         """
