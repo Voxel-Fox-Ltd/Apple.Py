@@ -242,17 +242,17 @@ class GithubCommands(utils.Cog):
                 if 200 >= r.status > 299:
                     return await ctx.send(f"I was unable to get the issues on that Gitlab repository - `{data}`.")
 
-        # Format them into an embed
-        with utils.Embed(use_random_colour=True, description="") as embed:
-            for index, issue in enumerate(data):
-                if host == "Github":
-                    embed.description += f"* (#{issue.get('number')}) [{issue.get('title')}]({issue.get('html_url')})\n"
-                elif host == "Gitlab":
-                    embed.description += f"* (#{issue.get('iid')}) [{issue.get('title')}]({issue.get('web_url')})\n"
-                if index >= 10:
-                    embed.description += "(Only showing the 10 most recent issues)"  # TODO paginate
-                    break
-        return await ctx.send(embed=embed)
+        # Format the lines
+        output = []
+        for index, issue in enumerate(data):
+            if host == "Github":
+                output.append(f"* (#{issue.get('number')}) [{issue.get('title')}]({issue.get('html_url')})")
+            elif host == "Gitlab":
+                output.append(f"* (#{issue.get('iid')}) [{issue.get('title')}]({issue.get('web_url')})")
+
+        # Output as paginator
+        formatter = lambda m, d: utils.Embed(use_random_colour=True, description="\n".join(d)).set_footer(f"Page {m.current_page + 1}/{m.max_pages}")
+        return await utils.Paginator(output, formatter=formatter).start(ctx)
 
     @issue.command(name="comment")
     async def issue_comment(self, ctx:utils.Context, repo:GitRepo, issue:GitIssueNumber, *, comment:str):
