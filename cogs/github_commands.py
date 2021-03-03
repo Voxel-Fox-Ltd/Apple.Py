@@ -251,8 +251,7 @@ class GithubCommands(utils.Cog):
                 output.append(f"* (#{issue.get('iid')}) [{issue.get('title')}]({issue.get('web_url')})")
 
         # Output as paginator
-        formatter = lambda m, d: utils.Embed(use_random_colour=True, description="\n".join(d)).set_footer(f"Page {m.current_page + 1}/{m.max_pages}")
-        return await utils.Paginator(output, formatter=formatter).start(ctx)
+        return await utils.Paginator(output).start(ctx)
 
     @issue.command(name="comment")
     async def issue_comment(self, ctx:utils.Context, repo:GitRepo, issue:GitIssueNumber, *, comment:str):
