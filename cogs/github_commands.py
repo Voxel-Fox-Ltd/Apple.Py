@@ -245,10 +245,13 @@ class GithubCommands(utils.Cog):
         # Format the lines
         output = []
         for index, issue in enumerate(data):
+            title = issue.get('title')
+            if len(title) > 150:
+                title = title[:150].rstrip() + '...'
             if host == "Github":
-                output.append(f"* (#{issue.get('number')}) [{issue.get('title')}]({issue.get('html_url')})")
+                output.append(f"* (#{issue.get('number')}) [{title}]({issue.get('html_url')})")
             elif host == "Gitlab":
-                output.append(f"* (#{issue.get('iid')}) [{issue.get('title')}]({issue.get('web_url')})")
+                output.append(f"* (#{issue.get('iid')}) [{title}]({issue.get('web_url')})")
 
         # Output as paginator
         return await utils.Paginator(output).start(ctx)
