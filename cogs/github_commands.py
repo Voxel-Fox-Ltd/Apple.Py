@@ -1,6 +1,7 @@
 import asyncio
 import re
 from urllib.parse import quote
+import math
 
 import discord
 from discord.ext import commands
@@ -244,17 +245,22 @@ class GithubCommands(utils.Cog):
 
         # Format the lines
         output = []
+        PER_PAGE = 8
         for index, issue in enumerate(data):
-            title = issue.get('title')
-            if len(title) > 150:
-                title = title[:150].rstrip() + '...'
             if host == "Github":
-                output.append(f"* (#{issue.get('number')}) [{title}]({issue.get('html_url')})")
+                issue_id = str(issue.get('number'))
+                url = issue.get('html_url')
             elif host == "Gitlab":
-                output.append(f"* (#{issue.get('iid')}) [{title}]({issue.get('web_url')})")
+                issue_id = str(issue.get('iid'))
+                url = issue.get('web_url')
+            title = issue.get('title')
+            max_title_length = math.floor(2000 / PER_PAGE) - len(issue_id) - len(url) - 11
+            if len(title) > max_title_length:
+                title = title[:max_title_length].rstrip() + '...'
+            output.append(f"* (#{issue_id}) [{title}]({url})")
 
         # Output as paginator
-        return await utils.Paginator(output).start(ctx)
+        return await utils.Paginator(output, per_page=PER_PAGE).start(ctx)
 
     @issue.command(name="comment")
     async def issue_comment(self, ctx:utils.Context, repo:GitRepo, issue:GitIssueNumber, *, comment:str):
