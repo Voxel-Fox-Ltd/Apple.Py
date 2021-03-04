@@ -379,6 +379,33 @@ class LibraryDocs(utils.Cog):
 
         await self.do_rtfm(ctx, "pygame", obj)
 
+    @rtfm.command(name="js", aliases=['javascript'])
+    async def rtdm_js(self, ctx, *, obj:str):
+        """
+        Gives you a documentation link for a Javascript entity.
+        """
+
+        url = "https://developer.mozilla.org/api/v1/search"
+        params = {
+            'q': obj,
+            'local': 'en-US',
+        }
+        headers = {
+            'User-Agent': self.bot.user_agent,
+        }
+        async with self.bot.session.get(url, params=params, headers=headers) as r:
+            data = await r.json()
+        if not data['documents']:
+            return await ctx.send("I couldn't find anything. Sorry.")
+        embed = utils.Embed(use_random_colour=True, description="")
+        for i in data['documents']:
+            if 'web/javascript' not in i['slug']:
+                continue
+            embed.description += f"[`{i['title']}`](https://developer.mozilla.org{i['mdn_url']})\n"
+            if embed.description.count("\n") >= 8:
+                break
+        return await ctx.send(embed=embed)
+
 
 def setup(bot:utils.Bot):
     x = LibraryDocs(bot)
