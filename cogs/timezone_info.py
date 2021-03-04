@@ -25,7 +25,7 @@ class TimezoneInfo(utils.Cog):
 
         # Ask them the question
         if offset is None:
-            ask_message = await ctx.send(f"Hey, {ctx.author.mention}! What's your current time? Give it in the format `XX:YY AM`")
+            ask_message = await ctx.send(f"Hey, {ctx.author.mention}! What's your current time? Give it in the format `HH:MM AM`")
             try:
                 response_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=30)
                 offset = response_message.content
@@ -35,7 +35,7 @@ class TimezoneInfo(utils.Cog):
         # See if their answer makes sense
         match = re.search(r"(?P<hour>\d?\d)[:-]?(?P<minute>\d\d) ?(?P<daytime>(?:AM)|(?:PM))?", offset, re.IGNORECASE)
         if not match:
-            return await ctx.send("You didn't give your time in the format provided. Please run this command again later to try again.")
+            return await ctx.send("You didn't give your time in the format provided(`HH:MM AM`). Please run this command again later to try again.")
         hour = int(match.group("hour"))
         minute = int(match.group("minute"))
         daytime = (match.group("daytime") or "am").lower()
