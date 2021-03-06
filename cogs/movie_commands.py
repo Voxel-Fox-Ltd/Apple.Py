@@ -139,8 +139,8 @@ class MovieCommand(utils.Cog):
         embed = self.generate_embed(data)
 
         if not embed:
-            return await ctx.send(f"No TV series results for `{original_name}` could be found.", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
-
+            return await ctx.invoke(self.bot.get_command("tv search"), name=original_name)
+        
         return await ctx.send(embed=embed)
     
     @tv.group(name="search")
