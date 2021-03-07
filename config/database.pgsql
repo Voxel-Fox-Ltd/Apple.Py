@@ -126,5 +126,6 @@ CREATE TABLE IF NOT EXISTS github_repo_aliases(
     alias VARCHAR(100) PRIMARY KEY,
     owner VARCHAR(300),
     repo VARCHAR(300),
-    host git_host DEFAULT 'Github'
+    host git_host DEFAULT 'Github',
+    added_by BIGINT
 );
