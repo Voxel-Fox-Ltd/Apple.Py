@@ -254,7 +254,7 @@ class GithubCommands(utils.Cog):
         async with self.bot.session.post(repo.issue_api_url, json=json, headers=headers) as r:
             data = await r.json()
             self.logger.info(f"Received data from git {r.url!s} - {data!s}")
-            if 200 > r.status >= 299:
+            if 200 <= r.status < 300:
                 pass
             else:
                 return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.")
@@ -285,7 +285,9 @@ class GithubCommands(utils.Cog):
         async with self.bot.session.get(repo.issue_api_url, params=params, headers=headers) as r:
             data = await r.json()
             self.logger.info(f"Received data from git {r.url!s} - {data!s}")
-            if 200 >= r.status > 299:
+            if 200 <= r.status < 300:
+                pass
+            else:
                 return await ctx.send(f"I was unable to get the issues on that repository - `{data}`.")
 
         # Format the lines
@@ -341,7 +343,9 @@ class GithubCommands(utils.Cog):
             self.logger.info(f"Received data from git {r.url!s} - {data!s}")
             if r.status == 404:
                 return await ctx.send("I was unable to find that issue.")
-            if 200 >= r.status > 299:
+            if 200 <= r.status < 300:
+                pass
+            else:
                 return await ctx.send(f"I was unable to create a comment on that issue - `{data}`.")
 
         # Output
@@ -373,7 +377,9 @@ class GithubCommands(utils.Cog):
             async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues/{issue}", json=json, headers=headers) as r:
                 data = await r.json()
                 self.logger.info(f"Received data from Github {r.url!s} - {data!s}")
-                if 200 >= r.status > 299:
+                if 200 <= r.status < 300:
+                    pass
+                else:
                     return await ctx.send(f"I was unable to get the issues on that Github repository - `{data}`.")
         elif host == "Gitlab":
             json = {'state_event': 'close'}
@@ -384,7 +390,9 @@ class GithubCommands(utils.Cog):
             async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo, safe='')}/issues/{issue}", json=json, headers=headers) as r:
                 data = await r.json()
                 self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
-                if 200 >= r.status > 299:
+                if 200 <= r.status < 300:
+                    pass
+                else:
                     return await ctx.send(f"I was unable to get the issues on that Gitlab repository - `{data}`.")
         return await ctx.send("Issue closed.")
 
