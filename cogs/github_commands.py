@@ -25,7 +25,7 @@ class GitRepo(object):
         return f"https://gitlab.com/{self.owner}/{self.repo}"
 
     @property
-    def issues_api_url(self):
+    def issue_api_url(self):
         if self.host == "Github":
             return f"https://api.github.com/repos/{self.owner}/{self.repo}/issues"
         return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/issues"
@@ -282,7 +282,7 @@ class GithubCommands(utils.Cog):
                 params.pop('state', None)
             headers = {'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}"}
 
-        async with self.bot.session.get(repo.issues_api_url, params=params, headers=headers) as r:
+        async with self.bot.session.get(repo.issue_api_url, params=params, headers=headers) as r:
             data = await r.json()
             self.logger.info(f"Received data from git {r.url!s} - {data!s}")
             if 200 >= r.status > 299:
