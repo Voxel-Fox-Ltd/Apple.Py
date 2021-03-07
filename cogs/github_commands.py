@@ -141,7 +141,7 @@ class GithubCommands(utils.Cog):
                     alias, repo.owner, repo.repo, repo.host, ctx.author.id,
                 )
             except asyncpg.UniqueViolationError:
-                data = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2", alias, ctx.author)
+                data = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2", alias, ctx.author.id)
                 if not data:
                     return await ctx.send(f"The alias `{alias.lower()}` is already in use.", allowed_mentions=discord.AllowedMentions.none())
                 await db("DELETE FROM github_repo_aliases WHERE alias=$1", alias)
@@ -156,7 +156,7 @@ class GithubCommands(utils.Cog):
         """
 
         async with self.bot.database() as db:
-            data = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2", alias, ctx.author)
+            data = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2", alias, ctx.author.id)
             if not data:
                 return await ctx.send("You don't own that repo alias.", allowed_mentions=discord.AllowedMentions.none())
             await db("DELETE FROM github_repo_aliases WHERE alias=LOWER($1)", alias)
@@ -336,7 +336,7 @@ class GithubCommands(utils.Cog):
         headers.update({'User-Agent': self.bot.user_agent})
 
         # Create comment
-        async with self.bot.session.post(repo.issue_comments_api_url, json=json, headers=headers) as r:
+        async with self.bot.session.post(repo.issue_comments_api_url.format(issue=issue), json=json, headers=headers) as r:
             data = await r.json()
             self.logger.info(f"Received data from git {r.url!s} - {data!s}")
             if r.status == 404:
