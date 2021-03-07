@@ -27,7 +27,7 @@ class GitRepo(object):
     @property
     def issues_api_url(self):
         if self.host == "Github":
-            return f"https://api.github.com/{self.owner}/{self.repo}/issues"
+            return f"https://api.github.com/repos/{self.owner}/{self.repo}/issues"
         return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/issues"
 
     @property
