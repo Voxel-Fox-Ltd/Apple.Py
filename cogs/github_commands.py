@@ -145,7 +145,7 @@ class GithubCommands(utils.Cog):
                 if not data:
                     return await ctx.send(f"The alias `{alias.lower()}` is already in use.", allowed_mentions=discord.AllowedMentions.none())
                 await db("DELETE FROM github_repo_aliases WHERE alias=$1", alias)
-                return await ctx.invoke(ctx, alias, repo)
+                return await ctx.invoke(ctx.command, alias, repo)
         await ctx.okay()
 
     @repoalias.command(name="remove", aliases=['delete', 'del', 'rem'])
