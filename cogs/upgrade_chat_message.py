@@ -26,7 +26,13 @@ class DonatorMessage(utils.Cog):
             return
 
         # Match the regex
-        m = self.UPGRADE_CHAT_MATCHER.search(message.content)
+        content = message.content
+        if not content:
+            try:
+                content = message.embeds[0].description
+            except Exception:
+                pass
+        m = self.UPGRADE_CHAT_MATCHER.search(content)
         if m is None:
             return
 
