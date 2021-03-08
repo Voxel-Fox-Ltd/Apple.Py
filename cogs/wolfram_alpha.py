@@ -13,6 +13,8 @@ class WolframAlpha(utils.Cog):
         """
         Ping some data to WolframAlpha.
         """
+        
+        await ctx.typing()
 
         params = {
             "input": search,
