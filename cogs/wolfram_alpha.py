@@ -13,6 +13,8 @@ class WolframAlpha(utils.Cog):
         """
         Ping some data to WolframAlpha.
         """
+        
+        await ctx.trigger_typing() # Lasts 10 seconds or until a message is sent
 
         params = {
             "input": search,
