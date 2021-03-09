@@ -289,7 +289,8 @@ class GithubCommands(utils.Cog):
                 pass
             else:
                 return await ctx.send(f"I was unable to get the issues on that repository - `{data}`.")
-
+        if len(data) == 0:
+            return await ctx.send("There are no issues in the repository!")
         # Format the lines
         output = []
         PER_PAGE = 8

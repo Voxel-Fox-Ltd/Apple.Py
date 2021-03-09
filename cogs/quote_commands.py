@@ -268,7 +268,7 @@ class QuoteCommands(utils.Cog):
 
         # Grab data from db
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1 AND guild_id=$1", quote_id.lower(), ctx.guild.id)
+            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1 AND guild_id=$2", quote_id.lower(), ctx.guild.id)
         if not rows:
             return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
 

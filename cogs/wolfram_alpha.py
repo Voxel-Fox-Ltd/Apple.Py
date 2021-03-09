@@ -6,13 +6,15 @@ import voxelbotutils as utils
 
 class WolframAlpha(utils.Cog):
 
-    @utils.command()
+    @utils.command(aliases=['wf', 'wolframalpha', 'wfa', 'search'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'wolfram')
     async def wolfram(self, ctx, *, search:str):
         """
         Ping some data to WolframAlpha.
         """
+        
+        await ctx.trigger_typing() # Lasts 10 seconds or until a message is sent
 
         params = {
             "input": search,
