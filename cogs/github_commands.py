@@ -108,7 +108,10 @@ class GithubCommands(utils.Cog):
             issue = i.group("issue")
             url += f"https://git{git_dict[ident]}.com/{url}"
             if issue:
-                url = f"{url}/issues/{issue}"
+                if ident == "gh":
+                    url = f"{url}/issues/{issue}"
+                elif ident == "gl":
+                    url = f"{url}/-/issues/{issue}"
             sendable += f"{url}\n"
         if n:
             async with self.bot.database() as db:
@@ -118,7 +121,10 @@ class GithubCommands(utils.Cog):
                     if rows:
                         url = f"https://{rows[0]['host'].lower()}.com/{rows[0]['owner']}/{rows[0]['repo']}"
                         if issue:
-                            url = f"{url}/-/issues/{issue}"
+                            if rows[0]['host'] == "Github":
+                                url = f"{url}/issues/{issue}"
+                            elif rows[0]['host'] == "Gitlab":
+                                url = f"{url}/-/issues/{issue}"
                         sendable += f"{url}\n"
 
         # Send the GitHub links if there's any output
