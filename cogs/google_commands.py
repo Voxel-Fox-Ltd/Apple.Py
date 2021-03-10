@@ -21,8 +21,9 @@ class GoogleCommands(utils.Cog):
         async with self.bot.session.get("https://customsearch.googleapis.com/customsearch/v1", params=params) as r:
             data = await r.json()
         with utils.Embed(use_random_colour=True) as embed:
+            ENDL = '\n'
             for d in data['items']:
-                embed.add_field(d['title'][:256], f"[Link ({d['displayLink']})]({d['link']}) - {d['snippet']}", inline=False)
+                embed.add_field(d['title'][:256], f"[{d['displayLink']}]({d['link']}) - {d['snippet'].replace(ENDL, ' ')}", inline=False)
         await ctx.send(embed=embed)
 
 
