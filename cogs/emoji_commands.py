@@ -34,7 +34,7 @@ class EmojiCommands(utils.Cog):
         
         # Default to the first attachment in the message's URL if `emoji` (the image url) is None
         if emoji is None:
-            if ctx.message.attachments):
+            if ctx.message.attachments:
                 emoji = ctx.message.attachments[0].url
 
         # See if we gave an emoji ID
