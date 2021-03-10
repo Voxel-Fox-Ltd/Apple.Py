@@ -90,7 +90,7 @@ class MeowChat(utils.Cog):
             async def waiter():
                 await asyncio.sleep(duration.delta.total_seconds())
                 try:
-                    self.meow_chats.add(ctx.channel)
+                    self.meow_chats.remove(ctx.channel)
                     await ctx.send("Turned off meow chat as scheduled :<")
                 except KeyError:
                     pass
