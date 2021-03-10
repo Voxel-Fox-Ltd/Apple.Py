@@ -106,7 +106,7 @@ class GithubCommands(utils.Cog):
             url = i.group("url")
             ident = i.group("ident")
             issue = i.group("issue")
-            url += f"https://git{git_dict[ident]}.com/{url}"
+            url = f"https://git{git_dict[ident]}.com/{url}"
             if issue:
                 if ident == "gh":
                     url = f"{url}/issues/{issue}"
