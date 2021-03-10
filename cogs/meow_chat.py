@@ -88,7 +88,10 @@ class MeowChat(utils.Cog):
         Turn off meow chat for this channel.
         """
 
-        self.meow_chats.remove(ctx.channel)
+        try:
+            self.meow_chats.remove(ctx.channel)
+        except KeyError:
+            return await ctx.send("Meow chat is already disabled for this channel.")
         await ctx.send(f"Meow chat has been disabled for {ctx.channel.mention} :<")
 
 
