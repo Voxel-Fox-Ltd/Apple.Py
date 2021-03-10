@@ -27,12 +27,15 @@ class TimezoneInfo(utils.Cog):
         if offset is None:
             ask_message = await ctx.send((
                 f"Hey, {ctx.author.mention}, what timezone are you currently in? You can give its name (`EST`, `GMT`, etc) "
-                "or you can give your continent and nearest capital city (`Europe/Amsterdam`, `Australia/Sydney`, etc)."
+                "or you can give your continent and nearest capital city (`Europe/Amsterdam`, `Australia/Sydney`, etc) - this is "
+                "case sensitive."
             ))
             try:
                 check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
                 response_message = await self.bot.wait_for("message", check=check, timeout=30)
                 offset = response_message.content
+                if len(offset) <= 4:
+                    offset = offset.upper()
             except asyncio.TimeoutError:
                 await ask_message.delete()
 
