@@ -70,7 +70,7 @@ class TimezoneInfo(utils.Cog):
 
         # Grab their current time and output
         if rows[0]['timezone_name']:
-            formatted_time = (dt.utcnow().astimezone(pytz.timezone(minutes=rows[0]['timezone_name']))).strftime('%-I:%M %p')
+            formatted_time = (dt.utcnow().astimezone(pytz.timezone(rows[0]['timezone_name']))).strftime('%-I:%M %p')
         else:
             formatted_time = (dt.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%-I:%M %p')
         await ctx.send(f"The current time for {user.mention} is estimated to be **{formatted_time}**.", allowed_mentions=discord.AllowedMentions.none())
