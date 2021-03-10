@@ -27,8 +27,9 @@ class TimezoneInfo(utils.Cog):
         if offset is None:
             ask_message = await ctx.send((
                 f"Hey, {ctx.author.mention}, what timezone are you currently in? You can give its name (`EST`, `GMT`, etc) "
-                "or you can give your continent and nearest capital city (`Europe/Amsterdam`, `Australia/Sydney`, etc) - this is "
-                "case sensitive."
+                "or you can give your continent and nearest large city (`Europe/Amsterdam`, `Australia/Sydney`, etc) - this is "
+                "case sensitive. If you can't find your timezone, check this list and give your \"TZ database name\" - "
+                "<https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>."
             ))
             try:
                 check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
@@ -38,6 +39,16 @@ class TimezoneInfo(utils.Cog):
                 await ask_message.delete()
         if len(offset) <= 4:
             offset = offset.upper()
+
+        # See if it's one of the more common ones that I know don't actually exist
+        common_timezones = {
+            "PST": "US/Pacific",
+            "MST": "US/Mountain",
+            "CST": "US/Central",
+            "EST": "US/Eastern",
+        }
+        if offset in common_timezones:
+            offset = common_timezones[offset]
 
         # Try and parse the timezone name
         try:
