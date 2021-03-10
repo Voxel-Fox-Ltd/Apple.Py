@@ -34,10 +34,10 @@ class TimezoneInfo(utils.Cog):
                 check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
                 response_message = await self.bot.wait_for("message", check=check, timeout=30)
                 offset = response_message.content
-                if len(offset) <= 4:
-                    offset = offset.upper()
             except asyncio.TimeoutError:
                 await ask_message.delete()
+        if len(offset) <= 4:
+            offset = offset.upper()
 
         # Try and parse the timezone name
         try:
