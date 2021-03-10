@@ -69,6 +69,12 @@ guild_settings_prefix_column = "prefix"  # Used if multiple bots connect to the 
         client_id = ""
         client_secret = ""
         refresh_token = ""
+    [api_keys.tumblr]
+        client_key = ""
+        client_secret = ""
+    [api_keys.google]  # Google custom search API
+        api_key = ""  # https://console.cloud.google.com/apis/credentials
+        search_engine_id = ""  # https://programmablesearchengine.google.com/cse/all
 
 # This data is passed directly over to asyncpg.connect()
 [database]

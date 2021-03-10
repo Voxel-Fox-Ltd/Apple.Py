@@ -91,7 +91,7 @@ class GithubCommands(utils.Cog):
             return
 
         # Find matches in the message
-        m = re.finditer(r'(?:\b|^)(?P<ident>g[hl])/(?P<url>(?P<user>\S{1,255})/(?P<repo>\S{1,255}))(?:\b|$)', message.content)
+        m = re.finditer(r'(?:\s|^)(?P<ident>g[hl])/(?P<url>(?P<user>[a-zA-Z0-9_-]{1,255})/(?P<repo>[a-zA-Z0-9_-]{1,255}))(?:#?(?P<issue>\d+?))?(?:\s|$)', message.content)
         n = re.finditer(r'(?:\b|^)(?P<ident>g[hl]) (?P<alias>\S{1,255})(?:\b|$)', message.content)
 
         # Dictionary of possible Git() links
