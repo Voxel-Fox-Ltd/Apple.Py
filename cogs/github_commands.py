@@ -112,7 +112,7 @@ class GithubCommands(utils.Cog):
                     url = f"{url}/issues/{issue}"
                 elif ident == "gl":
                     url = f"{url}/-/issues/{issue}"
-            sendable += f"{url}\n"
+            sendable += f"<{url}>\n"
         if n:
             async with self.bot.database() as db:
                 for i in n:
@@ -125,7 +125,7 @@ class GithubCommands(utils.Cog):
                                 url = f"{url}/issues/{issue}"
                             elif rows[0]['host'] == "Gitlab":
                                 url = f"{url}/-/issues/{issue}"
-                        sendable += f"{url}\n"
+                        sendable += f"<{url}>\n"
 
         # Send the GitHub links if there's any output
         if sendable:
