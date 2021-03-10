@@ -39,6 +39,7 @@ class GoogleCommands(utils.Cog):
             embed = utils.Embed(use_random_colour=True)
             for d in data:
                 embed.add_field(*d, inline=False)
+            embed.set_footer(f"Page {menu.current_page + 1}")
             return embed
         await utils.Paginator(self.get_search_page(query), formatter=formatter).start(ctx)
 
