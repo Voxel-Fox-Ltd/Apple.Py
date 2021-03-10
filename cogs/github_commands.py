@@ -78,6 +78,8 @@ class GithubCommands(utils.Cog):
 
     GIT_ISSUE_OPEN_EMOJI = "<:github_issue_open:817984658456707092>"
     GIT_ISSUE_CLOSED_EMOJI = "<:github_issue_closed:817984658372689960>"
+    GIT_PR_OPEN_EMOJI = "<:github_pr_open:817986200618139709>"
+    GIT_PR_CLOSED_EMOJI = "<:github_pr_closed:817986200962072617>"
 
     @utils.Cog.listener()
     async def on_message(self, message):
@@ -305,12 +307,12 @@ class GithubCommands(utils.Cog):
                 return await ctx.send(f"I was unable to get the issues on that repository - `{data}`.")
         if len(data) == 0:
             return await ctx.send("There are no issues in the repository!")
+
         # Format the lines
         output = []
         PER_PAGE = 8
         for index, issue in enumerate(data):
-            if issue.get("pull_request"):
-                continue
+            # Get our attrs
             if repo.host == "Github":
                 issue_id = str(issue.get('number'))
                 url = issue.get('html_url')
@@ -318,16 +320,25 @@ class GithubCommands(utils.Cog):
                 issue_id = str(issue.get('iid'))
                 url = issue.get('web_url')
             title = issue.get('title')
-            if list_closed:
-                max_title_length = math.floor(2000 / PER_PAGE) - len(issue_id) - len(url) - 11 - 41  # 11 refers to the linking characters, 41 the emoji
-                if len(title) > max_title_length:
-                    title = title[:max_title_length].rstrip() + '...'
-                output.append(f"* {self.GIT_ISSUE_OPEN_EMOJI if issue.get('state').startswith('open') else self.GIT_ISSUE_CLOSED_EMOJI} (#{issue_id}) [{title}]({url})")
+
+            # Work out the string
+            max_title_length = math.floor(2000 / PER_PAGE) - len(issue_id) - len(url) - 11 - 41  # 11 refers to the linking characters, 41 the emoji
+            if len(title) > max_title_length:
+                title = title[:max_title_length].rstrip() + '...'
+
+            # Work out the emoji to use
+            emoji_to_use = "?"
+            if issue.get("pull_request"):
+                emoji_to_use = self.GIT_PR_OPEN_EMOJI
+                if not issue.get('state').startswith('open'):
+                    emoji_to_use = self.GIT_PR_CLOSED_EMOJI
             else:
-                max_title_length = math.floor(2000 / PER_PAGE) - len(issue_id) - len(url) - 11  # 11 refers to the linking characters
-                if len(title) > max_title_length:
-                    title = title[:max_title_length].rstrip() + '...'
-                output.append(f"* (#{issue_id}) [{title}]({url})")
+                emoji_to_use = self.GIT_ISSUE_OPEN_EMOJI
+                if not issue.get('state').startswith('open'):
+                    emoji_to_use = self.GIT_ISSUE_CLOSED_EMOJI
+
+            # Add to list
+            output.append(f"* {emoji_to_use} (#{issue_id}) [{title}]({url})")
 
         # Output as paginator
         return await utils.Paginator(output, per_page=PER_PAGE).start(ctx)
