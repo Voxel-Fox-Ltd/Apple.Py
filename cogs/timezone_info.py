@@ -38,7 +38,7 @@ class TimezoneInfo(utils.Cog):
 
         # Try and parse the timezone name
         try:
-            zone = pytz.timezone(response_message.content)
+            zone = pytz.timezone(offset)
         except pytz.UnknownTimeZoneError:
             return await ctx.send("I can't work out what timezone you're referring to - please run this command again to try later.")
 
