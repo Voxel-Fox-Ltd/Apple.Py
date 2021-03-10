@@ -27,10 +27,18 @@ class EmojiCommands(utils.Cog):
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.guild_only()
-    async def stealemoji(self, ctx:utils.Context, emoji:typing.Union[discord.PartialEmoji, int, ImageUrl], name:str=None, animated:bool=False):
+    async def stealemoji(self, ctx:utils.Context, emoji:typing.Optional[typing.Union[discord.PartialEmoji, int, ImageUrl]]=None, name:str=None, animated:bool=False):
         """
         Copies an emoji and uploads it to your server.
         """
+
+        # Default to the first attachment in the message's URL if `emoji` (the image url) is None
+        if emoji is None:
+            if ctx.message.attachments:
+                emoji = ctx.message.attachments[0].url
+                await ImageUrl().convert(ctx, emoji)  # Make sure the url is an image
+            else:
+                raise utils.errors.MissingRequiredArgumentString("emoji")
 
         # See if we gave an emoji ID
         if isinstance(emoji, int):
