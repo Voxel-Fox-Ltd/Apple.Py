@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS user_settings(
     minecraft_username VARCHAR(16),
     minecraft_uuid VARCHAR(32),
 
-    timezone_offset INTEGER,
+    timezone_name VARCHAR(250),
 
     github_username VARCHAR(40),
     github_access_token VARCHAR(100),

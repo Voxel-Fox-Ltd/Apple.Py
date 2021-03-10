@@ -99,7 +99,6 @@ class MeowChat(utils.Cog):
                 current_task.cancel()
             self.meow_disable_tasks[ctx.channel.id] = self.bot.loop.create_task(waiter())
 
-
     @meow.command(name="disable", aliases=["stop", "off"])
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True)

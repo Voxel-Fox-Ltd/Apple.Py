@@ -1,9 +1,9 @@
-import re
 import asyncio
 from datetime import datetime as dt, timedelta
 
 import discord
 import voxelbotutils as utils
+import pytz
 
 
 class TimezoneInfo(utils.Cog):
@@ -25,46 +25,31 @@ class TimezoneInfo(utils.Cog):
 
         # Ask them the question
         if offset is None:
-            ask_message = await ctx.send(f"Hey, {ctx.author.mention}! What's your current time? Give it in the format `XX:YY AM`")
+            ask_message = await ctx.send((
+                f"Hey, {ctx.author.mention}, what timezone are you currently in? You can give its name (`EST`, `GMT`, etc) "
+                "or you can give your continent and nearest capital city (`Europe/Amsterdam`, `Australia/Sydney`, etc)."
+            ))
             try:
-                response_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=30)
+                check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+                response_message = await self.bot.wait_for("message", check=check, timeout=30)
                 offset = response_message.content
             except asyncio.TimeoutError:
                 await ask_message.delete()
 
-        # See if their answer makes sense
-        match = re.search(r"(?P<hour>\d?\d)[:-]?(?P<minute>\d\d) ?(?P<daytime>(?:AM)|(?:PM))?", offset, re.IGNORECASE)
-        if not match:
-            return await ctx.send("You didn't give your time in the format provided. Please run this command again later to try again.")
-        hour = int(match.group("hour"))
-        minute = int(match.group("minute"))
-        daytime = (match.group("daytime") or "am").lower()
-        if hour >= 24 or minute >= 60:  # or (daytime == 'am' and hour > 12):
-            return await ctx.send("It looks like the time you provided isn't valid; please try again later.")
-        elif daytime == 'pm' and hour < 12:
-            hour += 12
-
-        # Okay sick let's try and work out how far off we are
-        now = dt.utcnow()
-        hour_offset = hour - now.hour
-        minute_offset = 15 * round((minute - now.minute) / 15)
-        if minute_offset < 0:
-            minute_offset += 60
-            hour_offset -= 1
-        if hour_offset > 12:
-            hour_offset -= 24
-        elif hour_offset <= -12:
-            hour_offset += 24
-        total_minute_offset = (hour_offset * 60) + minute_offset
+        # Try and parse the timezone name
+        try:
+            zone = pytz.timezone(response_message.content)
+        except pytz.UnknownTimeZoneError:
+            return await ctx.send("I can't work out what timezone you're referring to - please run this command again to try later.")
 
         # Store it in the database
         async with self.bot.database() as db:
             await db(
-                """INSERT INTO user_settings (user_id, timezone_offset) VALUES ($1, $2) ON CONFLICT (user_id)
-                DO UPDATE SET timezone_offset=excluded.timezone_offset""",
-                ctx.author.id, total_minute_offset,
+                """INSERT INTO user_settings (user_id, timezone_name) VALUES ($1, $2) ON CONFLICT (user_id)
+                DO UPDATE SET timezone_name=excluded.timezone_name""",
+                ctx.author.id, zone.zone,
             )
-        await ctx.send(f"Your time is estimated to be **UTC{hour_offset:=+03d}:{minute_offset:=02d}** - I've stored this in the database.")
+        await ctx.send(f"I think your current time is **{dt.utcnow().astimezone(zone).strftime('%-I:%M %p')}** - I've stored this in the database.")
 
     @timezone.command(name="get")
     async def timezone_get(self, ctx:utils.Context, user:discord.Member=None):
@@ -82,7 +67,7 @@ class TimezoneInfo(utils.Cog):
             rows = await db("SELECT timezone_offset FROM user_settings WHERE user_id=$1", user.id)
         if not rows or rows[0]['timezone_offset'] is None:
             return await ctx.send(f"{user.mention} hasn't set up their timezone information! They can set it with `{ctx.clean_prefix}timezone set`.")
-        formatted_time = (dt.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%-I:%M %p')
+        formatted_time = (dt.utcnow().astimezone(pytz.timezone(minutes=rows[0]['timezone_name']))).strftime('%-I:%M %p')
         await ctx.send(f"The current time for {user.mention} is estimated to be **{formatted_time}**.", allowed_mentions=discord.AllowedMentions.none())
 
 
