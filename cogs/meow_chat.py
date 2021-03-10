@@ -1,3 +1,4 @@
+import asyncio
 import re
 
 import discord
@@ -26,6 +27,7 @@ class MeowChat(utils.Cog):
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.meow_chats = set()
+        self.meow_disable_tasks = {}
 
     @utils.Cog.listener()
     async def on_message(self, message:discord.Message):
@@ -72,13 +74,31 @@ class MeowChat(utils.Cog):
     @meow.command(name="enable", aliases=["start", "on"])
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True)
-    async def meow_enable(self, ctx:utils.Context):
+    async def meow_enable(self, ctx:utils.Context, duration:utils.TimeValue=None):
         """
         Turn on meow chat for this channel.
         """
 
         self.meow_chats.add(ctx.channel)
-        await ctx.send(f"Meow chat has been enabled for {ctx.channel.mention} owo")
+        if duration:
+            await ctx.send(f"Meow chat has been enabled in {ctx.channel.mention} for {duration.clean_full} owo")
+        else:
+            await ctx.send(f"Meow chat has been enabled in {ctx.channel.mention} owo")
+
+        # See if we want to disable meow chat after a while
+        if duration:
+            async def waiter():
+                await asyncio.sleep(duration.delta.total_seconds())
+                try:
+                    self.meow_chats.add(ctx.channel)
+                    await ctx.send("Turned off meow chat as scheduled :<")
+                except KeyError:
+                    pass
+            current_task: asyncio.Task = self.meow_disable_tasks.get(ctx.channel.id)
+            if current_task:
+                current_task.cancel()
+            self.meow_disable_tasks[ctx.channel.id] = self.bot.loop.create_task(waiter())
+
 
     @meow.command(name="disable", aliases=["stop", "off"])
     @commands.has_permissions(manage_messages=True)
@@ -91,8 +111,13 @@ class MeowChat(utils.Cog):
         try:
             self.meow_chats.remove(ctx.channel)
         except KeyError:
-            return await ctx.send("Meow chat is already disabled for this channel.")
-        await ctx.send(f"Meow chat has been disabled for {ctx.channel.mention} :<")
+            return await ctx.send("Meow chat is already disabled in this channel.")
+        await ctx.send(f"Meow chat has been disabled in {ctx.channel.mention} :<")
+
+        # See if there's a running task to keep it alive
+        current_task: asyncio.Task = self.meow_disable_tasks.pop(ctx.channel.id, None)
+        if current_task:
+            current_task.cancel()
 
 
 def setup(bot:utils.Bot):
