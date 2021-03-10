@@ -92,7 +92,7 @@ class GithubCommands(utils.Cog):
 
         # Find matches in the message
         m = re.finditer(r'(?:\s|^)(?P<ident>g[hl])/(?P<url>(?P<user>[a-zA-Z0-9_-]{1,255})/(?P<repo>[a-zA-Z0-9_-]{1,255}))(?:#?(?P<issue>\d+?))?(?:\s|$)', message.content)
-        n = re.finditer(r'(?:\b|^)(?P<ident>g[hl]) (?P<alias>\S{1,255})(?:\b|$)', message.content)
+        n = re.finditer(r'(?:\s|^)(?P<ident>g[hl]) (?P<alias>\S{1,255})(?: #?(?P<issue>\d+?))?(?:\s|$)', message.content)
 
         # Dictionary of possible Git() links
         git_dict = {
@@ -105,13 +105,21 @@ class GithubCommands(utils.Cog):
         for i in m:
             url = i.group("url")
             ident = i.group("ident")
-            sendable += f"<https://git{git_dict[ident]}.com/{url}>\n"
+            issue = i.group("issue")
+            url += f"https://git{git_dict[ident]}.com/{url}"
+            if issue:
+                url = f"{url}/issues/{issue}"
+            sendable += f"{url}\n"
         if n:
             async with self.bot.database() as db:
                 for i in n:
+                    issue = i.group("issue")
                     rows = await db("SELECT * FROM github_repo_aliases WHERE alias=$1", i.group("alias"))
                     if rows:
-                        sendable += f"<https://{rows[0]['host'].lower()}.com/{rows[0]['owner']}/{rows[0]['repo']}>\n"
+                        url = f"https://{rows[0]['host'].lower()}.com/{rows[0]['owner']}/{rows[0]['repo']}"
+                        if issue:
+                            url = f"{url}/-/issues/{issue}"
+                        sendable += f"{url}\n"
 
         # Send the GitHub links if there's any output
         if sendable:
