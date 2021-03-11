@@ -369,6 +369,16 @@ class MiscCommands(utils.Cog):
         timestamps = sorted([discord.Object(message1).created_at, discord.Object(message2).created_at], reverse=True)
         return await ctx.send(timestamps[0] - timestamps[1])
 
+    @utils.command(hidden=True)
+    async def rolecount(self, ctx:utils.Context, user:discord.User=None):
+        """
+        Returns how many roles the user has
+        """
+
+        user_r = user or ctx.author
+        return await ctx.send(f"That user has: {len(user_r.roles)} roles.")
+
+
     @utils.command()
     @commands.bot_has_permissions(send_messages=True, attach_files=True)
     async def randompicture(self, ctx:utils.Context, x_size:int=256, y_size:int=None):
