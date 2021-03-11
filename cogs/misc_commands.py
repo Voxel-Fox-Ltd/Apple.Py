@@ -370,7 +370,7 @@ class MiscCommands(utils.Cog):
         return await ctx.send(timestamps[0] - timestamps[1])
 
     @utils.command(hidden=True)
-    async def rolecount(self, ctx:utils.Context, user:discord.User=None):
+    async def rolecount(self, ctx:utils.Context, user:discord.Member=None):
         """
         Returns how many roles the user has
         """
