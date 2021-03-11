@@ -26,7 +26,7 @@ class QuoteCommands(utils.Cog):
         # Make sure they have a quote channel
         if self.bot.guild_settings[ctx.guild.id].get('quote_channel_id') is None:
             func = "You don't have a quote channel set!"
-            return {'success': False, message: func}
+            return {'success': False, 'message': func}
 
         # Make sure a message was passed
         if not messages:
@@ -35,7 +35,7 @@ class QuoteCommands(utils.Cog):
                 messages = [message_from_reply]
             else:
                 func = "I couldn't find any references to messages in your command call."
-                return {'success': False, message: func}
+                return {'success': False, 'message': func}
 
         # Recreate the message list without duplicates
         unique_messages = []
@@ -54,30 +54,30 @@ class QuoteCommands(utils.Cog):
                 break
             if (o.created_at - i.created_at).total_seconds() > 3 * 60:
                 func = "Those messages are too far apart to quote together."
-                return {'success': False, message: func}
+                return {'success': False, 'message': func}
             if not i.content or i.attachments:
                 if len(i.attachments) == 0:
                     func = "Embeds can't be quoted."
-                    return {'success': False, message: func}
+                    return {'success': False, 'message': func}
                 if i.attachments:
                     func = "You can't quote multiple messages when quoting images."
-                    return {'success': False, message: func}
+                    return {'success': False, 'message': func}
 
         # Validate the message content
         for message in messages:
             if (quote_is_url and message.content) or (message.content and message.attachments and message.content != message.attachments[0].url):
                 func = "You can't quote both messages and images."
-                return {'success': False, message: func}
+                return {'success': False, 'message': func}
             elif message.embeds and getattr(message.embeds[0].thumbnail, "url", None) != message.content:
                 func = "You can't quote embeds."
-                return {'success': False, message: func}
+                return {'success': False, 'message': func}
             elif len(message.attachments) > 1:
                 func = "Multiple images can't be quoted."
-                return {'success': False, message: func}
+                return {'success': False, 'message': func}
             elif message.attachments:
                 if self.IMAGE_URL_REGEX.search(message.attachments[0].url) is None:
                     func = "The attachment in that image isn't a valid image URL."
-                    return {'success': False, message: func}
+                    return {'success': False, 'message': func}
                 message.content = message.attachments[0].url
                 quote_is_url = True
 
@@ -87,12 +87,12 @@ class QuoteCommands(utils.Cog):
         text = '\n'.join([m.content for m in messages])
         if len(set([i.author.id for i in messages])) != 1:
             func = "You can only quote one person at a time."
-            return {'success': False, message: func}
+            return {'success': False, 'message': func}
 
         # Make sure they're not quoting themself
         if ctx.author.id in [i.author.id for i in messages] and ctx.author.id not in self.bot.owner_ids:
             func = "You can't quote yourself :/"
-            return {'success': False, message: func}
+            return {'success': False, 'message': func}
 
         # See if it's already been saved
         async with self.bot.database() as db:
@@ -102,7 +102,7 @@ class QuoteCommands(utils.Cog):
             )
             if rows:
                 func = f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`."                     
-                return {'success': False, message: func}
+                return {'success': False, 'message': func}
         
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
@@ -112,7 +112,7 @@ class QuoteCommands(utils.Cog):
                 embed.description = text
             # embed.set_footer(text=f"Quote ID {quote_id.upper()}")
             embed.timestamp = timestamp
-            return {'success': True, message: embed}
+            return {'success': True, 'message': embed}
 
     @utils.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
