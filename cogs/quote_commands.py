@@ -126,7 +126,7 @@ class QuoteCommands(utils.Cog):
             return
         response = await get_quote_messages(self, ctx, messages)
                 # Make embed
-        if response['succes'] == False:
+        if response['success'] == False:
             return await ctx.send(response['message'])
         
         embed = response['embed']
@@ -201,7 +201,7 @@ class QuoteCommands(utils.Cog):
 
         response = await get_quote_messages(self, ctx, messages)
                 # Make embed
-        if response['succes'] == False:
+        if response['success'] == False:
             return await ctx.send(response['message'])
         # Make embed
         
