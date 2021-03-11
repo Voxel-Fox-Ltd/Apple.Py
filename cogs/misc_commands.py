@@ -376,7 +376,7 @@ class MiscCommands(utils.Cog):
         """
 
         user_r = ctx.author or user
-        return await ctx.send(len(user_r.roles))
+        return await ctx.send(f"That user has: {len(user_r.roles)} roles.")
 
 
     @utils.command()
