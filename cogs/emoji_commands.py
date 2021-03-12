@@ -34,7 +34,10 @@ class EmojiCommands(utils.Cog):
         
         # If the emoji provided is just an ID, find the emoji
         if isintance(emoji, int):
-            emoji = discord.PartialEmoji(id=emoji)
+            emoji = bot.get_emoji(emoji)
+        
+        if (not emoji) or (emoji not in ctx.guild.emojis):
+            raise commands.BadArgument("The emoji you provided either does not exist or is not in this server.")
         
         emoji_name = emoji.name
         await emoji.delete()
