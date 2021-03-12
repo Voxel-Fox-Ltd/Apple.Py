@@ -22,7 +22,24 @@ class ImageUrl(commands.Converter):
 
 
 class EmojiCommands(utils.Cog):
-
+       
+    @utils.command(aliases=['removeemoji', 'delemoji'])
+    @commands.bot_has_permissions(manage_emojis=True)
+    @commands.has_guild_permissions(manage_emojis=True)
+    @commands.guild_only()
+    async def deleteemoji(self, ctx:utils.Context, emoji:typing.Union[discord.PartialEmoji, int]):
+        """
+        Deletes an emoji from a server
+        """
+        
+        # If the emoji provided is just an ID, find the emoji
+        if isintance(emoji, int):
+            emoji = discord.PartialEmoji(id=emoji)
+        
+        emoji_name = emoji.name
+        await emoji.delete()
+        await ctx.send(f"Deleted emoji `emoji_name`.")
+    
     @utils.command(aliases=['addemoji'])
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
