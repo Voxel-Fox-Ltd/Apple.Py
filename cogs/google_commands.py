@@ -21,8 +21,11 @@ class GoogleCommands(utils.Cog):
                 data = await r.json()
             ENDL = '\n'
             output_data = []
-            for d in data['items']:
-                output_data.append((d['title'][:256], f"[{d['displayLink']}]({d['link']}) - {d['snippet'].replace(ENDL, ' ')}"))
+            if data:
+                for d in data['items']:
+                    output_data.append((d['title'][:256], f"[{d['displayLink']}]({d['link']}) - {d['snippet'].replace(ENDL, ' ')}"))
+            else:
+                output_data = ["No results found for that query!"]
             return output_data
 
         return wrapper
