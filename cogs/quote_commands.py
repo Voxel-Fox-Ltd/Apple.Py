@@ -22,21 +22,17 @@ class QuoteCommands(utils.Cog):
     IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
     QUOTE_SEARCH_CHARACTER_CUTOFF = 100
 
-    @utils.group(invoke_without_command=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
-    @commands.guild_only()
-    async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
+    async def get_quote_messages(self, ctx, messages) -> dict:
         """
-        Quotes a user's message to the guild's quote channel.
+        Gets the messages that the user has quoted, returning a dict with keys `success` (bool) and `message` (str or voxelbotutils.Embed).
+        If `success` is `False`, then the resulting `message` can be directly output to the user, and if it's `True` then we can go ahead
+        with the message save flowthrough.
         """
-
-        # Make sure no subcommand is passed
-        if ctx.invoked_subcommand is not None:
-            return
 
         # Make sure they have a quote channel
         if self.bot.guild_settings[ctx.guild.id].get('quote_channel_id') is None:
-            return await ctx.send("You don't have a quote channel set!")
+            func = "You don't have a quote channel set!"
+            return {'success': False, 'message': func}
 
         # Make sure a message was passed
         if not messages:
@@ -44,7 +40,7 @@ class QuoteCommands(utils.Cog):
                 message_from_reply = await ctx.fetch_message(ctx.message.reference.message_id)
                 messages = [message_from_reply]
             else:
-                return await ctx.send("I couldn't find any references to messages in your command call.")
+                return {'success': False, 'message': "I couldn't find any references to messages in your command call."}
 
         # Recreate the message list without duplicates
         unique_messages = []
@@ -62,24 +58,24 @@ class QuoteCommands(utils.Cog):
             if o is None:
                 break
             if (o.created_at - i.created_at).total_seconds() > 3 * 60:
-                return await ctx.send("Those messages are too far apart to quote together.")
+                return {'success': False, 'message': "Those messages are too far apart to quote together."}
             if not i.content or i.attachments:
                 if len(i.attachments) == 0:
-                    return await ctx.send("Embeds can't be quoted.")
+                    return {'success': False, 'message': "Embeds can't be quoted."}
                 if i.attachments:
-                    return await ctx.send("You can't quote multiple messages when quoting images.")
+                    return {'success': False, 'message': "You can't quote multiple messages when quoting images."}
 
         # Validate the message content
         for message in messages:
             if (quote_is_url and message.content) or (message.content and message.attachments and message.content != message.attachments[0].url):
-                return await ctx.send("You can't quote both messages and images.")
+                return {'success': False, 'message': "You can't quote both messages and images."}
             elif message.embeds and getattr(message.embeds[0].thumbnail, "url", None) != message.content:
-                return await ctx.send("You can't quote embeds.")
+                return {'success': False, 'message': "You can't quote embeds."}
             elif len(message.attachments) > 1:
-                return await ctx.send("Multiple images can't be quoted.")
+                return {'success': False, 'message': "Multiple images can't be quoted."}
             elif message.attachments:
                 if self.IMAGE_URL_REGEX.search(message.attachments[0].url) is None:
-                    return await ctx.send("The attachment in that image isn't a valid image URL.")
+                    return {'success': False, 'message': "The attachment in that image isn't a valid image URL."}
                 message.content = message.attachments[0].url
                 quote_is_url = True
 
@@ -88,41 +84,52 @@ class QuoteCommands(utils.Cog):
         user = messages[0].author
         text = '\n'.join([m.content for m in messages])
         if len(set([i.author.id for i in messages])) != 1:
-            return await ctx.send("You can only quote one person at a time.")
+            return {'success': False, 'message': "You can only quote one person at a time."}
 
         # Make sure they're not quoting themself
         if ctx.author.id in [i.author.id for i in messages] and ctx.author.id not in self.bot.owner_ids:
-            return await ctx.send("You can't quote yourself :/")
+            return {'success': False, 'message': "You can't quote yourself :/"}
 
-        # See if it's already been saved
-        async with self.bot.database() as db:
-            rows = await db(
-                "SELECT * FROM user_quotes WHERE guild_id=$1 AND user_id=$2 AND timestamp=$3 AND text=$4",
-                ctx.guild.id, user.id, timestamp, text
-            )
-            if rows:
-                return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
-
-        # Make embed
+        # Return an embed
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
             if quote_is_url:
                 embed.set_image(text)
             else:
                 embed.description = text
-            # embed.set_footer(text=f"Quote ID {quote_id.upper()}")
             embed.timestamp = timestamp
+        return {'success': True, 'message': embed, 'user': user, 'timestamp': timestamp}
+
+    @utils.group(invoke_without_command=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
+    @commands.guild_only()
+    async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
+        """
+        Quotes a user's message to the guild's quote channel.
+        """
+
+        # Make sure no subcommand is passed
+        if ctx.invoked_subcommand is not None:
+            return
+        response = await self.get_quote_messages(self, ctx, messages)
+
+        # Make embed
+        if response['success'] is False:
+            return await ctx.send(response['message'])
+        embed = response['embed']
+        user = response['user']
+        timestamp = response['timestamp']
 
         # See if we should bother saving it
         async with self.bot.database() as db:
-            rows = await db("SELECT * FROM guild_settings WHERE guild_id = $1", ctx.guild.id)
+            rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1", ctx.guild.id)
         reactions_needed = rows[0]['quote_reactions_needed']
         ask_to_save_message = await ctx.send(
             f"Should I save this quote? If I receive {reactions_needed} positive reactions in the next 60 seconds, the quote will be saved.",
             embed=embed,
         )
-        await ask_to_save_message.add_reaction("\N{THUMBS UP SIGN}")
-        await ask_to_save_message.add_reaction("\N{THUMBS DOWN SIGN}")
+        self.bot.loop.create_task(ask_to_save_message.add_reaction("\N{THUMBS UP SIGN}"))
+        self.bot.loop.create_task(ask_to_save_message.add_reaction("\N{THUMBS DOWN SIGN}"))
         await asyncio.sleep(60)
 
         # Get the message again so we can refresh the reactions
@@ -156,12 +163,6 @@ class QuoteCommands(utils.Cog):
 
         # And save it to the database
         async with self.bot.database() as db:
-            rows = await db(
-                "SELECT * FROM user_quotes WHERE guild_id=$1 AND user_id=$2 AND timestamp=$3 AND text=$4",
-                ctx.guild.id, user.id, timestamp, text
-            )
-            if rows:
-                return await ctx.send(f"That message has already been quoted with quote ID `{rows[0]['quote_id']}`.")
             await db(
                 "INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp) VALUES ($1, $2, $3, $4, $5, $6)",
                 quote_id, ctx.guild.id, posted_message.channel.id, posted_message.id, user.id, timestamp
@@ -169,6 +170,49 @@ class QuoteCommands(utils.Cog):
 
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
+
+    @quote.command(name="force")
+    @commands.bot_has_permissions(manage_messages=True)
+    async def quote_force(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
+        """
+        Quotes a user's message to the guild's quote channel.
+        """
+
+        # Make sure no subcommand is passed
+        if ctx.invoked_subcommand is not None:
+            return
+        response = await self.get_quote_messages(self, ctx, messages)
+
+        # Make embed
+        if response['success'] is False:
+            return await ctx.send(response['message'])
+        embed = response['embed']
+        user = response['user']
+        timestamp = response['timestamp']
+
+        # See if they have a quotes channel
+        quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
+        quote_id = create_id()
+        embed.set_footer(text=f"Quote ID {quote_id.upper()}")
+        posted_message = None
+        if quote_channel_id:
+            channel = self.bot.get_channel(quote_channel_id)
+            try:
+                posted_message = await channel.send(embed=embed)
+            except (discord.Forbidden, AttributeError):
+                pass
+        if quote_channel_id is None or posted_message is None:
+            return await ctx.send("I couldn't send your quote into the quote channel.")
+
+        # And save it to the database
+        async with self.bot.database() as db:
+            await db(
+                "INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp) VALUES ($1, $2, $3, $4, $5, $6)",
+                quote_id, ctx.guild.id, posted_message.channel.id, posted_message.id, user.id, timestamp
+            )
+
+        # Output to user
+        await ctx.send(f"{ctx.author.mention}'s quote saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
 
     @quote.command(name="get")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
