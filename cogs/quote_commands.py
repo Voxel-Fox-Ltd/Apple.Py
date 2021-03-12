@@ -186,7 +186,7 @@ class QuoteCommands(utils.Cog):
         # Make embed
         if response['success'] is False:
             return await ctx.send(response['message'])
-        embed = response['embed']
+        embed = response['message']
         user = response['user']
         timestamp = response['timestamp']
 
