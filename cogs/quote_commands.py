@@ -111,7 +111,7 @@ class QuoteCommands(utils.Cog):
         # Make sure no subcommand is passed
         if ctx.invoked_subcommand is not None:
             return
-        response = await self.get_quote_messages(self, ctx, messages)
+        response = await self.get_quote_messages(ctx, messages)
 
         # Make embed
         if response['success'] is False:
@@ -181,7 +181,7 @@ class QuoteCommands(utils.Cog):
         # Make sure no subcommand is passed
         if ctx.invoked_subcommand is not None:
             return
-        response = await self.get_quote_messages(self, ctx, messages)
+        response = await self.get_quote_messages(ctx, messages)
 
         # Make embed
         if response['success'] is False:
