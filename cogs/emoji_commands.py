@@ -27,17 +27,13 @@ class EmojiCommands(utils.Cog):
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.guild_only()
-    async def deleteemoji(self, ctx:utils.Context, emoji:typing.Union[discord.PartialEmoji, int]):
+    async def deleteemoji(self, ctx:utils.Context, emoji:discord.Emoji):
         """
         Deletes an emoji from a server
         """
         
-        # If the emoji provided is just an ID, find the emoji
-        if isintance(emoji, int):
-            emoji = self.bot.get_emoji(emoji)
-        
-        if (not emoji) or (emoji not in ctx.guild.emojis):
-            raise commands.BadArgument("The emoji you provided either does not exist or is not in this server.")
+        if emoji not in ctx.guild.emojis:
+            raise commands.BadArgument("The emoji you provided is not in this server.")
         
         emoji_name = emoji.name
         await emoji.delete()
