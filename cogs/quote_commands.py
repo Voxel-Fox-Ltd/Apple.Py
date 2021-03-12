@@ -172,7 +172,8 @@ class QuoteCommands(utils.Cog):
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
 
     @quote.command(name="force")
-    @commands.bot_has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_guild=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def quote_force(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
         """
         Quotes a user's message to the guild's quote channel.
@@ -303,7 +304,7 @@ class QuoteCommands(utils.Cog):
 
     @quote.group(name="alias", invoke_without_command=True)
     @commands.guild_only()
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
     async def quote_alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias:commands.clean_content):
         """
@@ -326,7 +327,7 @@ class QuoteCommands(utils.Cog):
 
     @quote_alias.command(name="remove", aliases=["delete"])
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
     async def quote_alias_remove(self, ctx:utils.Context, alias:commands.clean_content):
         """
