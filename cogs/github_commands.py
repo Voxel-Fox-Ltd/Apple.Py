@@ -71,7 +71,10 @@ class GitIssueNumber(int):
     @classmethod
     async def convert(cls, ctx:utils.Context, value:str):
         value = value.lstrip('#')
-        return cls(value)
+        try:
+            return cls(value)
+        except Exception:
+            raise commands.BadArgument(f"I couldn't convert `{value}` into an integer.")
 
 
 class GithubCommands(utils.Cog):
