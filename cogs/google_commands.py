@@ -38,7 +38,7 @@ class GoogleCommands(utils.Cog):
 
         return wrapper
 
-    @utils.group()
+    @utils.group(invoke_without_command=True)
     @utils.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @utils.checks.is_config_set('api_keys', 'google', 'api_key')
     async def google(self, ctx:utils.Context, *, query:str):
