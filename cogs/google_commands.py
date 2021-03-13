@@ -32,7 +32,7 @@ class GoogleCommands(utils.Cog):
                 data = await r.json()
             ENDL = '\n'
             output_data = []
-            for d in data['items']:
+            for d in data.get('items', list()):
                 output_data.append(formatter(d))
             return output_data
 
