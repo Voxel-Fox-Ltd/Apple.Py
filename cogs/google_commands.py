@@ -40,7 +40,6 @@ class GoogleCommands(utils.Cog):
         return wrapper
 
     @utils.group(invoke_without_command=True)
-    @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @utils.checks.is_config_set('api_keys', 'google', 'api_key')
@@ -58,6 +57,7 @@ class GoogleCommands(utils.Cog):
         await utils.Paginator(self.get_search_page(query, 3), formatter=formatter).start(ctx)
 
     @google.command(name='images', aliases=['image', 'i'])
+    @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @utils.checks.is_config_set('api_keys', 'google', 'api_key')
