@@ -21,12 +21,12 @@ class GoogleCommands(utils.Cog):
                 params.update({'searchType': 'image'})
                 formatter = lambda d: (
                     d['title'][:256],
-                    f"[{d['displayLink']}]({d['link']}) - {d['snippet'].replace(ENDL, ' ')}"
+                    d['link']
                 )
             else:
                 formatter = lambda d: (
                     d['title'][:256],
-                    d['link']
+                    f"[{d['displayLink']}]({d['link']}) - {d['snippet'].replace(ENDL, ' ')}"
                 )
             async with self.bot.session.get("https://customsearch.googleapis.com/customsearch/v1", params=params) as r:
                 data = await r.json()
