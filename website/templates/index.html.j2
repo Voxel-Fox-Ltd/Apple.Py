@@ -24,7 +24,7 @@
                     body: jsonData,
                     headers: {"Content-Type": "application/json"}
                 })
-                return 300 > data.status >= 200;
+                return 300 > data.status && data.status >= 200;
             }
         </script>
 
