@@ -6,7 +6,7 @@ import voxelbotutils as utils
 
 class WolframAlpha(utils.Cog):
 
-    @utils.command(aliases=['wf', 'wolframalpha', 'wfa', 'search'])
+    @utils.command(aliases=['wf', 'wolframalpha', 'wfa'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'wolfram')
     async def wolfram(self, ctx, *, search:str):
