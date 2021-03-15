@@ -218,8 +218,10 @@ class MiscCommands(utils.Cog):
         # Get data
         async with self.bot.session.get(f"https://pypi.org/pypi/{module}/json") as r:
             if r.status != 200:
-                await ctx.send(f"Module `{module}` not found.", )
-                return
+                with utils.Embed(use_random_colour=True) as embed:
+                    embed.title = f"Module `{module}` not found"
+                    embed.description = f"(Search Results)[https://pypi.org/search/?q={module}]"
+                return await ctx.send(embed=embed)
             data = await r.json()
 
         # Format into an embed
