@@ -35,6 +35,8 @@ class GoogleCommands(utils.Cog):
             output_data = []
             for d in data.get('items', list()):
                 output_data.append(formatter(d))
+            if not output_data:
+                raise StopIteration()
             return output_data
 
         return wrapper
@@ -52,7 +54,7 @@ class GoogleCommands(utils.Cog):
             embed = utils.Embed(use_random_colour=True)
             for d in data:
                 embed.add_field(*d, inline=False)
-            embed.set_footer(f"Page {menu.current_page + 1}")
+            embed.set_footer(f"Page {menu.current_page + 1}/{menu.max_pages}")
             return embed
         await utils.Paginator(self.get_search_page(query, 3), formatter=formatter).start(ctx)
 
@@ -73,7 +75,7 @@ class GoogleCommands(utils.Cog):
             ).set_image(
                 data[0][1]
             ).set_footer(
-                f"Page {menu.current_page + 1}"
+                f"Page {menu.current_page + 1}/{menu.max_pages}"
             )
         await utils.Paginator(self.get_search_page(query, 1, True), formatter=formatter).start(ctx)
 
