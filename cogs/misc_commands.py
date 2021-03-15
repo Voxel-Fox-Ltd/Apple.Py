@@ -220,7 +220,7 @@ class MiscCommands(utils.Cog):
             if r.status != 200:
                 with utils.Embed(use_random_colour=True) as embed:
                     embed.title = f"Module `{module}` not found"
-                    embed.description = ("Search Results")[f"https://pypi.org/search/?q={module}"]
+                    embed.description = f"(Search Results)[https://pypi.org/search/?q={module}]"
                 return await ctx.send(embed=embed)
             data = await r.json()
 
