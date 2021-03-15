@@ -15,6 +15,23 @@
             <div class="button-holder">Logout of Discord (<b>{{ session.user_info.username }}#{{ session.user_info.discriminator }}</b>)</div>
         </a>
 
+        <script type="text/javascript">
+            async function setTimezone(){
+                let jsonData = JSON.stringify({timezone: Intl.DateTimeFormat().resolvedOptions().timeZone});
+                console.log(`Sending data to /set_timezone: ${jsonData}`);
+                let data = await fetch("/set_timezone", {
+                    method: "POST",
+                    body: jsonData,
+                    headers: {"Content-Type": "application/json"}
+                })
+                return 300 > data.status >= 200;
+            }
+        </script>
+
+        <a href="#" onclick="setTimezone().then(d => {if (d) {window.reload();}})">
+            <div class="button-holder">Update your Timezone{% if timezone_name %} (<b>{{ timezone_name }}</b>){% endif %}</div>
+        </a>
+
         {% if twitch_username %}
             <a href="/twitch_logout">
                 <div class="button-holder">Logout of Twitch (<b>{{ twitch_username }}</b>)</div>

@@ -2,14 +2,40 @@ from urllib.parse import urlencode
 import string
 import random
 
-from aiohttp.web import HTTPFound, Request, RouteTableDef
+from aiohttp.web import HTTPFound, Request, RouteTableDef, json_response
 from voxelbotutils import web as webutils
 import aiohttp_session
 import discord
 from aiohttp_jinja2 import template
+import pytz
 
 
 routes = RouteTableDef()
+
+
+@routes.post("/set_timezone")
+async def set_timezone(request:Request):
+    """
+    Sets the timezone for the given user.
+    """
+
+    session = await aiohttp_session.get_session(request)
+    if not session.get("user_id"):
+        return json_response({}, status=401)
+    data = await request.json()
+    if not data.get("timezone"):
+        return json_response({}, status=401)
+    try:
+        timezone = pytz.timezone(data.get("timezone"))
+    except pytz.UnknownTimeZoneError:
+        return json_response({}, status=400)
+    async with request.app['database']() as db:
+        await db(
+            """INSERT INTO user_settings (user_id, timezone_name) VALUES ($1, $2)
+            ON CONFLICT (user_id) DO UPDATE SET timezone_name=excluded.timezone_name""",
+            session['user_id'], timezone,
+        )
+    return json_response({}, status=200)
 
 
 @routes.get("/")
@@ -63,6 +89,7 @@ async def index(request:Request):
 
     # Handle current logins
     session = await aiohttp_session.get_session(request)
+    timezone_name = None
     twitch_username = None
     github_username = None
     gitlab_username = None
@@ -74,6 +101,7 @@ async def index(request:Request):
         async with request.app['database']() as db:
             rows = await db("SELECT * FROM user_settings WHERE user_id=$1", session['user_id'])
         if rows:
+            timezone_name = rows[0]['timezone_name']
             twitch_username = rows[0]['twitch_username']
             github_username = rows[0]['github_username']
             gitlab_username = rows[0]['gitlab_username']
@@ -85,6 +113,8 @@ async def index(request:Request):
     # Return items
     return {
         'login_url': webutils.get_discord_login_url(request),
+
+        'timezone_name': timezone_name,
 
         'twitch_login_url': f'https://id.twitch.tv/oauth2/authorize?{urlencode(twitch_login_url_params)}',
         'twitch_username': twitch_username,
