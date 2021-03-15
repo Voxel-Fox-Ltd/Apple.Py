@@ -33,7 +33,7 @@ async def set_timezone(request:Request):
         await db(
             """INSERT INTO user_settings (user_id, timezone_name) VALUES ($1, $2)
             ON CONFLICT (user_id) DO UPDATE SET timezone_name=excluded.timezone_name""",
-            session['user_id'], timezone.name,
+            session['user_id'], data['timezone'],
         )
     return json_response({}, status=200)
 
