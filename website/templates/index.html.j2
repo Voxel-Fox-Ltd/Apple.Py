@@ -28,7 +28,7 @@
             }
         </script>
 
-        <a href="#" onclick="setTimezone().then(d => {if (d) {location.reload();}})">
+        <a href="javascript:setTimezone().then(d=>{if(d){location.reload()}});">
             <div class="button-holder">Update your Timezone{% if timezone_name %} (<b>{{ timezone_name }}</b>){% endif %}</div>
         </a>
 
