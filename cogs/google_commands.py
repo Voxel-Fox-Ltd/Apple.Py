@@ -36,7 +36,7 @@ class GoogleCommands(utils.Cog):
             for d in data.get('items', list()):
                 output_data.append(formatter(d))
             if not output_data:
-                raise StopIteration()
+                raise StopAsyncIteration()
             return output_data
 
         return wrapper
