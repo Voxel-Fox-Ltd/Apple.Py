@@ -18,35 +18,59 @@ class BotSettings(utils.Cog):
             return
 
         # Create settings menu
-        menu = utils.SettingsMenu()
         settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
-        menu.bulk_add_options(
-            ctx,
-            {
-                'display': lambda c: "Set quote channel (currently {0})".format(settings_mention(c, 'quote_channel_id')),
-                'converter_args': [("What do you want to set the quote channel to?", "quote channel", commands.TextChannelConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'quote_channel_id'),
-            },
-            {
-                'display': lambda c: "Set reactions needed for quote (currently {0})".format(settings_mention(c, 'quote_reactions_needed')),
-                'converter_args': [("How many reactions should a message get to get quoted?", "reactions needed", int)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'quote_reactions_needed'),
-            },
-            {
-                'display': lambda c: "Set automatic nickname fixer (currently {0})".format(c.bot.guild_settings[c.guild.id]['automatic_nickname_update']),
-                'converter_args': [("Do you want to enable automatic nickname fixing?", "auto nickname", utils.converters.BooleanConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'automatic_nickname_update'),
-            },
-            {
-                'display': lambda c: "Set nickname change ban role (currently {0})".format(settings_mention(c, 'nickname_banned_role_id')),
-                'converter_args': [("Which role should be set to stop users changing their nickname?", "nickname change ban role", commands.RoleConverter)],
-                'callback': utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'nickname_banned_role_id'),
-            },
-            {
-                'display': "Set up VC max members",
-                'callback': self.bot.get_command("setup vcmaxmembers"),
-            },
+        menu = utils.SettingsMenu()
+        menu.add_multiple_options(
+            utils.SettingsMenuOption(
+                ctx=ctx,
+                display=lambda c: "Set quote channel (currently {0})".format(settings_mention(c, 'quote_channel_id')),
+                converter_args=(
+                    utils.SettingsMenuConverter(
+                        prompt="What do you want to set the quote channel to?",
+                        asking_for="quote channel",
+                        converter=commands.TextChannelConverter,
+                    ),
+                ),
+                callback=utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'quote_channel_id'),
+            ),
+            utils.SettingsMenuOption(
+                ctx=ctx,
+                display=lambda c: "Set reactions needed for quote (currently {0})".format(settings_mention(c, 'quote_reactions_needed')),
+                converter_args=(
+                    utils.SettingsMenuConverter(
+                        prompt="How many reactions should a message get to get quoted?",
+                        asking_for="reactions needed",
+                        converter=int,
+                    ),
+                ),
+                callback=utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'quote_reactions_needed'),
+            ),
+            utils.SettingsMenuOption(
+                ctx=ctx,
+                display=lambda c: "Set automatic nickname fixer (currently {0})".format(c.bot.guild_settings[c.guild.id]['automatic_nickname_update']),
+                converter_args=[("Do you want to enable automatic nickname fixing?", "auto nickname", utils.converters.BooleanConverter)],
+                callback=utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'automatic_nickname_update'),
+            ),
+            utils.SettingsMenuOption(
+                ctx=ctx,
+                display=lambda c: "Set nickname change ban role (currently {0})".format(settings_mention(c, 'nickname_banned_role_id')),
+                converter_args=(
+                    utils.SettingsMenuConverter(
+                        prompt="Which role should be set to stop users changing their nickname?",
+                        asking_for="nickname change ban role",
+                        converter=commands.RoleConverter,
+                    ),
+                ),
+                callback=utils.SettingsMenuOption.get_set_guild_settings_callback('guild_settings', 'nickname_banned_role_id'),
+            ),
+            utils.SettingsMenuOption(
+                ctx=ctx,
+                display="Set up VC max members",
+                callback=self.bot.get_command("setup vcmaxmembers"),
+            ),
         )
+
+        # Run the menu
         try:
             await menu.start(ctx)
             await ctx.send("Done setting up!")
@@ -60,12 +84,24 @@ class BotSettings(utils.Cog):
         Run the bot setup.
         """
 
-        # Create settings menu
-        key_display_function = lambda k: getattr(ctx.bot.get_channel(k), 'mention', 'none')
         menu = utils.SettingsMenuIterable(
-            'channel_list', 'channel_id', 'max_vc_members', 'MaxVCMembers',
-            commands.VoiceChannelConverter, "What voice channel do you want to set the max of?", key_display_function,
-            int, "How many members should be allowed in this VC?"
+            table_name='channel_list',
+            column_name='channel_id',
+            cache_key='max_vc_members',
+            database_key='MaxVCMembers',
+            key_display_function=lambda k: getattr(ctx.bot.get_channel(k), 'mention', 'none'),
+            converters=(
+                utils.SettingsMenuConverter(
+                    prompt="What voice channel do you want to set the max of?",
+                    asking_for="voice channel",
+                    converter=commands.VoiceChannelConverter,
+                ),
+                utils.SettingsMenuConverter(
+                    prompt="How many members should be allowed in this VC?",
+                    asking_for="amount",
+                    converter=int,
+                ),
+            ),
         )
         await menu.start(ctx)
 
