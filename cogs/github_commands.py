@@ -298,6 +298,8 @@ class GithubCommands(utils.Cog):
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
                 return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
 
+        user_login = user_rows[0][f'{repo.host.lower()}_username']
+
         # Get the issues
         if repo.host == "Github":
             params = {'state': 'all' if list_closed else 'open'}
@@ -312,24 +314,19 @@ class GithubCommands(utils.Cog):
             data = await r.json()
             self.logger.info(f"Received data from git {r.url!s} - {data!s}")
             if 200 <= r.status < 300:
-                # Get any PR data where they may be requesting changes/review
-                if repo.host == "Github":
-                    pr_issues = {}
-                    for index, issue in enumerate(data):
-                        state = issue.get('state')
-                        if state and state.startswith('open') and issue.get('pull_request'):
-                            pr_issues[issue.get('number')] = index
-                    if len(pr_issues):
-                        r = await self.bot.session.get(repo.pull_requests_api_url, params=params, headers=headers)
-                        pull_data = await r.json()
-                        for pull in pull_data:
-                            if pull['number'] in pr_issues:
-                                # Overwrite pull request URLs with actual PR data
-                                data[pr_issues[pull['number']]]['pull_request'] = pull
+                pass
             else:
                 return await ctx.send(f"I was unable to get the issues on that repository - `{data}`.")
         if len(data) == 0:
             return await ctx.send("There are no issues in the repository!")
+
+        # Request data for PRs
+        has_open_pr = any('pull_request' in issue for issue in data if issue.get('state').startswith('open'))
+        pull_requests = {}
+        if has_open_pr:
+            async with await self.bot.session.get(repo.pull_requests_api_url, params=params, headers=headers) as r:
+                pull_data = await r.json()
+                pull_requests = {str(pull['number']):pull for pull in pull_data}
 
         # Format the lines
         output = []
@@ -351,16 +348,15 @@ class GithubCommands(utils.Cog):
 
             # Work out the emoji to use
             emoji_to_use = "?"
-            pr_data = issue.get("pull_request")
-            if pr_data:
+            pull_request_data = pull_requests.get(issue_id) or issue.get('pull_request')
+            if pull_request_data:
                 emoji_to_use = self.GIT_PR_OPEN_EMOJI
                 if not issue.get('state').startswith('open'):
                     emoji_to_use = self.GIT_PR_CLOSED_EMOJI
-                elif pr_data.get('requested_reviewers'):
-                    for reviewer in pr_data.get('requested_reviewers'):
-                        if reviewer.get('login') == user_rows[0]['github_username']:
-                            emoji_to_use = self.GIT_PR_CHANGES_EMOJI
-                            break
+                elif pull_request_data.get('requested_reviewers'):
+                    if any(reviewer['login'] == user_login for reviewer in pull_request_data['requested_reviewers']):
+                        # User has been requested for changes/review
+                        emoji_to_use = self.GIT_PR_CHANGES_EMOJI
             else:
                 emoji_to_use = self.GIT_ISSUE_OPEN_EMOJI
                 if not issue.get('state').startswith('open'):
