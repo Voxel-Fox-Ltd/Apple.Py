@@ -50,6 +50,9 @@ class GoogleCommands(utils.Cog):
         Search a query on Google.
         """
 
+        if query.startswith("-"):
+            raise utils.errors.MissingRequiredArgumentString("query")
+
         def formatter(menu, data):
             embed = utils.Embed(use_random_colour=True)
             for d in data:
@@ -67,6 +70,9 @@ class GoogleCommands(utils.Cog):
         """
         Search a query on Google Images.
         """
+
+        if query.startswith("-"):
+            raise utils.errors.MissingRequiredArgumentString("query")
 
         def formatter(menu, data):
             return utils.Embed(
