@@ -341,7 +341,7 @@ class GithubCommands(utils.Cog):
         has_open_pr = any('pull_request' in issue for issue in data if issue.get('state').startswith('open'))
         pull_requests = {}
         if has_open_pr:
-            async with await self.bot.session.get(repo.pull_requests_api_url, params=params, headers=headers) as r:
+            async with self.bot.session.get(repo.pull_requests_api_url, params=params, headers=headers) as r:
                 pull_data = await r.json()
                 pull_requests = {str(pull['number']):pull for pull in pull_data}
 
