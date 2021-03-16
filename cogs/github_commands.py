@@ -375,12 +375,25 @@ class GithubCommands(utils.Cog):
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
                 return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
 
+        # Add attachments
+        attachment_urls = []
+        for i in ctx.attachments:
+            async with ctx.typing():
+                try:
+                    async with self.bot.session.get(i.url) as r:
+                        data = await r.read()
+                    file = discord.File(io.BytesIO(data), filename=i.filename)
+                    cache_message = await ctx.author.send(file=file)
+                    attachment_urls.append((file.filename, cache_message.attachments[0].url))
+                except discord.HTTPException:
+                    break
+
         # Get the headers
         if repo.host == "Github":
             headers = {'Accept': 'application/vnd.github.v3+json','Authorization': f"token {user_rows[0]['github_access_token']}",}
         elif repo.host == "Gitlab":
             headers = {'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}"}
-        json = {'body': comment}
+        json = {'body': (comment + "\n\n" + "\n".join([f"![{name}]({url})" for name, url in attachment_urls])).strip()}
         headers.update({'User-Agent': self.bot.user_agent})
 
         # Create comment
