@@ -35,6 +35,12 @@ class GitRepo(object):
         if self.host == "Github":
             return f"https://api.github.com/repos/{self.owner}/{self.repo}/issues/{{issue}}/comments"
         return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/issues/{{issue}}/notes"
+    
+    @property
+    def pull_requests_api_url(self):
+        if self.host == "Github":
+            return f"https://api.github.com/repos/{self.owner}/{self.repo}/pulls"
+        return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo,safe='')}/merge_requests"
 
     @classmethod
     async def convert(cls, ctx:utils.Context, value:str):
@@ -83,6 +89,7 @@ class GithubCommands(utils.Cog):
     GIT_ISSUE_CLOSED_EMOJI = "<:github_issue_closed:817984658372689960>"
     GIT_PR_OPEN_EMOJI = "<:github_pr_open:817986200618139709>"
     GIT_PR_CLOSED_EMOJI = "<:github_pr_closed:817986200962072617>"
+    GIT_PR_CHANGES_EMOJI = "<:github_changes_requested:819115452948938772>"
 
     @utils.Cog.listener()
     async def on_message(self, message):
@@ -305,7 +312,20 @@ class GithubCommands(utils.Cog):
             data = await r.json()
             self.logger.info(f"Received data from git {r.url!s} - {data!s}")
             if 200 <= r.status < 300:
-                pass
+                # Get any PR data where they may be requesting changes/review
+                if repo.host == "Github":
+                    pr_issues = {}
+                    for index, issue in enumerate(data):
+                        state = issue.get('state')
+                        if state and state.startswith('open') and issue.get('pull_request'):
+                            pr_issues[issue.get('number')] = index
+                    if len(pr_issues):
+                        r = await self.bot.session.get(repo.pull_requests_api_url, params=params, headers=headers)
+                        pull_data = await r.json()
+                        for pull in pull_data:
+                            if pull['number'] in pr_issues:
+                                # Overwrite pull request URLs with actual PR data
+                                data[pr_issues[pull['number']]]['pull_request'] = pull
             else:
                 return await ctx.send(f"I was unable to get the issues on that repository - `{data}`.")
         if len(data) == 0:
@@ -331,10 +351,16 @@ class GithubCommands(utils.Cog):
 
             # Work out the emoji to use
             emoji_to_use = "?"
-            if issue.get("pull_request"):
+            pr_data = issue.get("pull_request")
+            if pr_data:
                 emoji_to_use = self.GIT_PR_OPEN_EMOJI
                 if not issue.get('state').startswith('open'):
                     emoji_to_use = self.GIT_PR_CLOSED_EMOJI
+                elif pr_data.get('requested_reviewers'):
+                    for reviewer in pr_data.get('requested_reviewers'):
+                        if reviewer.get('login') == user_rows[0]['github_username']:
+                            emoji_to_use = self.GIT_PR_CHANGES_EMOJI
+                            break
             else:
                 emoji_to_use = self.GIT_ISSUE_OPEN_EMOJI
                 if not issue.get('state').startswith('open'):
