@@ -2,6 +2,7 @@ import asyncio
 import re
 from urllib.parse import quote
 import math
+import io
 
 import asyncpg
 import discord
@@ -17,6 +18,9 @@ class GitRepo(object):
         self.host = host
         self.owner = owner
         self.repo = repo
+
+    def __str__(self):
+        return f"{'gh' if self.host == 'Github' else 'gl'}/{self.owner}/{self.repo}"
 
     @property
     def html_url(self):
@@ -247,6 +251,17 @@ class GithubCommands(utils.Cog):
                     body_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
                 except asyncio.TimeoutError:
                     return await ctx.send("Timed out asking for issue body text.")
+                attachment_urls = []
+                for i in body_message.attachments:
+                    async with ctx.typing():
+                        try:
+                            async with self.bot.session.get(i.url) as r:
+                                data = await r.read()
+                            file = discord.File(io.BytesIO(data), filename=i.filename)
+                            cache_message = await ctx.author.send(file=file)
+                            attachment_urls.append((file.filename, cache_message.attachments[0].url))
+                        except discord.HTTPException:
+                            break
                 try:
                     await n.delete()
                     await body_message.delete()
@@ -256,7 +271,9 @@ class GithubCommands(utils.Cog):
                     await m.remove_reaction("\N{HEAVY PLUS SIGN}", ctx.author)
                 except discord.HTTPException:
                     pass
-                body = body_message.content
+                body = body_message.content + "\n\n"
+                for name, url in attachment_urls:
+                    body += f"![{name}]({url})\n"
 
                 embed = utils.Embed(title=title, description=body, use_random_colour=True)
                 await m.edit(contnet="Are you sure you want to create this issue?", embed=embed)
@@ -269,10 +286,10 @@ class GithubCommands(utils.Cog):
 
         # Work out our args
         if repo.host == "Github":
-            json = {'title': title, 'body': body}
+            json = {'title': title, 'body': body.strip()}
             headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f"token {user_rows[0]['github_access_token']}"}
         elif repo.host == "Gitlab":
-            json = {'title': title, 'description': body}
+            json = {'title': title, 'description': body.strip()}
             headers = {'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}"}
         headers.update({'User-Agent': self.bot.user_agent})
 
@@ -380,12 +397,25 @@ class GithubCommands(utils.Cog):
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
                 return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
 
+        # Add attachments
+        attachment_urls = []
+        for i in ctx.message.attachments:
+            async with ctx.typing():
+                try:
+                    async with self.bot.session.get(i.url) as r:
+                        data = await r.read()
+                    file = discord.File(io.BytesIO(data), filename=i.filename)
+                    cache_message = await ctx.author.send(file=file)
+                    attachment_urls.append((file.filename, cache_message.attachments[0].url))
+                except discord.HTTPException:
+                    break
+
         # Get the headers
         if repo.host == "Github":
             headers = {'Accept': 'application/vnd.github.v3+json','Authorization': f"token {user_rows[0]['github_access_token']}",}
         elif repo.host == "Gitlab":
             headers = {'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}"}
-        json = {'body': comment}
+        json = {'body': (comment + "\n\n" + "\n".join([f"![{name}]({url})" for name, url in attachment_urls])).strip()}
         headers.update({'User-Agent': self.bot.user_agent})
 
         # Create comment
