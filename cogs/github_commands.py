@@ -377,7 +377,7 @@ class GithubCommands(utils.Cog):
 
         # Add attachments
         attachment_urls = []
-        for i in ctx.attachments:
+        for i in ctx.message.attachments:
             async with ctx.typing():
                 try:
                     async with self.bot.session.get(i.url) as r:
