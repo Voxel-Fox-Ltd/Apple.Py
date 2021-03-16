@@ -221,7 +221,7 @@ class GithubCommands(utils.Cog):
         embed = utils.Embed(title=title, use_random_colour=True).set_footer("Use the \N{HEAVY PLUS SIGN} emoji to add a body.")
         m = await ctx.send("Are you sure you want to create this issue?", embed=embed)
         valid_emojis = ["\N{THUMBS UP SIGN}", "\N{HEAVY PLUS SIGN}", "\N{THUMBS DOWN SIGN}"]
-        body = None
+        body = ""
         while True:
             if body:
                 embed = utils.Embed(
