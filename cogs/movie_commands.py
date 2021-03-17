@@ -39,11 +39,13 @@ class MovieCommand(utils.Cog):
         if not search:
             embed.title = f"{data['Title']} ({data['Year']})"
 
+        valid_info = lambda v: v not in [None, 'N/A', 'n/a']
+
         # List short details of up to 10 results
         if search:
             description_list = []
             for index, row in enumerate(data['Search'][:10], start=1):
-                if row['Poster']:
+                if valid_info(row.get('Poster')):
                     description_list.append(f"{index}. **{row['Title']}** ({row['Year']}) - [Poster]({row['Poster']})")
                 else:
                     description_list.append(f"{index}. **{row['Title']}** ({row['Year']})")
@@ -60,18 +62,18 @@ class MovieCommand(utils.Cog):
         if data.get('Runtime'):
             embed.add_field("Runtime", data['Runtime'])
         if data.get('Genre'):
-            embed.add_field("Genre", data['Genre'])
+            embed.add_field(f"Genre{'s' if ',' in data['Genre'] else ''}", data['Genre'])
         if data.get('imdbRating'):
             embed.add_field("IMDB Rating", data['imdbRating'])
         if data.get('Production'):
-            embed.add_field("Production Company", data['Production'])
+            embed.add_field(f"Production Compan{'ies' if ',' in data['Production'] else 'y'}", data['Production'])
         if data.get('Director'):
-            embed.add_field("Director", data['Director'])
+            embed.add_field(f"Director{'s' if ',' in data['Director'] else ''}", data['Director'])
         if data.get('Writer'):
-            embed.add_field("Writer", data['Writer'], inline=False)
+            embed.add_field(f"Writer{'s' if ',' in data['Writer'] else ''}", data['Writer'], inline=False)
         if data.get('imdbID'):
             embed.add_field("IMDB Page", f"[Direct Link](https://www.imdb.com/title/{data['imdbID']}/) - IMDB ID `{data['imdbID']}`", inline=False)
-        if data.get('Poster'):
+        if valid_info(data.get('Poster')):
             embed.set_thumbnail(data['Poster'])
         return embed
 
