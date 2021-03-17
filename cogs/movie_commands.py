@@ -39,7 +39,7 @@ class MovieCommand(utils.Cog):
         if not search:
             embed.title = f"{data['Title']} ({data['Year']})"
 
-        valid_info = lambda v: v not in [None,'N/A']
+        valid_info = lambda v: v not in [None, 'N/A', 'n/a']
 
         # List short details of up to 10 results
         if search:
