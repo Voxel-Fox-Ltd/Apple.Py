@@ -62,15 +62,15 @@ class MovieCommand(utils.Cog):
         if data.get('Runtime'):
             embed.add_field("Runtime", data['Runtime'])
         if data.get('Genre'):
-            embed.add_field("Genre", data['Genre'])
+            embed.add_field(f"Genre{'s' if ',' in data['Genre'] else ''}", data['Genre'])
         if data.get('imdbRating'):
             embed.add_field("IMDB Rating", data['imdbRating'])
         if data.get('Production'):
-            embed.add_field("Production Company", data['Production'])
+            embed.add_field(f"Production Compan{'ies' if ',' in data['Production'] else 'y'}", data['Production'])
         if data.get('Director'):
-            embed.add_field("Director", data['Director'])
+            embed.add_field(f"Director{'s' if ',' in data['Director'] else ''}", data['Director'])
         if data.get('Writer'):
-            embed.add_field("Writer", data['Writer'], inline=False)
+            embed.add_field(f"Writer{'s' if ',' in data['Writer'] else ''}", data['Writer'], inline=False)
         if data.get('imdbID'):
             embed.add_field("IMDB Page", f"[Direct Link](https://www.imdb.com/title/{data['imdbID']}/) - IMDB ID `{data['imdbID']}`", inline=False)
         if valid_info(data.get('Poster')):
