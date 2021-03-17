@@ -39,11 +39,13 @@ class MovieCommand(utils.Cog):
         if not search:
             embed.title = f"{data['Title']} ({data['Year']})"
 
+        valid_info = lambda v: v not in [None,'N/A']
+
         # List short details of up to 10 results
         if search:
             description_list = []
             for index, row in enumerate(data['Search'][:10], start=1):
-                if row['Poster']:
+                if valid_info(row.get('Poster')):
                     description_list.append(f"{index}. **{row['Title']}** ({row['Year']}) - [Poster]({row['Poster']})")
                 else:
                     description_list.append(f"{index}. **{row['Title']}** ({row['Year']})")
@@ -71,7 +73,7 @@ class MovieCommand(utils.Cog):
             embed.add_field("Writer", data['Writer'], inline=False)
         if data.get('imdbID'):
             embed.add_field("IMDB Page", f"[Direct Link](https://www.imdb.com/title/{data['imdbID']}/) - IMDB ID `{data['imdbID']}`", inline=False)
-        if data.get('Poster'):
+        if valid_info(data.get('Poster')):
             embed.set_thumbnail(data['Poster'])
         return embed
 
