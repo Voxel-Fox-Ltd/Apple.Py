@@ -62,9 +62,11 @@ class RunescapeCommands(utils.Cog):
     @utils.command(aliases=['ge'])
     async def grandexchange(self, ctx, item, rs_notation: bool = True):
         """Get the value of an item on the grand exchange (OSRS)."""
-        item_id = await self.item_ids.get(item)
+        item_id = self.item_ids.get(item)
         if item_id:
-            return await ctx.send(self.get_item_value_by_id(item_id, return_int=not rs_notation))
+            item_value = await self.get_item_value_by_id(item_id, return_int=not rs_notation)
+            # todo: make into a fancy embed or something, use the icon given by the API
+            return await ctx.send(item_value)
         else:
             return await ctx.send('Item not found')
 
