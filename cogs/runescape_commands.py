@@ -37,7 +37,7 @@ class RunescapeCommands(utils.Cog):
 
         return value
 
-    def get_item_value_by_id(self, item_id, return_int=True):
+    async def get_item_value_by_id(self, item_id, return_int=True):
         if item_id is None:
             return 1
 
@@ -59,9 +59,11 @@ class RunescapeCommands(utils.Cog):
 
         return value
 
-    @utils.command()
-    def ge(self, ctx, item, rs_notation: bool = True):
-        if item_id := self.item_ids.get(item):
+    @utils.command(aliases=['ge'])
+    async def grandexchange(self, ctx, item, rs_notation: bool = True):
+        """Get the value of an item on the grand exchange (OSRS)."""
+        item_id = await self.item_ids.get(item)
+        if item_id:
             return await ctx.send(self.get_item_value_by_id(item_id, return_int=not rs_notation))
         else:
             return await ctx.send('Item not found')
