@@ -89,7 +89,7 @@ class RunescapeCommands(utils.Cog):
             except aiohttp.ClientConnectorError:
                 return await ctx.send('Error connecting to runescape API.')
             # todo: make into a fancy embed or something, use the icon given by the API
-            return await ctx.send(item_value)
+            return await ctx.send(f'{item_value} coins')
         return await ctx.send('Item not found')
 
 
