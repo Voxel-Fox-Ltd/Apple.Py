@@ -76,7 +76,7 @@ class RunescapeCommands(utils.Cog):
         return value
 
     @utils.command(aliases=['ge'])
-    async def grandexchange(self, ctx, item:str, rs_notation:bool=True):
+    async def grandexchange(self, ctx, rs_notation:typing.Optional[bool]=True, *, item:str):
         """
         Get the value of an item on the grand exchange (OSRS).
         """
