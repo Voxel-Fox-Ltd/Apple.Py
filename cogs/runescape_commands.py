@@ -12,7 +12,6 @@ ITEM_IDS_PATH = Path().parent.joinpath('config').joinpath('osrs-item-ids.json')
 
 class RunescapeCommands(utils.Cog):
 
-    # https://pastebin.com/raw/LhxJ7GRG (parsed and modified)
     def __init__(self, bot):
         super().__init__(bot)
         with open(ITEM_IDS_PATH) as item_ids_file:
@@ -82,9 +81,13 @@ class RunescapeCommands(utils.Cog):
         Get the value of an item on the grand exchange (OSRS).
         """
 
+        item = item.capitalize()
         item_id = self.item_ids.get(item)
         if item_id:
-            item_value = await self.get_item_value_by_id(item_id, return_int=not rs_notation)
+            try:
+                item_value = await self.get_item_value_by_id(item_id, return_int=not rs_notation)
+            except aiohttp.ClientConnectorError:
+                return await ctx.send('Error connecting to runescape API.')
             # todo: make into a fancy embed or something, use the icon given by the API
             return await ctx.send(item_value)
         return await ctx.send('Item not found')
