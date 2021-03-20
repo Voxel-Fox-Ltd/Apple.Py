@@ -29,12 +29,12 @@ class RunescapeCommands(utils.Cog):
             'm': 10 ** 6,
             'b': 10 ** 9,
         }
-        value_str = value_str.replace(',', '')
+        value_str = value_str.replace(',', '').strip()
 
         for multi, value in multipliers.items():
             if value_str.endswith(multi):
                 value_str = value_str.rstrip(multi)
-                value = int(value_str) * value
+                value = int(float(value_str) * value)
                 break
         else:
             value = int(value_str)
