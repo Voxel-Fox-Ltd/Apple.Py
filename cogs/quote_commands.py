@@ -171,9 +171,12 @@ class QuoteCommands(utils.Cog):
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
 
+    @utils.command(cooldown_after_parsing=True)
+    @utils.cooldown.cooldown(1, 30 * 15, commands.BucketType.member, cls=localutils.cooldown.RoleBasedGuildCooldown())
     @quote.command(name="force")
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    
     async def quote_force(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
         """
         Quotes a user's message to the guild's quote channel.
