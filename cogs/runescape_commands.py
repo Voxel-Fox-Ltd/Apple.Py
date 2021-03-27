@@ -101,9 +101,9 @@ class RunescapeCommands(utils.Cog):
             with utils.Embed() as embed:
                 embed.set_author(name=name, url=item_page_url, icon_url=item_dict['icon'])
                 embed.set_thumbnail(url=item_dict['icon_large'])
-                embed.add_field('Value', item_value)
-                embed.add_field(f'Examine {name}', item_dict['description'])
-                embed.add_field('Members', MEMBERS_MAPPING[item_dict['members']])
+                embed.add_field('Value', f'{item_value} coins', inline=False)
+                embed.add_field(f'Examine {name}', item_dict['description'], inline=False)
+                embed.add_field('Members', MEMBERS_MAPPING[item_dict['members']], inline=False)
 
             return await ctx.send(embed=embed)
         return await ctx.send('Item not found')
