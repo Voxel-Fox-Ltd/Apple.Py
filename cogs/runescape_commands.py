@@ -89,30 +89,30 @@ class RunescapeCommands(utils.Cog):
         """
         Get the value of an item on the grand exchange (OSRS).
         """
+        async with ctx.typing():
+            if item.lower() in ['random']:
+                item_id = random.choice(list(self.item_ids.values()))
+            else:
+                item = item.capitalize()
+                item_id = self.item_ids.get(item)
 
-        if item.lower() in ['random']:
-            item_id = random.choice(list(self.item_ids.values()))
-        else:
-            item = item.capitalize()
-            item_id = self.item_ids.get(item)
+            if item_id:
+                item_dict = await self.get_item_details_by_id(item_id)
+                item_value = await self.parse_item_value(item_dict, return_int=not rs_notation)
 
-        if item_id:
-            item_dict = await self.get_item_details_by_id(item_id)
-            item_value = await self.parse_item_value(item_dict, return_int=not rs_notation)
+                name = item_dict['name']
+                item_page_url = API_BASE_URL + f"a=373/{name.replace(' ', '+')}/viewitem?obj={item_id}"
 
-            name = item_dict['name']
-            item_page_url = API_BASE_URL + f"a=373/{name.replace(' ', '+')}/viewitem?obj={item_id}"
+                with utils.Embed() as embed:
+                    embed.set_author(name=name, url=item_page_url, icon_url=item_dict['icon'])
+                    embed.set_thumbnail(url=item_dict['icon_large'])
+                    embed.add_field('Value', f'{item_value} coins', inline=False)
+                    embed.add_field(f'Examine {name}', item_dict['description'], inline=False)
+                    embed.add_field('Members', MEMBERS_MAPPING[item_dict['members']], inline=False)
 
-            with utils.Embed() as embed:
-                embed.set_author(name=name, url=item_page_url, icon_url=item_dict['icon'])
-                embed.set_thumbnail(url=item_dict['icon_large'])
-                embed.add_field('Value', f'{item_value} coins', inline=False)
-                embed.add_field(f'Examine {name}', item_dict['description'], inline=False)
-                embed.add_field('Members', MEMBERS_MAPPING[item_dict['members']], inline=False)
-
-            return await ctx.send(embed=embed)
-        else:
-            return await ctx.send('Item not found')
+                return await ctx.send(embed=embed)
+            else:
+                return await ctx.send('Item not found')
 
 
 def setup(bot:utils.Bot):
