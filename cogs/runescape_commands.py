@@ -98,7 +98,7 @@ class RunescapeCommands(utils.Cog):
             name = item_dict['name']
             item_page_url = API_BASE_URL + f"a=373/{name.replace(' ', '+')}/viewitem?obj={item_id}"
 
-            with utils.Embed as embed:
+            with utils.Embed() as embed:
                 embed.set_author(name=name, url=item_page_url, icon_url=item_dict['icon'])
                 embed.set_thumbnail(url=item_dict['icon_large'])
                 embed.add_field('Value', item_value)
