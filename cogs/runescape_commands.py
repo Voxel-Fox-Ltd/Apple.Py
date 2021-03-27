@@ -1,20 +1,25 @@
 import json
-from pathlib import Path
+import random
 import typing
+from pathlib import Path
 
 import voxelbotutils as utils
 import aiohttp
 
 
-API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
-ITEM_IDS_PATH = Path().parent.joinpath('config').joinpath('osrs-item-ids.json')
+API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/'
+MEMBERS_MAPPING = {
+    'true': 'Yes',
+    'false': 'No',
+}
 
 
 class RunescapeCommands(utils.Cog):
 
     def __init__(self, bot):
         super().__init__(bot)
-        with open(ITEM_IDS_PATH) as item_ids_file:
+        self.item_ids_path = Path().parent.joinpath('config').joinpath('osrs-item-ids.json')
+        with open(self.item_ids_path) as item_ids_file:
             self.item_ids = json.load(item_ids_file)
 
     @staticmethod
@@ -40,17 +45,13 @@ class RunescapeCommands(utils.Cog):
             value = int(value_str)
         return value
 
-    async def get_item_value_by_id(self, item_id:int, return_int:bool=True) -> typing.Union[int, str]:
+    async def get_item_details_by_id(self, item_id:int) -> dict:
         """
-        Get the value of an item given its Runescape ID.
+        Return the JSON response from the rs API given an item's Runescape ID.
         """
-
-        # Make sure an item ID was passed
-        if item_id is None:
-            return 1
 
         # Send our web request
-        url = API_BASE_URL + 'catalogue/detail.json'
+        url = API_BASE_URL + 'api/catalogue/detail.json'
         params = {
             'item': item_id,
         }
@@ -66,9 +67,17 @@ class RunescapeCommands(utils.Cog):
 
         # revolver ocelot (revolver ocelot)
         item = item['item']
+        return item
+
+    async def parse_item_value(self, item:dict, return_int:bool=True) -> typing.Union[int, str]:
+        """
+        Parse the value of an item from the JSON response from the rs API.
+        """
+
         value = item['current']['price']
-        if return_int:
-            if isinstance(value, str):
+        if isinstance(value, str):
+            value = value.strip()
+            if return_int:
                 value = self.rs_notation_to_int(value)
         else:
             value = str(value)
@@ -80,17 +89,30 @@ class RunescapeCommands(utils.Cog):
         """
         Get the value of an item on the grand exchange (OSRS).
         """
+        async with ctx.typing():
+            if item.lower() in ['random']:
+                item_id = random.choice(list(self.item_ids.values()))
+            else:
+                item = item.capitalize()
+                item_id = self.item_ids.get(item)
 
-        item = item.capitalize()
-        item_id = self.item_ids.get(item)
-        if item_id:
-            try:
-                item_value = await self.get_item_value_by_id(item_id, return_int=not rs_notation)
-            except aiohttp.ClientConnectorError:
-                return await ctx.send('Error connecting to runescape API.')
-            # todo: make into a fancy embed or something, use the icon given by the API
-            return await ctx.send(f'{item_value} coins')
-        return await ctx.send('Item not found')
+            if item_id:
+                item_dict = await self.get_item_details_by_id(item_id)
+                item_value = await self.parse_item_value(item_dict, return_int=not rs_notation)
+
+                name = item_dict['name']
+                item_page_url = API_BASE_URL + f"a=373/{name.replace(' ', '+')}/viewitem?obj={item_id}"
+
+                with utils.Embed() as embed:
+                    embed.set_author(name=name, url=item_page_url, icon_url=item_dict['icon'])
+                    embed.set_thumbnail(url=item_dict['icon_large'])
+                    embed.add_field('Value', f'{item_value} coins', inline=False)
+                    embed.add_field(f'Examine {name}', item_dict['description'], inline=False)
+                    embed.add_field('Members', MEMBERS_MAPPING[item_dict['members']], inline=False)
+
+                return await ctx.send(embed=embed)
+            else:
+                return await ctx.send('Item not found')
 
 
 def setup(bot:utils.Bot):
