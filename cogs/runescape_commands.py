@@ -68,8 +68,9 @@ class RunescapeCommands(utils.Cog):
         # revolver ocelot (revolver ocelot)
         item = item['item']
         value = item['current']['price']
-        if return_int:
-            if isinstance(value, str):
+        if isinstance(value, str):
+            value = value.strip()
+            if return_int:
                 value = self.rs_notation_to_int(value)
         else:
             value = str(value)
