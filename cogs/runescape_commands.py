@@ -6,8 +6,11 @@ import voxelbotutils as utils
 import aiohttp
 
 
-API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
-ITEM_IDS_PATH = Path().parent.joinpath('config').joinpath('osrs-item-ids.json')
+API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/'
+MEMBERS_MAPPING = {
+    'true': 'Yes',
+    'false': 'No',
+}
 
 
 class RunescapeCommands(utils.Cog):
@@ -15,7 +18,8 @@ class RunescapeCommands(utils.Cog):
     # https://pastebin.com/raw/LhxJ7GRG (parsed and modified)
     def __init__(self, bot):
         super().__init__(bot)
-        with open(ITEM_IDS_PATH) as item_ids_file:
+        self.item_ids_path = Path().parent.joinpath('config').joinpath('osrs-item-ids.json')
+        with open(self.item_ids_path) as item_ids_file:
             self.item_ids = json.load(item_ids_file)
 
     @staticmethod
@@ -47,7 +51,7 @@ class RunescapeCommands(utils.Cog):
         """
 
         # Send our web request
-        url = API_BASE_URL + 'catalogue/detail.json'
+        url = API_BASE_URL + 'api/catalogue/detail.json'
         params = {
             'item': item_id,
         }
@@ -61,6 +65,8 @@ class RunescapeCommands(utils.Cog):
                 # https://github.com/aio-libs/aiohttp/blob/8c82ba11b9e38851d75476d261a1442402cc7592/aiohttp/web_request.py#L664-L681
                 item = await response.json(content_type=None)
 
+        # revolver ocelot (revolver ocelot)
+        item = item['item']
         return item
 
     async def parse_item_value(self, item:dict, return_int:bool=True) -> typing.Union[int, str]:
@@ -68,8 +74,6 @@ class RunescapeCommands(utils.Cog):
         Parse the value of an item from the JSON response from the rs API.
         """
 
-        # revolver ocelot (revolver ocelot)
-        item = item['item']
         value = item['current']['price']
         if isinstance(value, str):
             value = value.strip()
@@ -90,7 +94,17 @@ class RunescapeCommands(utils.Cog):
         if item_id:
             item_dict = await self.get_item_details_by_id(item_id)
             item_value = await self.parse_item_value(item_dict, return_int=not rs_notation)
-            # todo: make into a fancy embed or something, use the icon given by the API
+
+            name = item_dict['name']
+            item_page_url = API_BASE_URL + f"a=373/{name.replace(' ', '+')}/viewitem?obj={item_id}"
+
+            with utils.Embed as embed:
+                embed.set_author(name=name, url=item_page_url, icon_url=item_dict['icon'])
+                embed.set_thumbnail(url=item_dict['icon_large'])
+                embed.add_field('Value', item_value)
+                embed.add_field(f'Examine {name}', item_dict['description'])
+                embed.add_field('Members', MEMBERS_MAPPING[item_dict['members']])
+
             return await ctx.send(item_value)
         return await ctx.send('Item not found')
 
