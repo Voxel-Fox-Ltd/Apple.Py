@@ -41,14 +41,10 @@ class RunescapeCommands(utils.Cog):
             value = int(value_str)
         return value
 
-    async def get_item_value_by_id(self, item_id:int, return_int:bool=True) -> typing.Union[int, str]:
+    async def get_item_details_by_id(self, item_id:int) -> dict:
         """
-        Get the value of an item given its Runescape ID.
+        Return the JSON response from the rs API given an item's Runescape ID.
         """
-
-        # Make sure an item ID was passed
-        if item_id is None:
-            return 1
 
         # Send our web request
         url = API_BASE_URL + 'catalogue/detail.json'
@@ -64,6 +60,13 @@ class RunescapeCommands(utils.Cog):
                 # We can just say to not check the content type.
                 # https://github.com/aio-libs/aiohttp/blob/8c82ba11b9e38851d75476d261a1442402cc7592/aiohttp/web_request.py#L664-L681
                 item = await response.json(content_type=None)
+
+        return item
+
+    async def parse_item_value(self, item:dict, return_int:bool=True) -> typing.Union[int, str]:
+        """
+        Parse the value of an item from the JSON response from the rs API.
+        """
 
         # revolver ocelot (revolver ocelot)
         item = item['item']
@@ -85,7 +88,8 @@ class RunescapeCommands(utils.Cog):
 
         item_id = self.item_ids.get(item)
         if item_id:
-            item_value = await self.get_item_value_by_id(item_id, return_int=not rs_notation)
+            item_dict = await self.get_item_details_by_id(item_id)
+            item_value = await self.parse_item_value(item_dict, return_int=not rs_notation)
             # todo: make into a fancy embed or something, use the icon given by the API
             return await ctx.send(item_value)
         return await ctx.send('Item not found')
