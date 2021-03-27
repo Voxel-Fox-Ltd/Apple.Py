@@ -257,7 +257,7 @@ class LibraryDocs(utils.Cog):
             'latest': 'https://discordpy.readthedocs.io/en/latest',
             'python': 'https://docs.python.org/3',
             'pygame': 'https://www.pygame.org/docs',
-            'voxelbotutils': 'https://voxelbotutils.readthedocs.io/en/latest/',
+            'voxelbotutils': 'https://voxelbotutils.readthedocs.io/en/latest',
         }
         non_sphinx_page_types = {
             'djs': self.get_discordjs_docs,
