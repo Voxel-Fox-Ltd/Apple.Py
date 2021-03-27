@@ -105,7 +105,7 @@ class RunescapeCommands(utils.Cog):
                 embed.add_field(f'Examine {name}', item_dict['description'])
                 embed.add_field('Members', MEMBERS_MAPPING[item_dict['members']])
 
-            return await ctx.send(item_value)
+            return await ctx.send(embed=embed)
         return await ctx.send('Item not found')
 
 
