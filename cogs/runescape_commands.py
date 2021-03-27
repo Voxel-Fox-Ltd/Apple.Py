@@ -15,7 +15,6 @@ MEMBERS_MAPPING = {
 
 class RunescapeCommands(utils.Cog):
 
-    # https://pastebin.com/raw/LhxJ7GRG (parsed and modified)
     def __init__(self, bot):
         super().__init__(bot)
         self.item_ids_path = Path().parent.joinpath('config').joinpath('osrs-item-ids.json')
@@ -34,12 +33,12 @@ class RunescapeCommands(utils.Cog):
             'm': 10 ** 6,
             'b': 10 ** 9,
         }
-        value_str = value_str.replace(',', '')
+        value_str = value_str.replace(',', '').strip()
 
         for multi, value in multipliers.items():
             if value_str.endswith(multi):
                 value_str = value_str.rstrip(multi)
-                value = int(value_str) * value
+                value = int(float(value_str) * value)
                 break
         else:
             value = int(value_str)
@@ -85,11 +84,12 @@ class RunescapeCommands(utils.Cog):
         return value
 
     @utils.command(aliases=['ge'])
-    async def grandexchange(self, ctx, item:str, rs_notation:bool=True):
+    async def grandexchange(self, ctx, rs_notation:typing.Optional[bool]=True, *, item:str):
         """
         Get the value of an item on the grand exchange (OSRS).
         """
 
+        item = item.capitalize()
         item_id = self.item_ids.get(item)
         if item_id:
             item_dict = await self.get_item_details_by_id(item_id)
