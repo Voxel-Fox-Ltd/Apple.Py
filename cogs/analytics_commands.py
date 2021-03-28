@@ -7,6 +7,14 @@ from discord.ext import commands
 import voxelbotutils as utils
 
 
+# todo: caching
+# caching model:
+# sqlite3 dbs in config
+# one db per text channel
+# delete after a certain time
+# use a dict of asyncio locks, with setdefault
+
+
 DISCORD_EMOTE_REGEX = re.compile(r'<:(\w*):\d*>')
 RATELIMIT_MESSAGE_PER_SECOND = 100
 PROGRESS_REPORT_INTERVAL_DEFAULT = 1000
@@ -25,6 +33,7 @@ class AnalyticsCommands(utils.Cog):
     @utils.command(name='set-analytics-progress-report-interval', aliases=['sapri'])
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
+    # todo: limit the minimum interval, and/or make the permissions needed more / make it guild specific
     async def set_interval(self, ctx:utils.Context, interval:int):
         await ctx.send(
             f'Previous interval: {self.progress_report_interval}, '
@@ -56,6 +65,7 @@ class AnalyticsCommands(utils.Cog):
         for target_channel in target_channels:
             async for message in target_channel.history(limit=None):
                 self.bot.loop.create_task(self.progress_report(ctx, messages_processed, target_channel))
+                # todo: fix getting links (use embeds)
                 for embed in message.embeds:
                     if regex is not None:
                         if re.fullmatch(regex, embed.url):
@@ -97,6 +107,7 @@ class AnalyticsCommands(utils.Cog):
                         message_timestamp = message.created_at.timestamp()
                         csvw.writerows([[message_timestamp, emote_used] for emote_used in emotes_used])
                         messages_processed += 1
+            # todo: fix sending this
             discord_file = discord.File(file_stream, filename='emotes.csv')
             return await ctx.send('Here are all the emotes used in this guild:', file=discord_file)
 
