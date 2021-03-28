@@ -13,6 +13,8 @@ import voxelbotutils as utils
 # one db per text channel
 # delete after a certain time
 # use a dict of asyncio locks, with setdefault
+# todo: options to only analyse the last n messages or back until whatever date
+# todo: command to cancel processing
 
 
 DISCORD_EMOTE_REGEX = re.compile(r'<:(\w*):\d*>')
@@ -65,7 +67,7 @@ class AnalyticsCommands(utils.Cog):
         for target_channel in target_channels:
             async for message in target_channel.history(limit=None):
                 self.bot.loop.create_task(self.progress_report(ctx, messages_processed, target_channel))
-                # todo: fix getting links (use embeds)
+                # todo: fix getting links (use regex)
                 for embed in message.embeds:
                     if regex is not None:
                         if re.fullmatch(regex, embed.url):
