@@ -1,6 +1,7 @@
 import io
 import re
 import csv
+import logging as log
 
 import discord
 from discord.ext import commands
@@ -13,6 +14,7 @@ import voxelbotutils as utils
 # one db per text channel
 # delete after a certain time
 # use a dict of asyncio locks, with setdefault
+# new plan: just use the real db this bot already uses lol
 # todo: options to only analyse the last n messages or back until whatever date
 # todo: command to cancel processing
 
@@ -26,6 +28,7 @@ class AnalyticsCommands(utils.Cog):
 
     progress_report_interval = PROGRESS_REPORT_INTERVAL_DEFAULT
 
+    # todo: get total messages in a channel, like is possible with a search in the client
     async def progress_report(self, ctx:commands.Context, messages_processed:int, current_channel:discord.TextChannel):
         if messages_processed == 0:
             await ctx.send(f'Processing... ({RATELIMIT_MESSAGE_PER_SECOND} messages/second - Discord ratelimit)')
@@ -76,6 +79,7 @@ class AnalyticsCommands(utils.Cog):
                         all_links.append(embed.url)
                 messages_processed += 1
 
+        # todo: just use a file and then delete it lol this is totally pointless
         with io.StringIO('\n'.join(all_links)) as file_stream:
             discord_file = discord.File(file_stream, filename='links.txt')
             return await ctx.send(
@@ -97,8 +101,9 @@ class AnalyticsCommands(utils.Cog):
 
         if target_channels is None:
             target_channels = ctx.guild.channels
+        log.info('test')
 
-        with io.StringIO() as file_stream:
+        with io.StringIO(newline='') as file_stream:
             csvw = csv.writer(file_stream)
             messages_processed = 0
             for target_channel in target_channels:
@@ -106,10 +111,12 @@ class AnalyticsCommands(utils.Cog):
                     async for message in target_channel.history(limit=None):
                         self.bot.loop.create_task(self.progress_report(ctx, messages_processed, target_channel))
                         emotes_used = re.findall(DISCORD_EMOTE_REGEX, message.content)
+                        log.info(emotes_used)
                         message_timestamp = message.created_at.timestamp()
                         csvw.writerows([[message_timestamp, emote_used] for emote_used in emotes_used])
                         messages_processed += 1
             # todo: fix sending this
+            file_stream.seek(0)
             discord_file = discord.File(file_stream, filename='emotes.csv')
             return await ctx.send('Here are all the emotes used in this guild:', file=discord_file)
 
