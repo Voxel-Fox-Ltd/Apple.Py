@@ -24,9 +24,9 @@ class ReminderCommands(utils.Cog):
     def cog_unload(self):
         self.reminder_finish_handler.stop()
 
-    @utils.group(aliases=["reminder"], invoke_without_command=True)
+    @utils.group(aliases=["reminders"], invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def reminders(self, ctx:utils.Context):
+    async def reminder(self, ctx:utils.Context):
         """
         Shows you your reminders.
         """
@@ -50,9 +50,9 @@ class ReminderCommands(utils.Cog):
         # Send to the user
         await ctx.send(message or "You have no reminders.", allowed_mentions=discord.AllowedMentions.none())
 
-    @reminders.command(name="set", aliases=['create'])
+    @reminder.command(name="set", aliases=['create'])
     @commands.bot_has_permissions(send_messages=True)
-    async def remidners_set(self, ctx:utils.Context, time:utils.TimeValue, *, message:str):
+    async def reminder_set(self, ctx:utils.Context, time:utils.TimeValue, *, message:str):
         """
         Adds a reminder to your account.
         """
@@ -121,7 +121,7 @@ class ReminderCommands(utils.Cog):
 
             # Delete the reminder as we don't need it anymore
 
-        await db("DELETE FROM reminders WHERE reminder_id=ANY($1::TEXT)", expired_reminders)
+        await db("DELETE FROM reminders WHERE reminder_id=ANY($1::TEXT[])", expired_reminders)
         await db.disconnect()
 
 
