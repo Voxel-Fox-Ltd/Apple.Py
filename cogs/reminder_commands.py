@@ -24,7 +24,7 @@ class ReminderCommands(utils.Cog):
     def cog_unload(self):
         self.reminder_finish_handler.stop()
 
-    @utils.group(invoke_without_command=True)
+    @utils.group(aliases=["reminder"], invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True)
     async def reminders(self, ctx:utils.Context):
         """
@@ -44,7 +44,7 @@ class ReminderCommands(utils.Cog):
         # Format an output string
         reminders = ""
         for reminder in rows:
-            reminders += f"\n`{reminder['reminder_id']}` - {reminder['message'][:70]} ({utils.TimeValue((reminder['timestamp'] - dt.utcnow()).total_seconds()),clean_spaced})"
+            reminders += f"\n`{reminder['reminder_id']}` - {reminder['message'][:70]} ({utils.TimeValue((reminder['timestamp'] - dt.utcnow()).total_seconds()).clean_spaced})"
         message = f"Your reminders: {reminders}"
 
         # Send to the user
