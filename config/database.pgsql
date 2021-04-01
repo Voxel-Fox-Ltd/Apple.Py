@@ -128,3 +128,13 @@ CREATE TABLE IF NOT EXISTS github_repo_aliases(
     repo VARCHAR(300),
     host git_host DEFAULT 'Github'
 );
+
+
+CREATE TABLE IF NOT EXISTS reminders(
+    reminder_id VARCHAR(5) PRIMARY KEY,
+    guild_id BIGINT,
+    channel_id BIGINT,
+    timestamp TIMESTAMP,
+    user_id BIGINT,
+    message TEXT
+);
