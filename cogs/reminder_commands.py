@@ -44,7 +44,8 @@ class ReminderCommands(utils.Cog):
         # Format an output string
         reminders = ""
         for reminder in rows:
-            reminders += f"\n`{reminder['reminder_id']}` - {reminder['message'][:70]} ({utils.TimeValue((reminder['timestamp'] - dt.utcnow()).total_seconds()).clean_spaced})"
+            expiry = utils.TimeValue((reminder['timestamp'] - dt.utcnow()).total_seconds()).clean_spaced or 'now'
+            reminders += f"\n`{reminder['reminder_id']}` - {reminder['message'][:70]} ({expiry})"
         message = f"Your reminders: {reminders}"
 
         # Send to the user
@@ -106,21 +107,23 @@ class ReminderCommands(utils.Cog):
                 channel = self.bot.get_channel(channel_id) or await self.bot.fetch_channel(channel_id)
             except discord.HTTPException:
                 pass
-            allowed_mentions = discord.AllowedMentions(users=[discord.Object(user_id)])
+            sendable = {
+                "content": f"<@{user_id}> reminder `{reminder_id}` triggered - {message}",
+                "allowed_mentions": discord.AllowedMentions(users=[discord.Object(user_id)]),
+            }
             try:
-                await channel.send(f"Yo <@{user_id}>, I got a reminder for you :) - {message}", allowed_mentions=allowed_mentions)
+                await channel.send(**sendable)
             except discord.Forbidden:
                 try:
                     user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-                    await user.send(f"Yo <@{user_id}>, I got a reminder for you :) - {message}", allowed_mentions=allowed_mentions)
+                    await user.send(**sendable)
                 except discord.HTTPException:
                     pass
             except AttributeError:
                 pass
             expired_reminders.append(reminder_id)
 
-            # Delete the reminder as we don't need it anymore
-
+        # Delete expired reminders
         await db("DELETE FROM reminders WHERE reminder_id=ANY($1::TEXT[])", expired_reminders)
         await db.disconnect()
 
