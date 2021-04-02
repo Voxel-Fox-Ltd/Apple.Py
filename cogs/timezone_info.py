@@ -62,7 +62,7 @@ class TimezoneInfo(utils.Cog):
                 DO UPDATE SET timezone_name=excluded.timezone_name""",
                 ctx.author.id, zone.zone,
             )
-        await ctx.send(f"I think your current time is **{dt.utcnow().astimezone(pytz.utc).astimezone(zone).strftime('%-I:%M %p')}** - I've stored this in the database.")
+        await ctx.send(f"I think your current time is **{dt.utcnow().replace(tzinfo=pytz.utc).astimezone(zone).strftime('%-I:%M %p')}** - I've stored this in the database.")
 
     @timezone.command(name="get")
     async def timezone_get(self, ctx:utils.Context, user:discord.Member=None):
@@ -83,7 +83,7 @@ class TimezoneInfo(utils.Cog):
 
         # Grab their current time and output
         if rows[0]['timezone_name']:
-            formatted_time = (dt.utcnow().astimezone(pytz.utc).astimezone(pytz.timezone(rows[0]['timezone_name']))).strftime('%-I:%M %p')
+            formatted_time = (dt.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone(rows[0]['timezone_name']))).strftime('%-I:%M %p')
         else:
             formatted_time = (dt.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%-I:%M %p')
         await ctx.send(f"The current time for {user.mention} is estimated to be **{formatted_time}**.", allowed_mentions=discord.AllowedMentions.none())
