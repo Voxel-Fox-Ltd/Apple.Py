@@ -28,7 +28,7 @@ class UserIDPinger(utils.Cog):
         user_id = m.group("uid")
 
         # Send the pingy boi only if the user was found
-        user = self.bot.get_user(user_id)
+        user = self.bot.get_user(int(user_id))
         if user:
             await message.channel.send(f"{user.mention}")
         
