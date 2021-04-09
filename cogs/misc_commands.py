@@ -130,6 +130,18 @@ class MiscCommands(utils.Cog):
         return await ctx.send(random.choice(self.get_topics()))
 
     @utils.command()
+    @commands.bot_has_permissions(send_messages=True)
+    async def coinflip(self, ctx:utils.Context):
+        """
+        Flips a coin.
+        """
+
+        coin = ["Heads", "Tails"]
+
+        return await ctx.send(random.choice(coin)
+
+
+    @utils.command()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(manage_channels=True)
     @commands.guild_only()
