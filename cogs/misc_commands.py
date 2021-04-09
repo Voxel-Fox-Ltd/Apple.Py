@@ -138,7 +138,7 @@ class MiscCommands(utils.Cog):
 
         coin = ["Heads", "Tails"]
 
-        return await ctx.send(random.choice(coin)
+        return await ctx.send(random.choice(coin))
 
 
     @utils.command()
