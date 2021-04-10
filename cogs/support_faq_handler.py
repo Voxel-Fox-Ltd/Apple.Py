@@ -108,7 +108,7 @@ class SupportFAQHandler(utils.Cog):
             try:
                 emoji_number = int(str(payload.emoji)[0])
                 new_channel = current_category.channels[emoji_number]  # They gave a number
-                self.send_faq_log(f"{member.mention} (`{member.id}`) in {current_category.name} is looking at FAQ **{FAQ_MESSAGES[str(current_category.id)][emoji_number]}**.")
+                self.send_faq_log(f"{member.mention} (`{member.id}`) in {current_category.name} is looking at FAQ **{FAQ_MESSAGES[str(current_category.id)][emoji_number - 1]}**.")
             except ValueError:
                 new_channel_id = PICKABLE_FAQ_CHANNELS["\N{BLACK QUESTION MARK ORNAMENT}"]  # Take them to other support
                 new_channel = self.bot.get_channel(new_channel_id)
@@ -136,10 +136,10 @@ class SupportFAQHandler(utils.Cog):
         async with ctx.typing():
 
             # Remake the FAQ channel for each channel
-            for category_id, embed_lines in FAQ_MESSAGES.items():
+            for category_id_str, embed_lines in FAQ_MESSAGES.items():
 
                 # Get the category object
-                category = self.bot.get_channel(int(category_id))
+                category = self.bot.get_channel(int(category_id_str))
 
                 # Get the faq channel and delete the old message
                 faq_channel = category.channels[0]
@@ -148,7 +148,7 @@ class SupportFAQHandler(utils.Cog):
                         f"The first channel in the **{category_name}** category isn't called **faqs**.",
                         allowed_mentions=discord.AllowedMentions.none(),
                     )
-                async for message in faq_channel.messages(limit=3):
+                async for message in faq_channel.history(limit=3):
                     await message.delete()
 
                 # Send a new message
