@@ -107,7 +107,7 @@ class SupportFAQHandler(utils.Cog):
             try:
                 emoji_number = int(str(payload.emoji)[0])
                 new_channel = current_category.channels[emoji_number]  # They gave a number
-                self.send_faq_log(f"{member.mention} (`{member.id}`) in {current_category.name} is looking at FAQ **{FAQ_MESSAGES[str(current_category.id)][emoji_number - 1]}**.")
+                self.send_faq_log(f"{member.mention} (`{member.id}`) in {current_category.name} is looking at FAQ **{FAQ_MESSAGES[str(current_channel.id)][emoji_number - 1]}**.")
             except ValueError:
                 new_channel_id = PICKABLE_FAQ_CHANNELS["\N{BLACK QUESTION MARK ORNAMENT}"]  # Take them to other support
                 new_channel = self.bot.get_channel(new_channel_id)
