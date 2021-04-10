@@ -152,7 +152,8 @@ class SupportFAQHandler(utils.Cog):
                     await message.delete()
 
                 # Send a new message
-                description = "\n".join(embed_lines + ["\N{BLACK QUESTION MARK ORNAMENT} **Other**"])
+                emoji_lines = [f"{index}\N{COMBINING ENCLOSING KEYCAP} **{string}**" for index, string in enumerate(embed_lines, start=1)]
+                description = "\n".join(emoji_lines + ["\N{BLACK QUESTION MARK ORNAMENT} **Other**"])
                 new_message = await faq_channel.send(embed=utils.Embed(
                     title="What issue are you having?", description=description, colour=0x1,
                 ))
