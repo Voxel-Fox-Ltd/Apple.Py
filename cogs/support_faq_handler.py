@@ -17,7 +17,6 @@ FAQ_MESSAGES = {
         "None of the commands are working",
         "I can't disown my child",
         "Can you copy my MarriageBot family into Gold?",
-        # "Other",
     ],
     "830294484045529140": [
         "None of the commands are working",
@@ -136,10 +135,11 @@ class SupportFAQHandler(utils.Cog):
         async with ctx.typing():
 
             # Remake the FAQ channel for each channel
-            for category_id_str, embed_lines in FAQ_MESSAGES.items():
+            for channel_id_str, embed_lines in FAQ_MESSAGES.items():
 
                 # Get the category object
-                category = self.bot.get_channel(int(category_id_str))
+                channel = self.bot.get_channel(int(channel_id_str))
+                category = channel.category
 
                 # Get the faq channel and delete the old message
                 faq_channel = category.channels[0]
