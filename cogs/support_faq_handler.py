@@ -27,7 +27,7 @@ class SupportFAQHandler(utils.Cog):
     def cog_unload(self):
         self.guild_purge_loop.cancel()
 
-    @tasks.loop(days=1)
+    @tasks.loop(hours=6)
     async def guild_purge_loop(self):
         """
         Automatically purges the support guild.
