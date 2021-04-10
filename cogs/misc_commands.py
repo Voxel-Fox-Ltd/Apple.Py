@@ -137,9 +137,7 @@ class MiscCommands(utils.Cog):
         """
 
         coin = ["Heads", "Tails"]
-
         return await ctx.send(random.choice(coin))
-
 
     @utils.command()
     @commands.bot_has_permissions(manage_channels=True)
