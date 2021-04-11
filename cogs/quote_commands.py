@@ -22,7 +22,7 @@ class QuoteCommands(utils.Cog):
     IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
     QUOTE_SEARCH_CHARACTER_CUTOFF = 100
 
-    async def get_quote_messages(self, ctx, messages) -> dict:
+    async def get_quote_messages(self, ctx, messages, *, allow_self_quote:bool=False) -> dict:
         """
         Gets the messages that the user has quoted, returning a dict with keys `success` (bool) and `message` (str or voxelbotutils.Embed).
         If `success` is `False`, then the resulting `message` can be directly output to the user, and if it's `True` then we can go ahead
@@ -87,7 +87,8 @@ class QuoteCommands(utils.Cog):
             return {'success': False, 'message': "You can only quote one person at a time."}
 
         # Make sure they're not quoting themself
-        if ctx.author.id in [i.author.id for i in messages] and ctx.author.id not in self.bot.owner_ids:
+        message_author = messages[0].author
+        if ctx.author.id == message_author.id and allow_self_quote is False and ctx.author.id not in self.bot.owner_ids:
             return {'success': False, 'message': "You can't quote yourself :/"}
 
         # Return an embed
@@ -182,7 +183,7 @@ class QuoteCommands(utils.Cog):
         # Make sure no subcommand is passed
         if ctx.invoked_subcommand is not None:
             return
-        response = await self.get_quote_messages(ctx, messages)
+        response = await self.get_quote_messages(ctx, messages, allow_self_quote=True)
 
         # Make embed
         if response['success'] is False:
