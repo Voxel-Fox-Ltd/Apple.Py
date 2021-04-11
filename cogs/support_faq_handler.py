@@ -78,7 +78,7 @@ class SupportFAQHandler(utils.Cog):
                 await current_message.edit(content=new_text)
             else:
                 new_text = content
-                message = await self.faq_webhook.send(content, *args, wait=True, **kwargs)
+                current_message = await self.faq_webhook.send(content, *args, wait=True, **kwargs)
             self.message_cache[member.id] = (current_message, new_text)
         self.bot.loop.create_task(wrapper())
 
