@@ -156,7 +156,7 @@ class SupportFAQHandler(utils.Cog):
 
                 # See if it's anything new
                 current_messages = await faq_channel.history(limit=1).flatten()
-                if current_messages and current_messages[0].embeds and current_messages[0].embeds[0] == new_embed:
+                if current_messages and current_messages[0].embeds and current_messages[0].embeds[0].to_dict() == new_embed.to_dict():
                     continue
                 await current_messages[0].delete()
                 new_message = await faq_channel.send(embed=new_embed)
