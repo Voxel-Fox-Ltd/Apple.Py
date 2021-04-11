@@ -3,6 +3,8 @@ from discord.ext import commands, tasks
 import voxelbotutils as utils
 
 
+SOCIAL_GUILD_ID = 208895639164026880
+SOCIAL_SUPPORT_CHANNEL_ID = 689189589776203861
 SUPPORT_GUILD_ID = 830286019520626710
 BOT_PICKER_CHANNEL_ID = 830286547247955998
 PICKABLE_FAQ_CHANNELS = {
@@ -44,6 +46,7 @@ class SupportFAQHandler(utils.Cog):
             adapter=discord.AsyncWebhookAdapter(bot.session),
         )
         self.faq_webhook._state = bot._connection
+        self.member_join_waits = {}
 
     def cog_unload(self):
         self.guild_purge_loop.cancel()
@@ -76,6 +79,36 @@ class SupportFAQHandler(utils.Cog):
             m = await channel.send(user.mention)
             await m.delete()
         self.bot.loop.create_task(wrapper())
+
+    def wait_for_join(self, member:discord.User) -> None:
+        """
+        Waits for a member to join the VFL social server, then sends a webhook to the log channel.
+        """
+
+        async def wrapper():
+            try:
+                await self.bot.wait_for("member_join", check=lambda m: m.id == member.id and m.guild.id == SOCIAL_GUILD_ID, timeout=60)
+            except asyncio.TimeoutError:
+                self.send_faq_log(f"{member.mention} (`{member.id}`) did not join the main VFL server.")
+                return
+            except asyncio.CancelledError:
+                return
+            else:
+                self.send_faq_log(f"{member.mention} (`{member.id}`) joined the main VFL server.")
+            try:
+                await self.bot.wait_for("message", check=lambda m: m.author.id == member.id and m.channel.id == SOCIAL_SUPPORT_CHANNEL_ID, timeout=120)
+            except asyncio.TimeoutError:
+                self.send_faq_log(f"{member.mention} (`{member.id}`) did not send a message in the main VFL's support channel.")
+                return
+            except asyncio.CancelledError:
+                return
+            else:
+                self.send_faq_log(f"{member.mention} (`{member.id}`) sent their question in the main VFL's support channel.")
+        task = self.bot.loop.create_task(wrapper())
+        current_task = self.member_join_waits.get(member.id)
+        if current_task:
+            current_task.cancel()
+        self.member_join_waits[member.id] = task
 
     @utils.Cog.listener()
     async def on_raw_reaction_add(self, payload:discord.RawReactionActionEvent):
