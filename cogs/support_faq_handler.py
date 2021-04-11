@@ -144,7 +144,6 @@ class SupportFAQHandler(utils.Cog):
         if member.guild.id != SUPPORT_GUILD_ID:
             return
         self.send_faq_log(member, f"{member.mention} (`{member.id}`) has left the server.")
-        self.message_cache[member.id] = (None, None)
 
     @utils.Cog.listener()
     async def on_raw_reaction_add(self, payload:discord.RawReactionActionEvent):
@@ -181,6 +180,7 @@ class SupportFAQHandler(utils.Cog):
                 new_channel_id = PICKABLE_FAQ_CHANNELS["\N{BLACK QUESTION MARK ORNAMENT}"]  # Take them to other support
                 new_channel = self.bot.get_channel(new_channel_id)
                 self.send_faq_log(member, f"{member.mention} (`{member.id}`) in {current_category.name} has a question not in the FAQ.")
+                self.wait_for_join(member)
             await new_channel.set_permissions(member, read_messages=True)
             self.ghost_ping(new_channel, member)
             return
