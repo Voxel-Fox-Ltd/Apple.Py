@@ -80,9 +80,10 @@ class SupportFAQHandler(utils.Cog):
                 new_text = current_text + "\n" + content
                 await current_message.edit(content=new_text)
             else:
-                new_text = content
                 if "joined the server" not in content:
-                    content = f"{member.mention} (`{member.id}`)\n" + content
+                    new_text = f"{member.mention} (`{member.id}`)\n" + content
+                else:
+                    new_text = content
                 current_message = await self.faq_webhook.send(content, *args, wait=True, **kwargs)
             self.message_cache[member.id] = (current_message, dt.utcnow(), new_text)
         self.bot.loop.create_task(wrapper())
