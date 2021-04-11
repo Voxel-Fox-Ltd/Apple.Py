@@ -81,6 +81,8 @@ class SupportFAQHandler(utils.Cog):
                 await current_message.edit(content=new_text)
             else:
                 new_text = content
+                if "joined the server" not in content:
+                    content = f"{member.mention} (`{member.id}`)\n" + content
                 current_message = await self.faq_webhook.send(content, *args, wait=True, **kwargs)
             self.message_cache[member.id] = (current_message, dt.utcnow(), new_text)
         self.bot.loop.create_task(wrapper())
@@ -104,12 +106,12 @@ class SupportFAQHandler(utils.Cog):
             try:
                 await self.bot.wait_for("member_join", check=lambda m: m.id == member.id and m.guild.id == SOCIAL_GUILD_ID, timeout=60)
             except asyncio.TimeoutError:
-                self.send_faq_log(member, f"{member.mention} (`{member.id}`) did not join the main VFL server.")
+                self.send_faq_log(member, "User did not join the main VFL server.")
                 return
             except asyncio.CancelledError:
                 return
             else:
-                self.send_faq_log(member, f"{member.mention} (`{member.id}`) joined the main VFL server.")
+                self.send_faq_log(member, "User joined the main VFL server.")
             try:
                 await self.bot.wait_for("message", check=lambda m: m.author.id == member.id and m.channel.id == SOCIAL_SUPPORT_CHANNEL_ID, timeout=120)
             except asyncio.TimeoutError:
@@ -118,7 +120,7 @@ class SupportFAQHandler(utils.Cog):
             except asyncio.CancelledError:
                 return
             else:
-                self.send_faq_log(member, f"{member.mention} (`{member.id}`) sent their question in the main VFL's support channel.")
+                self.send_faq_log(member, "User sent their question in the main VFL's support channel.")
         task = self.bot.loop.create_task(wrapper())
         current_task = self.member_join_waits.get(member.id)
         if current_task:
@@ -143,7 +145,7 @@ class SupportFAQHandler(utils.Cog):
 
         if member.guild.id != SUPPORT_GUILD_ID:
             return
-        self.send_faq_log(member, f"{member.mention} (`{member.id}`) has left the server.")
+        self.send_faq_log(member, "User has left the server.")
 
     @utils.Cog.listener()
     async def on_raw_reaction_add(self, payload:discord.RawReactionActionEvent):
@@ -164,7 +166,12 @@ class SupportFAQHandler(utils.Cog):
             new_channel_id = PICKABLE_FAQ_CHANNELS[str(payload.emoji)]
             new_channel = self.bot.get_channel(new_channel_id)
             await new_channel.set_permissions(member, read_messages=True)
-            self.send_faq_log(member, f"{member.mention} (`{member.id}`) has been given access to **{new_channel.category.name}**.")
+            if new_channel.category.name == "Other" and new_channel_id == PICKABLE_FAQ_CHANNELS["\N{BLACK QUESTION MARK ORNAMENT}"]:
+                self.send_faq_log(member, "User wants support for another bot.")
+            elif new_channel.category.name == "Other" and new_channel_id == PICKABLE_FAQ_CHANNELS["\N{SPEECH BALLOON}"]:
+                self.send_faq_log(member, "User just wants to hang out.")
+            else:
+                self.send_faq_log(member, f"User has been given access to **{new_channel.category.name}**.")
             self.ghost_ping(new_channel, member)
             return
 
@@ -175,11 +182,11 @@ class SupportFAQHandler(utils.Cog):
             try:
                 emoji_number = int(str(payload.emoji)[0])
                 new_channel = current_category.channels[emoji_number]  # They gave a number
-                self.send_faq_log(member, f"{member.mention} (`{member.id}`) in {current_category.name} is looking at FAQ **{FAQ_MESSAGES[str(current_channel.id)][emoji_number - 1]}**.")
+                self.send_faq_log(member, f"User in {current_category.name} is looking at FAQ **{FAQ_MESSAGES[str(current_channel.id)][emoji_number - 1]}**.")
             except ValueError:
                 new_channel_id = PICKABLE_FAQ_CHANNELS["\N{BLACK QUESTION MARK ORNAMENT}"]  # Take them to other support
                 new_channel = self.bot.get_channel(new_channel_id)
-                self.send_faq_log(member, f"{member.mention} (`{member.id}`) in {current_category.name} has a question not in the FAQ.")
+                self.send_faq_log(member, f"User in {current_category.name} has a question not in the FAQ.")
                 self.wait_for_join(member)
             await new_channel.set_permissions(member, read_messages=True)
             self.ghost_ping(new_channel, member)
@@ -187,7 +194,7 @@ class SupportFAQHandler(utils.Cog):
 
         # It's probably a tick mark
         if str(payload.emoji) == "\N{HEAVY CHECK MARK}":
-            self.send_faq_log(member, f"{member.mention} (`{member.id}`) gave a tick mark in **{current_channel.mention}**.")
+            self.send_faq_log(member, f"User gave a tick mark in **{current_channel.mention}**.")
 
     @utils.command()
     @commands.is_owner()
