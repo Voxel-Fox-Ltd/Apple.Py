@@ -1,3 +1,5 @@
+from datetime import datetime as dt, timedelta
+
 import discord
 from discord.ext import commands, tasks
 import voxelbotutils as utils
@@ -47,6 +49,7 @@ class SupportFAQHandler(utils.Cog):
         )
         self.faq_webhook._state = bot._connection
         self.member_join_waits = {}
+        self.message_cache = {}
 
     def cog_unload(self):
         self.guild_purge_loop.cancel()
@@ -63,12 +66,21 @@ class SupportFAQHandler(utils.Cog):
     async def before_guild_purge_loop(self):
         return await self.bot.wait_until_ready()
 
-    def send_faq_log(self, *args, **kwargs) -> None:
+    def send_faq_log(self, member:discord.User, content:str, *args, **kwargs) -> None:
         """
         Sends a message using the webhook.
         """
 
-        self.bot.loop.create_task(self.faq_webhook.send(*args, **kwargs))
+        async def wrapper():
+            current_message, current_text = self.message_cache.get(member.id, (None, None))
+            if current_message and (dt.utcnow() - current_message.cretaed_at) < timedelta(minutes=15):
+                new_text = current_text + "\n" + content
+                await current_message.edit(content=new_text)
+            else:
+                new_text = content
+                message = await self.faq_webhook.send(content, *args, wait=True, **kwargs)
+            self.message_cache[member.id] = (current_message, new_text)
+        self.bot.loop.create_task(wrapper())
 
     def ghost_ping(self, channel:discord.TextChannel, user:discord.User) -> None:
         """
@@ -111,6 +123,27 @@ class SupportFAQHandler(utils.Cog):
         self.member_join_waits[member.id] = task
 
     @utils.Cog.listener()
+    async def on_member_join(self, member:discord.Member):
+        """
+        Ping a webhook when a member joins the guild.
+        """
+
+        if member.guild.id != SUPPORT_GUILD_ID:
+            return
+        self.send_faq_log(member, f"{member.mention} (`{member.id}`) has joined the server.")
+
+    @utils.Cog.listener()
+    async def on_member_remove(self, member:discord.Member):
+        """
+        Ping a webhook when a member joins the guild.
+        """
+
+        if member.guild.id != SUPPORT_GUILD_ID:
+            return
+        self.send_faq_log(member, f"{member.mention} (`{member.id}`) has left the server.")
+        self.message_cache[member.id] = (None, None)
+
+    @utils.Cog.listener()
     async def on_raw_reaction_add(self, payload:discord.RawReactionActionEvent):
         """
         Runs the support guild reaction handler.
@@ -129,7 +162,7 @@ class SupportFAQHandler(utils.Cog):
             new_channel_id = PICKABLE_FAQ_CHANNELS[str(payload.emoji)]
             new_channel = self.bot.get_channel(new_channel_id)
             await new_channel.set_permissions(member, read_messages=True)
-            self.send_faq_log(f"{member.mention} (`{member.id}`) has been given access to **{new_channel.category.name}**.")
+            self.send_faq_log(member, f"{member.mention} (`{member.id}`) has been given access to **{new_channel.category.name}**.")
             self.ghost_ping(new_channel, member)
             return
 
@@ -140,18 +173,18 @@ class SupportFAQHandler(utils.Cog):
             try:
                 emoji_number = int(str(payload.emoji)[0])
                 new_channel = current_category.channels[emoji_number]  # They gave a number
-                self.send_faq_log(f"{member.mention} (`{member.id}`) in {current_category.name} is looking at FAQ **{FAQ_MESSAGES[str(current_channel.id)][emoji_number - 1]}**.")
+                self.send_faq_log(member, f"{member.mention} (`{member.id}`) in {current_category.name} is looking at FAQ **{FAQ_MESSAGES[str(current_channel.id)][emoji_number - 1]}**.")
             except ValueError:
                 new_channel_id = PICKABLE_FAQ_CHANNELS["\N{BLACK QUESTION MARK ORNAMENT}"]  # Take them to other support
                 new_channel = self.bot.get_channel(new_channel_id)
-                self.send_faq_log(f"{member.mention} (`{member.id}`) in {current_category.name} has a question not in the FAQ.")
+                self.send_faq_log(member, f"{member.mention} (`{member.id}`) in {current_category.name} has a question not in the FAQ.")
             await new_channel.set_permissions(member, read_messages=True)
             self.ghost_ping(new_channel, member)
             return
 
         # It's probably a tick mark
         if str(payload.emoji) == "\N{HEAVY CHECK MARK}":
-            self.send_faq_log(f"{member.mention} (`{member.id}`) gave a tick mark in **{current_channel.mention}**.")
+            self.send_faq_log(member, f"{member.mention} (`{member.id}`) gave a tick mark in **{current_channel.mention}**.")
 
     @utils.command()
     @commands.is_owner()
