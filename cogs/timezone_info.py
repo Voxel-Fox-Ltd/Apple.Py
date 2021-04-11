@@ -22,6 +22,8 @@ class TimezoneInfo(utils.Cog):
     def get_common_timezone(name) -> str:
         if len(name) <= 4:
             name = name.upper()
+        else:
+            name = name.title()
         common_timezones = {
             "PST": "US/Pacific",
             "MST": "US/Mountain",
