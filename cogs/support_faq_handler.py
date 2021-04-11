@@ -148,15 +148,18 @@ class SupportFAQHandler(utils.Cog):
                         f"The first channel in the **{category_name}** category isn't called **faqs**.",
                         allowed_mentions=discord.AllowedMentions.none(),
                     )
-                async for message in faq_channel.history(limit=3):
-                    await message.delete()
 
-                # Send a new message
+                # Make the embed
                 emoji_lines = [f"{index}\N{COMBINING ENCLOSING KEYCAP} **{string}**" for index, string in enumerate(embed_lines, start=1)]
                 description = "\n".join(emoji_lines + ["\N{BLACK QUESTION MARK ORNAMENT} **Other**"])
-                new_message = await faq_channel.send(embed=utils.Embed(
-                    title="What issue are you having?", description=description, colour=0x1,
-                ))
+                new_embed = utils.Embed(title="What issue are you having?", description=description, colour=0x1)
+
+                # See if it's anything new
+                current_messages = await faq_channel.history(limit=1).flatten()
+                if current_messages and current_messages[0].embeds and current_messages[0].embeds[0] == new_embed:
+                    continue
+                await current_messages[0].delete()
+                new_message = await faq_channel.send(embed=new_embed)
                 for emoji, item in [i.strip().split(" ", 1) for i in new_message.embeds[0].description.strip().split("\n")]:
                     await new_message.add_reaction(emoji)
 
