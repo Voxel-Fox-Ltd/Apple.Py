@@ -72,14 +72,17 @@ class SupportFAQHandler(utils.Cog):
         """
 
         async def wrapper():
-            current_message, current_text = self.message_cache.get(member.id, (None, None))
-            if current_message and (dt.utcnow() - current_message.cretaed_at) < timedelta(minutes=15):
+            try:
+                current_message, last_update, current_text = self.message_cache.get(member.id)
+            except Exception:
+                current_message = None
+            if current_message and (dt.utcnow() - last_update) < timedelta(minutes=5):
                 new_text = current_text + "\n" + content
                 await current_message.edit(content=new_text)
             else:
                 new_text = content
                 current_message = await self.faq_webhook.send(content, *args, wait=True, **kwargs)
-            self.message_cache[member.id] = (current_message, new_text)
+            self.message_cache[member.id] = (current_message, dt.utcnow(), new_text)
         self.bot.loop.create_task(wrapper())
 
     def ghost_ping(self, channel:discord.TextChannel, user:discord.User) -> None:
