@@ -101,21 +101,21 @@ class SupportFAQHandler(utils.Cog):
             try:
                 await self.bot.wait_for("member_join", check=lambda m: m.id == member.id and m.guild.id == SOCIAL_GUILD_ID, timeout=60)
             except asyncio.TimeoutError:
-                self.send_faq_log(f"{member.mention} (`{member.id}`) did not join the main VFL server.")
+                self.send_faq_log(member, f"{member.mention} (`{member.id}`) did not join the main VFL server.")
                 return
             except asyncio.CancelledError:
                 return
             else:
-                self.send_faq_log(f"{member.mention} (`{member.id}`) joined the main VFL server.")
+                self.send_faq_log(member, f"{member.mention} (`{member.id}`) joined the main VFL server.")
             try:
                 await self.bot.wait_for("message", check=lambda m: m.author.id == member.id and m.channel.id == SOCIAL_SUPPORT_CHANNEL_ID, timeout=120)
             except asyncio.TimeoutError:
-                self.send_faq_log(f"{member.mention} (`{member.id}`) did not send a message in the main VFL's support channel.")
+                self.send_faq_log(member, f"{member.mention} (`{member.id}`) did not send a message in the main VFL's support channel.")
                 return
             except asyncio.CancelledError:
                 return
             else:
-                self.send_faq_log(f"{member.mention} (`{member.id}`) sent their question in the main VFL's support channel.")
+                self.send_faq_log(member, f"{member.mention} (`{member.id}`) sent their question in the main VFL's support channel.")
         task = self.bot.loop.create_task(wrapper())
         current_task = self.member_join_waits.get(member.id)
         if current_task:
