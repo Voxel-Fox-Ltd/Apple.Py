@@ -98,9 +98,9 @@ class SteamCommand(utils.Cog):
             embed.title = game_object['name']
             embed.set_footer(text=f"AppID: {appid}")
             embed.description = game_object['short_description']
-            embed.add_field("Developer", ', '.join(game_object['developers']), inline=True)
-            embed.add_field("Publisher", ', '.join(game_object['publishers']), inline=True)
-            embed.add_field("Genre", ', '.join(i['description'] for i in game_object['genres']), inline=True)
+            embed.add_field("Developer", ', '.join(game_object.get('developers', list())) or 'None', inline=True)
+            embed.add_field("Publisher", ', '.join(game_object.get('publishers', list())) or 'None', inline=True)
+            embed.add_field("Genre", ', '.join(i['description'] for i in game_object['genres']) or 'None', inline=True)
             if game_object.get('price_overview') is not None:
                 initial_price = game_object['price_overview']['initial_formatted']
                 final_price = game_object['price_overview']['final_formatted']
