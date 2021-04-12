@@ -264,12 +264,12 @@ class GithubCommands(utils.Cog):
                     await m.remove_reaction("\N{HEAVY PLUS SIGN}", ctx.author)
                 except discord.HTTPException:
                     pass
-                body = body_message.content + "\n\n"
+                body = body.strip() + "\n\n" + body_message.content + "\n\n"
                 for name, url in attachment_urls:
                     body += f"![{name}]({url})\n"
 
                 embed = utils.Embed(title=title, description=body, use_random_colour=True)
-                await m.edit(contnet="Are you sure you want to create this issue?", embed=embed)
+                await m.edit(content="Are you sure you want to create this issue?", embed=embed)
 
             # Check the reaction
             if str(payload.emoji) == "\N{THUMBS DOWN SIGN}":
