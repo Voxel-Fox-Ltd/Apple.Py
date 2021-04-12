@@ -145,13 +145,13 @@ class MiscCommands(utils.Cog):
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(manage_channels=True)
     @commands.guild_only()
-    async def slowmode(self, ctx:utils.Context, seconds:int):
+    async def slowmode(self, ctx:utils.Context, time:utils.TimeValue):
         """
         Sets slowmode for a channel.
         """
 
         try:
-            await ctx.channel.edit(slowmode_delay=seconds)
+            await ctx.channel.edit(slowmode_delay=time.delta.total_seconds())
         except discord.HTTPException as e:
             return await ctx.send(str(e))
         await ctx.okay()
