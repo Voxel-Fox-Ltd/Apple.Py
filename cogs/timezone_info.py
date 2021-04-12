@@ -52,7 +52,7 @@ class TimezoneInfo(utils.Cog):
                 response_message = await self.bot.wait_for("message", check=check, timeout=30)
                 offset = response_message.content
             except asyncio.TimeoutError:
-                await ask_message.delete()
+                return await ask_message.delete()
 
         # See if it's one of the more common ones that I know don't actually exist
         offset = self.get_common_timezone(offset)
