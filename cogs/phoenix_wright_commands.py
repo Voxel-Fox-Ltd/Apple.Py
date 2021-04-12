@@ -46,7 +46,7 @@ class PhoenixWrightCommands(utils.Cog):
                 try:
                     localutils.ObjectionFrame.get_character_id(m.content)
                 except KeyError:
-                    await ctx.send("I can't work out who that character is meant to be - please provide someone else.")
+                    return await ctx.send("I can't work out who that character is meant to be - please run this command later to try again.")
                 else:
                     users_as_characters[u] = m.content
                     break
