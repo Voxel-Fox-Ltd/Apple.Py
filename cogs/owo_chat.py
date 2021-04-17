@@ -13,7 +13,7 @@ class OwoChat(utils.Cog):
         "uwu",
     )
     EMOJI_REGEX = re.compile(r"<a?:.+?:\d+?>")
-   
+
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.owo_chats = set()
@@ -36,15 +36,15 @@ class OwoChat(utils.Cog):
             return
         if message.author.bot:
             return
-        if message.author.id in self.bot.owner_ids or message.author.id == 322542134546661388 # georgie is safe :):
+        if message.author.id in self.bot.owner_ids:
             return
         content = self.EMOJI_REGEX.sub("", message.content.lower())
         if any([i in content for i in self.VALID_KEYWORDS]):
             return
         try:
-            await message.okay() # Reacts okay to the qualifying message. let the users know they fucked up
+            await message.okay()  # Reacts okay to the qualifying message. let the users know they fucked up
             current_delay = message.channel.slowmode_delay
-            slowmode_time = (current_delay * 2) or 1 # The new slowmode_time is either double the first, or 1 if there is no current delay
+            slowmode_time = (current_delay * 2) or 1  # The new slowmode_time is either double the first, or 1 if there is no current delay
             await message.channel.edit(slowmode_delay=slowmode_time)
         except discord.HTTPException:
             pass
