@@ -1,11 +1,11 @@
 import typing
 import re
+import io
 
 import discord
 from discord.ext import commands
 import voxelbotutils as utils
 from PIL import Image
-import io
 
 
 class ImageUrl(commands.Converter):
@@ -24,7 +24,7 @@ class ImageUrl(commands.Converter):
 
 
 class EmojiCommands(utils.Cog):
-       
+
     @utils.command(aliases=['removeemoji', 'delemoji'])
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
@@ -33,14 +33,14 @@ class EmojiCommands(utils.Cog):
         """
         Deletes an emoji from a server
         """
-        
+
         if emoji not in ctx.guild.emojis:
             raise commands.BadArgument("The emoji you provided is not in this server.")
-        
+
         emoji_name = emoji.name
         await emoji.delete()
         await ctx.send(f"Deleted emoji `emoji_name`.")
-    
+
     @utils.command(aliases=['addemoji'])
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
@@ -74,10 +74,10 @@ class EmojiCommands(utils.Cog):
         # Grab image data
         async with self.bot.session.get(url) as r:
             data = await r.read()
-        
+
         # If the size is too big for Discord
         if len(data) > 256000:
-            data = (image.resize(self.calculate_new_size(Image.open(io.BytesIO(data)))).tobytes()
+            data = (image.resize(self.calculate_new_size(Image.open(io.BytesIO(data))))).tobytes()
 
         # Upload that to Discord
         try:
@@ -87,7 +87,7 @@ class EmojiCommands(utils.Cog):
         except discord.InvalidArgument:
             return await ctx.send("Unsupported image type - make sure you're providing the correct argument for the image's animation state.")
         await ctx.send(f"Emoji added - {e!s}")
-    
+
     @staticmethod
     def calculate_new_size(image:Image, intended_size:int=256000) -> tuple:
       """
@@ -97,7 +97,7 @@ class EmojiCommands(utils.Cog):
       width = image.width
       height = image.height
       initial_size = len(image.tobytes())
-      magic_constant = (initial_size) / (width * height) # The constant (c)  
+      magic_constant = (initial_size) / (width * height) # The constant (c)
       size_mod = intended_size / (magic_constant * width * height) # The size modifier to reach the intended size
 
       return (int(width * size_mod), int(height * size_mod))
