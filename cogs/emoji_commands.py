@@ -72,6 +72,10 @@ class EmojiCommands(utils.Cog):
         # Grab image data
         async with self.bot.session.get(url) as r:
             data = await r.read()
+        
+        # If the size is too big for Discord
+        if len(data) > 256000:
+            data = (image.resize(calculate_new_size(Image.open(io.BytesIO(data)))).tobytes()
 
         # Upload that to Discord
         try:
@@ -81,7 +85,20 @@ class EmojiCommands(utils.Cog):
         except discord.InvalidArgument:
             return await ctx.send("Unsupported image type - make sure you're providing the correct argument for the image's animation state.")
         await ctx.send(f"Emoji added - {e!s}")
+    
+    @staticmethod
+    def calculate_new_size(image:Image, intended_size:int=256000) -> tuple:
+      """
+      Use the equation f(n) = n * h * w * c to calculate an image's size given a size modifier, the width, the height, and a calculated constant. (Inaccurate because image compression isn't constant)
+      """
 
+      width = image.width
+      height = image.height
+      initial_size = len(image.tobytes())
+      magic_constant = (initial_size) / (width * height) # The constant (c)  
+      size_mod = intended_size / (magic_constant * width * height) # The size modifier to reach the intended size
+
+      return (int(width * size_mod), int(height * size_mod))
 
 def setup(bot:utils.Bot):
     x = EmojiCommands(bot)
