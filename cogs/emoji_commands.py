@@ -98,8 +98,8 @@ class EmojiCommands(utils.Cog):
             resized_image = original_image.resize(new_size)  # .tobytes()
             new_image_file_handle = io.BytesIO()
             resized_image.save(new_image_file_handle, format="png")
-            resized_image.seek(0)
-            data = resized_image.read()
+            new_image_file_handle.seek(0)
+            data = new_image_file_handle.read()
 
         # Upload that to Discord
         try:
