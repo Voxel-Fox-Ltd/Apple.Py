@@ -18,7 +18,7 @@ class YagsYoutubeMessage(utils.Cog):
             return
         if message.author.id != self.YAGS_USER_ID:
             return
-        if "uploaded a new youtube video" not in message.content:
+        if "**Kae** uploaded a new youtube video" not in message.content or "Woah! **Kae** is currently streaming" not in message.content:
             return
         role = message.guild.get_role(self.YOUTUBE_UPDATE_ROLE)
         mentionable = role.mentionable
