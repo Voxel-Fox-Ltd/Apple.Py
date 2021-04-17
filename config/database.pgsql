@@ -131,3 +131,8 @@ CREATE TABLE IF NOT EXISTS reminders(
     user_id BIGINT,
     message TEXT
 );
+
+
+CREATE TABLE IF NOT EXISTS topics(
+    topic TEXT PRIMARY KEY
+);

@@ -13,18 +13,6 @@ import voxelbotutils as utils
 
 class MiscCommands(utils.Cog):
 
-    def __init__(self, bot:utils.Bot):
-        super().__init__(bot)
-        self.topics = None
-
-    def get_topics(self):
-        if self.topics is not None:
-            return self.topics
-        with open("config/topics.txt") as a:
-            lines = a.read().strip()
-        self.topics = lines.split('\n')
-        return self.get_topics()
-
     @utils.command()
     async def fpf(self, ctx:utils.Context, *, text:commands.clean_content):
         """
@@ -120,14 +108,30 @@ class MiscCommands(utils.Cog):
         output_image.seek(0)
         return await ctx.send(file=discord.File(output_image, filename="imposter.png"))
 
-    @utils.command()
+    @utils.group(aliases=['topics'])
     @commands.bot_has_permissions(send_messages=True)
     async def topic(self, ctx:utils.Context):
         """
         Gives you a conversation topic.
         """
 
-        return await ctx.send(random.choice(self.get_topics()))
+        async with self.bot.database() as db:
+            rows = await db("SELECT * FROM topics ORDER BY RANDOM() LIMIT 1")
+        if not rows:
+            return await ctx.send("There aren't any topics set up in the database for this bot :<")
+        return await ctx.send(rows[0]['topic'])
+
+    @topic.command(name="add")
+    @utils.checks.is_bot_support()
+    @commands.bot_has_permissions(send_messages=True)
+    async def topic_add(self, ctx:utils.Context, *, topic:str):
+        """
+        Add a new topic to the database.
+        """
+
+        async with self.bot.database() as db:
+            await db("INSERT INTO topics VALUES ($1)", topic)
+        return await ctx.send("Added to database.")
 
     @utils.command()
     @commands.bot_has_permissions(send_messages=True)
@@ -137,9 +141,7 @@ class MiscCommands(utils.Cog):
         """
 
         coin = ["Heads", "Tails"]
-
         return await ctx.send(random.choice(coin))
-
 
     @utils.command()
     @commands.bot_has_permissions(manage_channels=True)
