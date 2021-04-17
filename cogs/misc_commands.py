@@ -108,7 +108,7 @@ class MiscCommands(utils.Cog):
         output_image.seek(0)
         return await ctx.send(file=discord.File(output_image, filename="imposter.png"))
 
-    @utils.group(aliases=['topics'])
+    @utils.group(aliases=['topics'], invoke_without_command=False)
     @commands.bot_has_permissions(send_messages=True)
     async def topic(self, ctx:utils.Context):
         """
