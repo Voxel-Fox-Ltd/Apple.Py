@@ -77,8 +77,10 @@ class EmojiCommands(utils.Cog):
 
         # If the size is too big for Discord
         if len(data) > 256000:
-            data = (image.resize(self.calculate_new_size(Image.open(io.BytesIO(data))))).tobytes()
-
+            og_image = Image.open(io.BytesIO(data))
+            new_size = self.calculate_new_size(og_image)
+            data = og_image.resize(new_size).tobytes()
+            
         # Upload that to Discord
         try:
             e = await ctx.guild.create_custom_emoji(name=name, image=data)
