@@ -4,6 +4,8 @@ import re
 import discord
 from discord.ext import commands
 import voxelbotutils as utils
+from PIL import Image
+import io
 
 
 class ImageUrl(commands.Converter):
@@ -75,7 +77,7 @@ class EmojiCommands(utils.Cog):
         
         # If the size is too big for Discord
         if len(data) > 256000:
-            data = (image.resize(calculate_new_size(Image.open(io.BytesIO(data)))).tobytes()
+            data = (image.resize(self.calculate_new_size(Image.open(io.BytesIO(data)))).tobytes()
 
         # Upload that to Discord
         try:
