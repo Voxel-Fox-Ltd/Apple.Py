@@ -13,8 +13,6 @@ class WolframAlpha(utils.Cog):
         """
         Ping some data to WolframAlpha.
         """
-        
-        await ctx.trigger_typing() # Lasts 10 seconds or until a message is sent
 
         params = {
             "input": search,
@@ -25,14 +23,15 @@ class WolframAlpha(utils.Cog):
         headers = {
             "User-Agent": self.bot.user_agent,
         }
-        async with self.bot.session.get("https://api.wolframalpha.com/v2/query", params=params, headers=headers) as r:
-            data = json.loads(await r.text())
+        async with ctx.typing():
+            async with self.bot.session.get("https://api.wolframalpha.com/v2/query", params=params, headers=headers) as r:
+                data = json.loads(await r.text())
         try:
             pod = data['queryresult']['pods'][1]
             # await ctx.send(pod['subpods'][0]['img'])
-            return await ctx.send(embed=utils.Embed(title=pod['title'], use_random_colour=True).set_image(pod['subpods'][0]['img']['src']))
+            return await ctx.reply(embed=utils.Embed(title=pod['title'], use_random_colour=True).set_image(pod['subpods'][0]['img']['src']))
         except (KeyError, IndexError):
-            return await ctx.send("No results for that query!")
+            return await ctx.reply("No results for that query!")
 
 
 def setup(bot:utils.Bot):
