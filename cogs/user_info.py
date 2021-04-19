@@ -1,5 +1,6 @@
 import io
 from datetime import datetime as dt
+import typing
 
 import discord
 from discord.ext import commands
@@ -8,15 +9,19 @@ import voxelbotutils as utils
 
 class UserInfo(utils.Cog):
 
-    @utils.command(aliases=["av"])
-    async def avatar(self, ctx:utils.Context, user:discord.User=None):
+    @utils.command(aliases=["avatar", "av"])
+    async def enlarge(self, ctx:utils.Context, target:typing.Union[discord.User, discord.PartialEmoji]=None):
         """
-        Shows you the avatar of a given user.
+        Enlarges the avatar or given emoji.
         """
 
-        user = user or ctx.author
+        target = target or ctx.author
+        if isinstance(target, discord.User):
+            url = target.avatar_url
+        elif isinstance(target, (discord.Emoji, discord.PartialEmoji)):
+            url = target.url
         with utils.Embed(use_random_colour=True) as embed:
-            embed.set_image(url=user.avatar_url)
+            embed.set_image(url=str(url))
         await ctx.send(embed=embed)
 
     @utils.command(aliases=["whoami"])
