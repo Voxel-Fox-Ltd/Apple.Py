@@ -20,7 +20,7 @@ class UserInfo(utils.Cog):
             url = target.avatar_url
         elif isinstance(target, (discord.Emoji, discord.PartialEmoji)):
             url = target.url
-        with utils.Embed(use_random_colour=True) as embed:
+        with utils.Embed(color=0x1) as embed:
             embed.set_image(url=str(url))
         await ctx.send(embed=embed)
 
