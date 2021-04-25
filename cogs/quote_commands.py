@@ -328,6 +328,29 @@ class QuoteCommands(utils.Cog):
             await db("INSERT INTO quote_aliases (quote_id, alias) VALUES ($1, $2)", quote_id.lower(), alias.lower())
         await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
+    @quote.command(name="list")
+    @commands.guild_only()
+    @commands.has_guild_permissions(manage_guild=True)
+    @commands.bot_has_permissions(send_messages=True)
+    async def quote_list(self, ctx:utils.Context, user:discord.Member=None):
+        """
+        List the IDs of quotes for a user.
+        """
+
+        # Grab data from db
+        user = user or ctx.author
+        async with self.bot.database() as db:
+            rows = await db("SELECT quote_id FROM user_quotes WHERE user_id=$1 AND guild_id=$2", user, ctx.guild.id)
+        if not rows:
+            embed = utils.Embed(
+                use_random_colour=True, description="This user has no quotes.",
+            ).set_author_to_user(user)
+            return await ctx.send(embed=embed)
+        embed = utils.Embed(
+            use_random_colour=True, description="\n".join([i['quote_id'] for i in rows[:50]]),
+        ).set_author_to_user(user)
+        return await ctx.send(embed=embed)
+
     @quote_alias.command(name="remove", aliases=["delete"])
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
