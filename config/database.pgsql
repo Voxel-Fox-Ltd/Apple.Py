@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS user_quotes(
     message_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     timestamp TIMESTAMP NOT NULL
+    quoter_id BIGINT
 );
 
 

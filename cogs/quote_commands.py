@@ -165,8 +165,9 @@ class QuoteCommands(utils.Cog):
         # And save it to the database
         async with self.bot.database() as db:
             await db(
-                "INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp) VALUES ($1, $2, $3, $4, $5, $6)",
-                quote_id, ctx.guild.id, posted_message.channel.id, posted_message.id, user.id, timestamp
+                """INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp, quoter_id)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)""",
+                quote_id, ctx.guild.id, posted_message.channel.id, posted_message.id, user.id, timestamp, ctx.author.id,
             )
 
         # Output to user
@@ -209,8 +210,9 @@ class QuoteCommands(utils.Cog):
         # And save it to the database
         async with self.bot.database() as db:
             await db(
-                "INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp) VALUES ($1, $2, $3, $4, $5, $6)",
-                quote_id, ctx.guild.id, posted_message.channel.id, posted_message.id, user.id, timestamp
+                """INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp, quoter_id)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)""",
+                quote_id, ctx.guild.id, posted_message.channel.id, posted_message.id, user.id, timestamp, ctx.author.id,
             )
 
         # Output to user
