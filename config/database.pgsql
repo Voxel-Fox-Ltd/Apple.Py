@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS user_quotes(
     channel_id BIGINT NOT NULL,
     message_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    timestamp TIMESTAMP NOT NULL
+    timestamp TIMESTAMP NOT NULL,
     quoter_id BIGINT
 );
 
