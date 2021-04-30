@@ -144,7 +144,7 @@ class QuoteCommands(utils.Cog):
         except discord.HTTPException:
             pass
         if reaction_count < reactions_needed:
-            return await ctx.send(f"_Not_ saving the quote asked by {ctx.author.mention} - not enough reactions received.", ignore_error=True)
+            return await ctx.send(f"_Not_ saving the quote asked by {ctx.author.mention} - not enough reactions received.")
 
         # If we get here, we can save to db
         quote_id = create_id()
@@ -171,7 +171,7 @@ class QuoteCommands(utils.Cog):
             )
 
         # Output to user
-        await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
+        await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed)
 
     @quote.command(name="force")
     @commands.has_guild_permissions(manage_guild=True)
@@ -216,7 +216,7 @@ class QuoteCommands(utils.Cog):
             )
 
         # Output to user
-        await ctx.send(f"{ctx.author.mention}'s quote saved with ID `{quote_id.upper()}`", embed=embed, ignore_error=True)
+        await ctx.send(f"{ctx.author.mention}'s quote saved with ID `{quote_id.upper()}`", embed=embed)
 
     @quote.command(name="get")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
