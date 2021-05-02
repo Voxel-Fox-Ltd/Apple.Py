@@ -77,7 +77,7 @@ class RoleCommands(utils.Cog):
         Dumps a message out into chat.
         """
 
-        await ctx.send(f'```json\n{json.dumps([i.to_json() for i in message.embeds], indent=2)}\n```')
+        await ctx.send(f'```json\n{json.dumps([i.to_dict() for i in message.embeds], indent=2)}\n```')
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_messages=True)
