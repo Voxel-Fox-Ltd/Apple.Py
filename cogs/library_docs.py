@@ -428,8 +428,6 @@ class LibraryDocs(utils.Cog):
             return await ctx.send("I couldn't find anything. Sorry.")
         embed = utils.Embed(use_random_colour=True, description="")
         for i in data['results']:
-            if 'web/javascript' not in i['slug']:
-                continue
             embed.description += f"[`{i['displayName']}`]({i['url']})\n"
             if embed.description.count("\n") >= 8:
                 break
