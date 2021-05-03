@@ -406,6 +406,33 @@ class LibraryDocs(utils.Cog):
                 break
         return await ctx.send(embed=embed)
 
+    @rtfm.command(name="dotnet", aliases=['.net'])
+    async def rtdm_dotnet(self, ctx, *, obj:str):
+        """
+        Gives you a documentation link for a Javascript entity.
+        """
+
+        url = "https://docs.microsoft.com/api/apibrowser/dotnet/search"
+        params = {
+            'api-version': '0.2',
+            'search': obj,
+            'locale': 'en-us',
+            '$filter': "monikers/any(t: t eq 'net-5.0')",
+        }
+        headers = {
+            'User-Agent': self.bot.user_agent,
+        }
+        async with self.bot.session.get(url, params=params, headers=headers) as r:
+            data = await r.json()
+        if not data['results']:
+            return await ctx.send("I couldn't find anything. Sorry.")
+        embed = utils.Embed(use_random_colour=True, description="")
+        for i in data['results']:
+            embed.description += f"[`{i['displayName']}`]({i['url']})\n"
+            if embed.description.count("\n") >= 8:
+                break
+        return await ctx.send(embed=embed)
+
 
 def setup(bot:utils.Bot):
     x = LibraryDocs(bot)
