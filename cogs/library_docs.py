@@ -417,7 +417,7 @@ class LibraryDocs(utils.Cog):
             'api-version': '0.2',
             'search': obj,
             'locale': 'en-us',
-            '$filter': "monikers/any(t:+t+eq+'net-5.0')",
+            '$filter': "monikers/any(t: t eq 'net-5.0')",
         }
         headers = {
             'User-Agent': self.bot.user_agent,
