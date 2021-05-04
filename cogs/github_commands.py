@@ -12,6 +12,7 @@ import voxelbotutils as utils
 
 class GitRepo(object):
 
+    SLASH_COMMAND_ARG_TYPE = utils.interactions.ApplicationCommandOptionType.STRING
     __slots__ = ('host', 'owner', 'repo')
 
     def __init__(self, host, owner, repo):

@@ -101,7 +101,7 @@ class QuoteCommands(utils.Cog):
             embed.timestamp = timestamp
         return {'success': True, 'message': embed, 'user': user, 'timestamp': timestamp}
 
-    @utils.group(invoke_without_command=True)
+    @utils.group(invoke_without_command=True, add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
     async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
@@ -173,7 +173,7 @@ class QuoteCommands(utils.Cog):
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed)
 
-    @quote.command(name="force")
+    @quote.command(name="force", add_slash_command=False)
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def quote_force(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
@@ -218,7 +218,7 @@ class QuoteCommands(utils.Cog):
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote saved with ID `{quote_id.upper()}`", embed=embed)
 
-    @quote.command(name="get")
+    @quote.command(name="get", add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def quote_get(self, ctx:utils.Context, identifier:commands.clean_content):
         """
@@ -258,7 +258,7 @@ class QuoteCommands(utils.Cog):
         # Output to user
         return await ctx.send(embed=quote_embed)
 
-    @quote.command(name="random")
+    @quote.command(name="random", add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def quote_random(self, ctx:utils.Context, user:discord.User=None):
         """
@@ -305,7 +305,7 @@ class QuoteCommands(utils.Cog):
             quote_embed.set_author(name=quote_author.display_name, icon_url=quote_author.avatar_url)
         return await ctx.send(embed=quote_embed)
 
-    @quote.group(name="alias", invoke_without_command=True)
+    @quote.group(name="alias", invoke_without_command=True, add_slash_command=False)
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
@@ -328,7 +328,7 @@ class QuoteCommands(utils.Cog):
             await db("INSERT INTO quote_aliases (quote_id, alias) VALUES ($1, $2)", quote_id.lower(), alias.lower())
         await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
-    @quote.command(name="list")
+    @quote.command(name="list", add_slash_command=False)
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
@@ -351,7 +351,7 @@ class QuoteCommands(utils.Cog):
         ).set_author_to_user(user)
         return await ctx.send(embed=embed)
 
-    @quote_alias.command(name="remove", aliases=["delete"])
+    @quote_alias.command(name="remove", aliases=["delete"], add_slash_command=False)
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
@@ -373,7 +373,7 @@ class QuoteCommands(utils.Cog):
             await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
         return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
-    @quote.command(name="delete")
+    @quote.command(name="delete", add_slash_command=False)
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
