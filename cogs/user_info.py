@@ -16,6 +16,7 @@ class UserInfo(utils.Cog):
         """
 
         target = target or ctx.author
+        url = None
         if isinstance(target, (discord.User, discord.Member)):
             url = target.avatar_url
         elif isinstance(target, (discord.Emoji, discord.PartialEmoji)):
