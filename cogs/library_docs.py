@@ -433,6 +433,73 @@ class LibraryDocs(utils.Cog):
                 break
         return await ctx.send(embed=embed)
 
+    @utils.command(aliases=['pip'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def pypi(self, ctx:utils.Context, module:commands.clean_content):
+        """
+        Grab data from PyPi.
+        """
+
+        # Get data
+        async with self.bot.session.get(f"https://pypi.org/pypi/{module}/json") as r:
+            if r.status != 200:
+                with utils.Embed(use_random_colour=True) as embed:
+                    embed.title = f"Module `{module}` not found"
+                    embed.description = f"[Search Results](https://pypi.org/search/?q={module})"
+                return await ctx.send(embed=embed)
+            data = await r.json()
+
+        # Format into an embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author(name=data['info']['name'], url=f"https://pypi.org/project/{module}")
+            embed.description = data['info']['summary']
+        return await ctx.send(embed=embed)
+
+    @utils.command(aliases=['npmjs'])
+    async def npm(self, ctx:utils.Context, package_name:str):
+        """
+        Check NPM for a package.
+        """
+
+        # Get our data
+        async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
+            if e.status == 404:
+                await ctx.send(f"I could not find anything about `{package_name}` :c")
+                return
+            if e.status != 200:
+                await ctx.send("Something went wrong, try again later...")
+                return
+            data = await e.json()
+
+        # make a lil embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author(name=data['name'], url=f"https://www.npmjs.com/package/{package_name}")
+            embed.description = data['description']
+        await ctx.send(embed=embed)
+
+    @utils.command()
+    async def nuget(self, ctx:utils.Context, package_name:str):
+        """
+        Check nuget for a package.
+        """
+
+        # Get our data
+        async with self.bot.session.get(f"https://azuresearch-usnc.nuget.org/query?q={package_name}") as e:
+            if e.status != 200:
+                await ctx.send("Something went wrong, try again later...")
+                return
+            data = await e.json()
+
+        # make a lil embed
+        with utils.Embed(use_random_colour=True) as embed:
+            if data['data']:
+                embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{data['data'][0]['id']}")
+                embed.description = data['data'][0]['description']
+            else:
+                await ctx.send(f"I could not find anything for `{package_name}` :c")
+                return
+        await ctx.send(embed=embed)
+
 
 def setup(bot:utils.Bot):
     x = LibraryDocs(bot)

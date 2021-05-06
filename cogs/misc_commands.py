@@ -13,61 +13,11 @@ import voxelbotutils as utils
 
 class MiscCommands(utils.Cog):
 
-    @utils.command()
-    async def fpf(self, ctx:utils.Context, *, text:commands.clean_content):
-        """
-        Give you some fluffy pink font text.
-        """
-
-        if len(text) > 50:
-            return await ctx.send("Your text input is too long.")
-        base_url = "https://flamingtext.com/net-fu/proxy_form.cgi"
-        params = {
-            "script": "fluffy-logo",
-            "fillTextColor": "#fde",
-            "outlineSize": "3",
-            "fillOutlineColor": "#ffcdcd",
-            "shadowType": "0",
-            "shadowXOffset": "-20",
-            "shadowBlur": "0",
-            "backgroundRadio": "0",
-            "text": text,
-            "_loc": "generate",
-            "imageoutput": "true",
-        }
-        url = base_url + '?' + urlencode(params)
-        embed = utils.Embed(use_random_colour=True).set_image(url)
-        return await ctx.send(embed=embed)
-
-    @utils.command()
-    async def hpf(self, ctx:utils.Context, *, text:commands.clean_content):
-        """
-        Give you some Harry Potter font text.
-        """
-
-        if len(text) > 50:
-            return await ctx.send("Your text input is too long.")
-        base_url = "https://flamingtext.com/net-fu/proxy_form.cgi"
-        params = {
-            "script": "harry-potter-logo",
-            "fillTextColor": "#fde",
-            "outlineSize": "3",
-            "fillOutlineColor": "#ffcdcd",
-            "shadowType": "0",
-            "shadowXOffset": "-20",
-            "shadowBlur": "0",
-            "backgroundRadio": "0",
-            "text": text,
-            "_loc": "generate",
-            "imageoutput": "true",
-        }
-        url = base_url + '?' + urlencode(params)
-        embed = utils.Embed(use_random_colour=True).set_image(url)
-        return await ctx.send(embed=embed)
-
     @utils.command(ignore_extra=False, aliases=['imposter', 'crewmate', 'amongus', 'amogus'])
     @commands.bot_has_permissions(send_messages=True, attach_files=True)
-    async def impostor(self, ctx:utils.Context, user1:discord.User, user2:discord.User, user3:discord.User, user4:discord.User, user5:discord.User=None):
+    async def impostor(
+            self, ctx:utils.Context, user1:discord.User, user2:discord.User, user3:discord.User,
+            user4:discord.User, user5:discord.User=None):
         """
         Puts you and your friends into an impostor image.
         """
@@ -112,6 +62,19 @@ class MiscCommands(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     async def topic(self, ctx:utils.Context):
         """
+        The parent group for the topic commands.
+        """
+
+        async with self.bot.database() as db:
+            rows = await db("SELECT * FROM topics ORDER BY RANDOM() LIMIT 1")
+        if not rows:
+            return await ctx.send("There aren't any topics set up in the database for this bot :<")
+        return await ctx.send(rows[0]['topic'])
+
+    @topic.command(name="get")
+    @commands.bot_has_permissions(send_messages=True)
+    async def topic_get(self, ctx:utils.Context):
+        """
         Gives you a conversation topic.
         """
 
@@ -142,21 +105,6 @@ class MiscCommands(utils.Cog):
 
         coin = ["Heads", "Tails"]
         return await ctx.send(random.choice(coin))
-
-    @utils.command()
-    @commands.bot_has_permissions(manage_channels=True)
-    @commands.has_permissions(manage_channels=True)
-    @commands.guild_only()
-    async def slowmode(self, ctx:utils.Context, time:utils.TimeValue):
-        """
-        Sets slowmode for a channel.
-        """
-
-        try:
-            await ctx.channel.edit(slowmode_delay=time.delta.total_seconds())
-        except discord.HTTPException as e:
-            return await ctx.send(str(e))
-        await ctx.okay()
 
     @utils.command(aliases=['http'])
     @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
@@ -220,73 +168,6 @@ class MiscCommands(utils.Cog):
                 return
         with utils.Embed(use_random_colour=True) as embed:
             embed.set_image(url=f'https://httpstatusdogs.com/img/{errorcode}.jpg')
-        await ctx.send(embed=embed)
-
-    @utils.command(aliases=['pip'])
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def pypi(self, ctx:utils.Context, module:commands.clean_content):
-        """
-        Grab data from PyPi.
-        """
-
-        # Get data
-        async with self.bot.session.get(f"https://pypi.org/pypi/{module}/json") as r:
-            if r.status != 200:
-                with utils.Embed(use_random_colour=True) as embed:
-                    embed.title = f"Module `{module}` not found"
-                    embed.description = f"[Search Results](https://pypi.org/search/?q={module})"
-                return await ctx.send(embed=embed)
-            data = await r.json()
-
-        # Format into an embed
-        with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author(name=data['info']['name'], url=f"https://pypi.org/project/{module}")
-            embed.description = data['info']['summary']
-        return await ctx.send(embed=embed)
-
-    @utils.command(aliases=['npmjs'])
-    async def npm(self, ctx:utils.Context, package_name:str):
-        """
-        Check NPM for a package.
-        """
-
-        # Get our data
-        async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
-            if e.status == 404:
-                await ctx.send(f"I could not find anything about `{package_name}` :c")
-                return
-            if e.status != 200:
-                await ctx.send("Something went wrong, try again later...")
-                return
-            data = await e.json()
-
-        # make a lil embed
-        with utils.Embed(use_random_colour=True) as embed:
-            embed.set_author(name=data['name'], url=f"https://www.npmjs.com/package/{package_name}")
-            embed.description = data['description']
-        await ctx.send(embed=embed)
-
-    @utils.command()
-    async def nuget(self, ctx:utils.Context, package_name:str):
-        """
-        Check nuget for a package.
-        """
-
-        # Get our data
-        async with self.bot.session.get(f"https://azuresearch-usnc.nuget.org/query?q={package_name}") as e:
-            if e.status != 200:
-                await ctx.send("Something went wrong, try again later...")
-                return
-            data = await e.json()
-
-        # make a lil embed
-        with utils.Embed(use_random_colour=True) as embed:
-            if data['data']:
-                embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{data['data'][0]['id']}")
-                embed.description = data['data'][0]['description']
-            else:
-                await ctx.send(f"I could not find anything for `{package_name}` :c")
-                return
         await ctx.send(embed=embed)
 
     @utils.command(aliases=['color'], add_slash_command=False)
