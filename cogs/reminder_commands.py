@@ -28,6 +28,17 @@ class ReminderCommands(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     async def reminder(self, ctx:utils.Context):
         """
+        The parent group for the reminder commands.
+        """
+
+        if ctx.invoked_subcommand is not None:
+            return
+        return await ctx.send_help(ctx.command)
+
+    @reminder.command(name="list")
+    @commands.bot_has_permissions(send_messages=True)
+    async def reminder_list(self, ctx:utils.Context):
+        """
         Shows you your reminders.
         """
 
