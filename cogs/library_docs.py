@@ -456,6 +456,7 @@ class LibraryDocs(utils.Cog):
         return await ctx.send(embed=embed)
 
     @utils.command(aliases=['npmjs'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def npm(self, ctx:utils.Context, package_name:str):
         """
         Check NPM for a package.
@@ -478,6 +479,7 @@ class LibraryDocs(utils.Cog):
         await ctx.send(embed=embed)
 
     @utils.command()
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def nuget(self, ctx:utils.Context, package_name:str):
         """
         Check nuget for a package.
@@ -499,6 +501,31 @@ class LibraryDocs(utils.Cog):
                 await ctx.send(f"I could not find anything for `{package_name}` :c")
                 return
         await ctx.send(embed=embed)
+
+    @utils.command()
+    @commands.bot_has_permissions(send_messages=True)
+    async def charinfo(self, ctx, *, characters: str):
+        """
+        Shows you information about a number of characters.
+        """
+
+        def to_string(c):
+            digit = f'{ord(c):x}'
+            name = unicodedata.name(c, 'Name not found.')
+            return f'`\\U{digit:>08}`: {name} - {c} \N{EM DASH} <http://www.fileformat.info/info/unicode/char/{digit}>'
+        msg = '\n'.join(map(to_string, characters))
+        if len(msg) > 2000:
+            return await ctx.send('Output too long to display.')
+        await ctx.send(msg)
+
+    @utils.command()
+    async def getinterval(self, ctx:utils.Context, message1:int, message2:int):
+        """
+        Get the interval between two snowflakes.
+        """
+
+        timestamps = sorted([discord.Object(message1).created_at, discord.Object(message2).created_at], reverse=True)
+        return await ctx.send(timestamps[0] - timestamps[1])
 
 
 def setup(bot:utils.Bot):
