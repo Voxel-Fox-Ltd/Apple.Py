@@ -9,9 +9,6 @@ class SteamCommand(utils.Cog):
     ALL_GAMES_URL = "https://api.steampowered.com/ISteamApps/GetAppList/v2/"
     GAME_DATA_URL = "https://store.steampowered.com/api/appdetails"
     GAME_URL_REGEX = re.compile(r"https:\/\/store\.steampowered\.com\/app\/(\d+)")
-    headers = {
-        "User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"
-    }
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
@@ -26,7 +23,10 @@ class SteamCommand(utils.Cog):
         params = {
             "key": self.bot.config['api_keys']['steam']
         }
-        async with self.bot.session.get(self.ALL_GAMES_URL, params=params, headers=self.headers) as r:
+        headers = {
+            "User-Agent": self.bot.user_agent
+        }
+        async with self.bot.session.get(self.ALL_GAMES_URL, params=params, headers=headers) as r:
             data = await r.json()
         apps = data['applist']['apps']
         self.game_cache = apps
@@ -83,7 +83,10 @@ class SteamCommand(utils.Cog):
         params = {
             "appids": appid
         }
-        async with self.bot.session.get(self.GAME_DATA_URL, params=params, headers=self.headers) as r:
+        headers = {
+            "User-Agent": self.bot.user_agent
+        }
+        async with self.bot.session.get(self.GAME_DATA_URL, params=params, headers=headers) as r:
             game_data = await r.json()
         if game_data[str(appid)]['success'] is False:
             return await ctx.send(f"I couldn't find an application with ID `{appid}`.")
