@@ -13,51 +13,6 @@ import voxelbotutils as utils
 
 class MiscCommands(utils.Cog):
 
-    @utils.command(ignore_extra=False, aliases=['imposter', 'crewmate', 'amongus', 'amogus'])
-    @commands.bot_has_permissions(send_messages=True, attach_files=True)
-    async def impostor(
-            self, ctx:utils.Context, user1:discord.User, user2:discord.User, user3:discord.User,
-            user4:discord.User, user5:discord.User=None):
-        """
-        Puts you and your friends into an impostor image.
-        """
-
-        # Fix up input args
-        if user5 is None:
-            user3, user4, user5 = ctx.author, user3, user4
-        user_list = [user1, user2, user3, user4, user5]
-
-        # Grab everyone's profile pictures
-        avatar_bytes = []
-        for user in user_list:
-            async with self.bot.session.get(str(user.avatar_url_as(format="png", size=256))) as r:
-                avatar_bytes.append(await r.read())
-
-        # io them up
-        base_image = Image.open("config/crewmate.png")
-        avatar_images = [Image.open(io.BytesIO(i)) for i in avatar_bytes]
-
-        # Resize our avatars
-        avatar_positions = [
-            ((394, 427), (469, 502)),
-            ((510, 438), (594, 522)),
-            ((636, 429), (755, 547)),
-            ((773, 438), (853, 518)),
-            ((895, 430), (969, 505)),
-        ]
-        get_size = lambda i: (avatar_positions[i][1][0] - avatar_positions[i][0][0], avatar_positions[i][1][1] - avatar_positions[i][0][1])
-        avatar_images = [i.resize(get_size(index)) for index, i in enumerate(avatar_images)]
-
-        # Paste them onto our base
-        for index, i in enumerate(avatar_images):
-            base_image.paste(i, avatar_positions[index][0])
-
-        # And output
-        output_image = io.BytesIO()
-        base_image.save(output_image, format="png")
-        output_image.seek(0)
-        return await ctx.send(file=discord.File(output_image, filename="imposter.png"))
-
     @utils.group(aliases=['topics'], invoke_without_command=False)
     @commands.bot_has_permissions(send_messages=True)
     async def topic(self, ctx:utils.Context):
