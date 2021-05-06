@@ -94,7 +94,6 @@ async def index(request:Request):
     github_username = None
     gitlab_username = None
     google_email = None
-    tumblr_username = None
     reddit_username = None
     trello_username = None
     if session.get('logged_in'):
@@ -106,7 +105,6 @@ async def index(request:Request):
             github_username = rows[0]['github_username']
             gitlab_username = rows[0]['gitlab_username']
             google_email = rows[0]['google_email']
-            tumblr_username = rows[0]['tumblr_username']
             reddit_username = rows[0]['reddit_username']
             trello_username = rows[0]['trello_username']
 
@@ -127,9 +125,6 @@ async def index(request:Request):
 
         'google_login_url': f'https://accounts.google.com/o/oauth2/v2/auth?{urlencode(google_login_url_params)}',
         'google_email': google_email,
-
-        'tumblr_login_url': request.app['config']['website_base_url'].rstrip('/') + '/get_tumblr_login_url',
-        'tumblr_username': tumblr_username,
 
         'reddit_login_url': f'https://www.reddit.com/api/v1/authorize?{urlencode(reddit_login_url_params)}',
         'reddit_username': reddit_username,

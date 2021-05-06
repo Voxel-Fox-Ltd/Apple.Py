@@ -433,6 +433,100 @@ class LibraryDocs(utils.Cog):
                 break
         return await ctx.send(embed=embed)
 
+    @utils.command(aliases=['pip'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def pypi(self, ctx:utils.Context, module:commands.clean_content):
+        """
+        Grab data from PyPi.
+        """
+
+        # Get data
+        async with self.bot.session.get(f"https://pypi.org/pypi/{module}/json") as r:
+            if r.status != 200:
+                with utils.Embed(use_random_colour=True) as embed:
+                    embed.title = f"Module `{module}` not found"
+                    embed.description = f"[Search Results](https://pypi.org/search/?q={module})"
+                return await ctx.send(embed=embed)
+            data = await r.json()
+
+        # Format into an embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author(name=data['info']['name'], url=f"https://pypi.org/project/{module}")
+            embed.description = data['info']['summary']
+        return await ctx.send(embed=embed)
+
+    @utils.command(aliases=['npmjs'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def npm(self, ctx:utils.Context, package_name:str):
+        """
+        Check NPM for a package.
+        """
+
+        # Get our data
+        async with self.bot.session.get(f"http://registry.npmjs.com/{package_name}/") as e:
+            if e.status == 404:
+                await ctx.send(f"I could not find anything about `{package_name}` :c")
+                return
+            if e.status != 200:
+                await ctx.send("Something went wrong, try again later...")
+                return
+            data = await e.json()
+
+        # make a lil embed
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_author(name=data['name'], url=f"https://www.npmjs.com/package/{package_name}")
+            embed.description = data['description']
+        await ctx.send(embed=embed)
+
+    @utils.command()
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def nuget(self, ctx:utils.Context, package_name:str):
+        """
+        Check nuget for a package.
+        """
+
+        # Get our data
+        async with self.bot.session.get(f"https://azuresearch-usnc.nuget.org/query?q={package_name}") as e:
+            if e.status != 200:
+                await ctx.send("Something went wrong, try again later...")
+                return
+            data = await e.json()
+
+        # make a lil embed
+        with utils.Embed(use_random_colour=True) as embed:
+            if data['data']:
+                embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{data['data'][0]['id']}")
+                embed.description = data['data'][0]['description']
+            else:
+                await ctx.send(f"I could not find anything for `{package_name}` :c")
+                return
+        await ctx.send(embed=embed)
+
+    @utils.command()
+    @commands.bot_has_permissions(send_messages=True)
+    async def charinfo(self, ctx, *, characters: str):
+        """
+        Shows you information about a number of characters.
+        """
+
+        def to_string(c):
+            digit = f'{ord(c):x}'
+            name = unicodedata.name(c, 'Name not found.')
+            return f'`\\U{digit:>08}`: {name} - {c} \N{EM DASH} <http://www.fileformat.info/info/unicode/char/{digit}>'
+        msg = '\n'.join(map(to_string, characters))
+        if len(msg) > 2000:
+            return await ctx.send('Output too long to display.')
+        await ctx.send(msg)
+
+    @utils.command()
+    async def getinterval(self, ctx:utils.Context, message1:int, message2:int):
+        """
+        Get the interval between two snowflakes.
+        """
+
+        timestamps = sorted([discord.Object(message1).created_at, discord.Object(message2).created_at], reverse=True)
+        return await ctx.send(timestamps[0] - timestamps[1])
+
 
 def setup(bot:utils.Bot):
     x = LibraryDocs(bot)

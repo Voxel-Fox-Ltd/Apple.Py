@@ -1,4 +1,3 @@
 voxelbotutils
 beautifulsoup4
-pillow
 pytz
