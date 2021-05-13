@@ -13,12 +13,12 @@ class StaffPinger(utils.Cog):
             return
         if message.author.id != 204255221017214977:
             return
-        await message.delete()
         embed = None
         if message.embeds:
             embed = message.embeds[0]
+        await message.delete()
         await message.channel.send(
-            f"{message.content} <@&480519382699868181> <@&713026585569263637>",
+            # f"{message.content} <@&480519382699868181> <@&713026585569263637>",
             embed=embed,
         )
 
