@@ -18,7 +18,7 @@ class StaffPinger(utils.Cog):
             embed = message.embeds[0]
         await message.delete()
         await message.channel.send(
-            # f"{message.content} <@&480519382699868181> <@&713026585569263637>",
+            f"{message.content} <@&480519382699868181> <@&713026585569263637>",
             embed=embed,
         )
 
