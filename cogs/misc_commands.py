@@ -186,7 +186,7 @@ class MiscCommands(utils.Cog):
         """
 
         def make_button(i):
-            return utils.Button("X", f"DISABLE_BUTTON_COMMAND {i}", style=utils.ButtonStyle[random.randint(1, 4)])
+            return utils.Button("X", f"DISABLE_BUTTON_COMMAND {i}", style=utils.ButtonStyle(random.randint(1, 4)))
         await ctx.send(
             "OwO button time",
             components=utils.MessageComponents.add_buttons_with_rows(
