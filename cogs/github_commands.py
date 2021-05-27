@@ -281,6 +281,7 @@ class GithubCommands(utils.Cog):
 
             # Check the reaction
             if payload.component.custom_id == "NO":
+                await payload.message.edit(components=components.disable_components())
                 return await ctx.send("Alright, cancelling issue add.")
             if payload.component.custom_id == "YES":
                 await payload.message.edit(components=components.disable_components())
