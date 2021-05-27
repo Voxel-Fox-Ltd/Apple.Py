@@ -34,3 +34,8 @@ class MessageInfo(utils.Cog):
         """
 
         await ctx.send(f'```py\n{[i.encode("unicode_escape").decode() for i in list(message.content)]}\n```')
+
+
+def setup(bot: utils.Bot):
+    x = MessageInfo(bot)
+    bot.add_cog(x)
