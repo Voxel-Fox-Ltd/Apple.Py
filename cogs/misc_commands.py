@@ -178,6 +178,40 @@ class MiscCommands(utils.Cog):
                 return await ctx.send("I don't have permission to remove members from that channel.")
         return await ctx.send(f"Dropped {member_count} members from the VC.")
 
+    @utils.command()
+    @commands.bot_has_permissions(send_messages=True)
+    async def buttons(self, ctx: utils.Context):
+        """
+        Makes a cute lil message of clickable buttons.
+        """
+
+        def make_button(i):
+            return utils.Button("X", f"DISABLE_BUTTON_COMMAND {i}", style=utils.ButtonStyle[random.randint(1, 4)])
+        await ctx.send(
+            "OwO button time",
+            components=utils.MessageComponents.add_buttons_with_rows(
+                *[make_button(i) for i in range(25)]
+            ),
+        )
+
+    @utils.Cog.listener()
+    async def on_button_click(self, payload):
+        """
+        Disables a given button.
+        """
+
+        if not payload.component.custom_id.startswith("DISABLE_BUTTON_COMMAND"):
+            return
+        components = utils.MessageComponents(*[
+            utils.ActionRow(*[
+                utils.Button.from_dict(b) for b in r['components']
+            ]) for r in payload.data['message']['components']
+        ])
+        b = components.get_component(payload.component.custom_id)
+        b.disable()
+        await payload.ack()
+        await payload.message.edit(components=components)
+
 
 def setup(bot:utils.Bot):
     x = MiscCommands(bot)
