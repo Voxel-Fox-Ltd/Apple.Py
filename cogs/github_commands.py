@@ -151,7 +151,7 @@ class GithubCommands(utils.Cog):
             return await ctx.send_help(ctx.command)
 
     @repoalias.command(name="add")
-    @commands.bot_has_permissions(send_messages=True, add_reactions=True)
+    @commands.bot_has_permissions(send_messages=True)
     async def repoalias_add(self, ctx:utils.Context, alias:str, repo:GitRepo):
         """
         Add a Github repo alias to the database.
@@ -170,10 +170,10 @@ class GithubCommands(utils.Cog):
                     return await ctx.send(f"The alias `{alias.lower()}` is already in use.", allowed_mentions=discord.AllowedMentions.none())
                 await db("DELETE FROM github_repo_aliases WHERE alias=$1", alias)
                 return await ctx.invoke(ctx.command, alias, repo)
-        await ctx.okay()
+        await ctx.send("Done.")
 
     @repoalias.command(name="remove", aliases=['delete', 'del', 'rem'])
-    @commands.bot_has_permissions(send_messages=True, add_reactions=True)
+    @commands.bot_has_permissions(send_messages=True)
     async def repoalias_remove(self, ctx:utils.Context, alias:str):
         """
         Removes a Github repo alias from the database.
@@ -184,10 +184,10 @@ class GithubCommands(utils.Cog):
             if not data:
                 return await ctx.send("You don't own that repo alias.", allowed_mentions=discord.AllowedMentions.none())
             await db("DELETE FROM github_repo_aliases WHERE alias=LOWER($1)", alias)
-        await ctx.okay()
+        await ctx.send("Done.")
 
     @utils.command(aliases=['ci'], hidden=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def createissue(self, ctx:utils.Context, repo:GitRepo, *, title:str):
         """
         Create a Github issue on a given repo.
@@ -196,7 +196,7 @@ class GithubCommands(utils.Cog):
         return await ctx.invoke(self.bot.get_command("issue create"), repo, title=title)
 
     @utils.group(aliases=['issues'])
-    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def issue(self, ctx:utils.Context):
         """
         The parent group for the git issue commands.
@@ -206,7 +206,7 @@ class GithubCommands(utils.Cog):
             return await ctx.send_help(ctx.command)
 
     @issue.command(name='create', aliases=['make'])
-    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def issue_create(self, ctx:utils.Context, repo:GitRepo, *, title:str):
         """
         Create a Github issue on a given repo.
@@ -216,66 +216,71 @@ class GithubCommands(utils.Cog):
         async with self.bot.database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
-                return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+                return await ctx.send((
+                    f"You need to link your {repo.host} account to Discord to run this "
+                    f"command - see `{ctx.clean_prefix}website`."
+                ))
 
         # Ask if we want to do this
-        embed = utils.Embed(title=title, use_random_colour=True).set_footer("Use the \N{HEAVY PLUS SIGN} emoji to add a body.")
+        embed = utils.Embed(title=title, use_random_colour=True)
+        components = utils.MessageComponents.boolean_buttons()
+        components.components[0].components.insert(1, utils.Button("Set body", "BODY"))
         m = await ctx.send("Are you sure you want to create this issue?", embed=embed)
-        valid_emojis = ["\N{THUMBS UP SIGN}", "\N{HEAVY PLUS SIGN}", "\N{THUMBS DOWN SIGN}"]
         body = ""
         while True:
+
+            # See if we want to update the body
             if body:
-                embed = utils.Embed(
-                    title=title, description=body, use_random_colour=True
-                ).set_footer("Use the \N{HEAVY PLUS SIGN} emoji to change the body.")
-            else:
-                for e in valid_emojis:
-                    self.bot.loop.create_task(m.add_reaction(e))
+                embed = utils.Embed(title=title, description=body, use_random_colour=True)
             try:
-                check = lambda p: p.message_id == m.id and str(p.emoji) in valid_emojis and p.user_id == ctx.author.id
-                payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
+                payload = await m.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
+                await payload.ack()
             except asyncio.TimeoutError:
                 return await ctx.send("Timed out asking for issue create confirmation.")
 
             # Get the body
-            if str(payload.emoji) == "\N{HEAVY PLUS SIGN}":
-                n = await ctx.send("What body content do you want to be added to your issue?")
+            if payload.component.custom_id == "BODY":
+
+                # Wait for their body message
+                n = await payload.send("What body content do you want to be added to your issue?")
                 try:
                     check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
                     body_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
                 except asyncio.TimeoutError:
-                    return await ctx.send("Timed out asking for issue body text.")
+                    return await payload.send("Timed out asking for issue body text.")
+
+                # Grab the attachments
                 attachment_urls = []
                 for i in body_message.attachments:
-                    async with ctx.typing():
-                        try:
-                            async with self.bot.session.get(i.url) as r:
-                                data = await r.read()
-                            file = discord.File(io.BytesIO(data), filename=i.filename)
-                            cache_message = await ctx.author.send(file=file)
-                            attachment_urls.append((file.filename, cache_message.attachments[0].url))
-                        except discord.HTTPException:
-                            break
+                    try:
+                        async with self.bot.session.get(i.url) as r:
+                            data = await r.read()
+                        file = discord.File(io.BytesIO(data), filename=i.filename)
+                        cache_message = await ctx.author.send(file=file)
+                        attachment_urls.append((file.filename, cache_message.attachments[0].url))
+                    except discord.HTTPException:
+                        break
+
+                # Delete their body message and our asking message
                 try:
                     await n.delete()
                     await body_message.delete()
                 except discord.HTTPException:
                     pass
-                try:
-                    await m.remove_reaction("\N{HEAVY PLUS SIGN}", ctx.author)
-                except discord.HTTPException:
-                    pass
+
+                # Fix up the body
                 body = body.strip() + "\n\n" + body_message.content + "\n\n"
                 for name, url in attachment_urls:
                     body += f"![{name}]({url})\n"
 
+                # Edit the message
                 embed = utils.Embed(title=title, description=body, use_random_colour=True)
-                await m.edit(content="Are you sure you want to create this issue?", embed=embed)
+                await m.edit(embed=embed)
 
             # Check the reaction
-            if str(payload.emoji) == "\N{THUMBS DOWN SIGN}":
+            if payload.component.custom_id == "NO":
                 return await ctx.send("Alright, cancelling issue add.")
-            if str(payload.emoji) == "\N{THUMBS UP SIGN}":
+            if payload.component.custom_id == "YES":
                 break
 
         # Work out our args
