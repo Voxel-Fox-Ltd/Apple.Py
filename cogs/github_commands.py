@@ -225,7 +225,7 @@ class GithubCommands(utils.Cog):
         embed = utils.Embed(title=title, use_random_colour=True)
         components = utils.MessageComponents.boolean_buttons()
         components.components[0].components.insert(1, utils.Button("Set body", "BODY"))
-        m = await ctx.send("Are you sure you want to create this issue?", embed=embed)
+        m = await ctx.send("Are you sure you want to create this issue?", embed=embed, components=components)
         body = ""
         while True:
 
@@ -281,6 +281,7 @@ class GithubCommands(utils.Cog):
             if payload.component.custom_id == "NO":
                 return await ctx.send("Alright, cancelling issue add.")
             if payload.component.custom_id == "YES":
+                await payload.message.edit(components=components.disable_components())
                 break
 
         # Work out our args
