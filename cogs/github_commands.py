@@ -242,6 +242,7 @@ class GithubCommands(utils.Cog):
             if payload.component.custom_id == "BODY":
 
                 # Wait for their body message
+                await payload.message.edit(components=components.disable_components())
                 n = await payload.send("What body content do you want to be added to your issue?")
                 try:
                     check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
@@ -267,6 +268,7 @@ class GithubCommands(utils.Cog):
                     await body_message.delete()
                 except discord.HTTPException:
                     pass
+                await payload.message.edit(components=components.enable_components())
 
                 # Fix up the body
                 body = body.strip() + "\n\n" + body_message.content + "\n\n"
