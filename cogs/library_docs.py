@@ -4,6 +4,7 @@ import zlib
 import re
 import os
 import textwrap
+import unicodedata
 
 import discord
 from discord.ext import commands
