@@ -55,15 +55,21 @@ class LibraryDocs(utils.Cog):
     @utils.Cog.listener()
     async def on_message(self, message:discord.Message):
         """
-        Listens for "vbu.git" and responds with a Git url.
+        Listens for "vbu.git" and responds with a Git url or "vbu.docs" to respond with a readthedocs url.
         """
 
         if message.author.bot:
             return
-        if message.content.lower() != "vbu.git":
+        
+        possible_links = {
+            "vbu.git": "https://github.com/Voxel-Fox-Ltd/VoxelBotUtils/",
+            "vbu.docs": "https://voxelbotutils.readthedocs.io/en/latest/"
+        }
+        
+        if message.content.lower() not in possible_links.keys():
             return
         try:
-            return await message.channel.send("<https://github.com/Voxel-Fox-Ltd/VoxelBotUtils/>")
+            return await message.channel.send(f"<{possible_links[message.content.lower()]}>")
         except Exception:
             pass
 
