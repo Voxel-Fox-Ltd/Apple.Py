@@ -51,7 +51,7 @@ class GoogleCommands(utils.Cog):
         """
 
         if ctx.invoked_subcommand is None:
-            return await ctx.invoke(ctx.get_command("google search"), query=query)
+            return await ctx.invoke(self.bot.get_command("google search"), query=query)
         return await ctx.send_help(ctx.command)
 
     @google.command(name="search")
