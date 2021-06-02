@@ -12,7 +12,7 @@ from cogs import utils as localutils
 
 class PhoenixWrightCommands(utils.Cog):
 
-    @utils.command()
+    @utils.command(enabled=False)
     async def phoenix(self, ctx:utils.Context, after:discord.Message, before:typing.Optional[discord.Message], *characters:str):
         """
         Makes you an Objection.lol file for you to use as a base.
