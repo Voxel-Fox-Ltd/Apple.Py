@@ -85,10 +85,11 @@ class RunescapeCommands(utils.Cog):
         return value
 
     @utils.command(aliases=['ge'])
-    async def grandexchange(self, ctx, rs_notation:typing.Optional[bool]=True, *, item:str):
+    async def grandexchange(self, ctx, *, item:str):
         """
         Get the value of an item on the grand exchange (OSRS).
         """
+
         async with ctx.typing():
             if item.lower() in ['random']:
                 item_id = random.choice(list(self.item_ids.values()))
@@ -98,7 +99,7 @@ class RunescapeCommands(utils.Cog):
 
             if item_id:
                 item_dict = await self.get_item_details_by_id(item_id)
-                item_value = await self.parse_item_value(item_dict, return_int=not rs_notation)
+                item_value = await self.parse_item_value(item_dict, return_int=False)
 
                 name = item_dict['name']
                 item_page_url = API_BASE_URL + f"a=373/{name.replace(' ', '+')}/viewitem?obj={item_id}"
