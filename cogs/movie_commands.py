@@ -80,9 +80,20 @@ class MovieCommand(utils.Cog):
     @utils.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'omdb')
-    async def movie(self, ctx:utils.Context, *, name:str):
+    async def movie(self, ctx:utils.Context):
         """
-        Searches for a movie on the OMDB API.
+        The parent command for movie commands.
+        """
+
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
+
+    @movie.group(name="get")
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @utils.checks.is_config_set('api_keys', 'omdb')
+    async def movie_get(self, ctx:utils.Context, *, name:str):
+        """
+        Gets a movie from the OMDB API.
         """
 
         # See if we gave a year
@@ -126,9 +137,20 @@ class MovieCommand(utils.Cog):
     @utils.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'omdb')
-    async def tv(self, ctx:utils.Context, *, name:str):
+    async def tv(self, ctx:utils.Context):
         """
-        Searches for a TV series on the OMDB API
+        The parent group for the TV commands.
+        """
+
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
+
+    @tv.command(name="get")
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @utils.checks.is_config_set('api_keys', 'omdb')
+    async def tv_get(self, ctx:utils.Context, *, name:str):
+        """
+        Gets a TV show from the OMDB API.
         """
 
         # See if we gave a year
