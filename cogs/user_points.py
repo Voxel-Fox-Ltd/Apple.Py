@@ -83,7 +83,7 @@ class UserPoints(utils.Cog):
         await ctx.send(f"Removed {points} points from {user.mention}.", allowed_mentions=discord.AllowedMentions(users=False))
         self.bot.dispatch("leaderboard_update", ctx.guild)
 
-    @points.subcommand_group(name="leaderboard", invoke_without_command=True)
+    @points.subcommand_group(name="leaderboard", invoke_without_command=True, add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def points_leaderboard(self, ctx:utils.Context):
