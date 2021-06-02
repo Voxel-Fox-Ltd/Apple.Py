@@ -45,14 +45,13 @@ class GoogleCommands(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @utils.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @utils.checks.is_config_set('api_keys', 'google', 'api_key')
-    async def google(self, ctx:utils.Context, *, query:str):
+    async def google(self, ctx:utils.Context):
         """
         The parent group for the google commands.
         """
 
         if ctx.invoked_subcommand is None:
-            return await ctx.invoke(self.bot.get_command("google search"), query=query)
-        return await ctx.send_help(ctx.command)
+            return await ctx.send_help(ctx.command)
 
     @google.command(name="search")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
