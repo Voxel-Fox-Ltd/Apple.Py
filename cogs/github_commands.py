@@ -222,7 +222,7 @@ class GithubCommands(utils.Cog):
                 ))
 
         # Ask if we want to do this
-        embed = utils.Embed(title=title, use_random_colour=True)
+        embed = utils.Embed(title=title, use_random_colour=True).set_footer(text=str(repo))
         components = utils.MessageComponents.boolean_buttons()
         components.components[0].components.insert(1, utils.Button("Set body", "BODY"))
         m = await ctx.send("Are you sure you want to create this issue?", embed=embed, components=components)
@@ -231,7 +231,7 @@ class GithubCommands(utils.Cog):
 
             # See if we want to update the body
             if body:
-                embed = utils.Embed(title=title, description=body, use_random_colour=True)
+                embed = utils.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
             try:
                 payload = await m.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                 await payload.ack()
@@ -276,7 +276,7 @@ class GithubCommands(utils.Cog):
                     body += f"![{name}]({url})\n"
 
                 # Edit the message
-                embed = utils.Embed(title=title, description=body, use_random_colour=True)
+                embed = utils.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
                 await m.edit(embed=embed)
 
             # Check the reaction
