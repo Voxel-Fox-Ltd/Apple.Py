@@ -246,6 +246,8 @@ class NicknameHandler(utils.Cog):
         Fixes a user's nickname to remove dumbass characters.
         """
 
+        if ctx.invoked_subcommand is not None:
+            return
         user = await ctx.guild.fetch_member(user.id)
         current_name = user.nick or user.name
         new_name = await self.fix_user_nickname(user, force_to_animal=force_to_animal)
