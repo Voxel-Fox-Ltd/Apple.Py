@@ -238,7 +238,7 @@ class NicknameHandler(utils.Cog):
         await user.edit(nick=new_name,reason= "Changed by Apple.Py automagically")
         return new_name
 
-    @utils.group(aliases=['fun'], invoke_without_subcommand=False)
+    @utils.group(aliases=['fun'], invoke_without_command=False)
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     async def fixunzalgoname(self, ctx:utils.Context, user:discord.Member, force_to_animal:bool=False):
