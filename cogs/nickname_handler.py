@@ -254,7 +254,7 @@ class NicknameHandler(utils.Cog):
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
 
     @fixunzalgoname.command(name='text')
-    @utils.checks.is_bot_support()
+    @commands.bot_has_permissions(send_messages=True)
     async def fixunzalgoname_text(self, ctx:utils.Context, *, text:str):
         """
         Fixes a user's nickname to remove dumbass characters.
