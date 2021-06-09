@@ -255,8 +255,7 @@ class NicknameHandler(utils.Cog):
 
     @fixunzalgoname.command(name='text')
     @utils.checks.is_bot_support()
-    @commands.bot_has_permissions(manage_nicknames=True)
-    async def fixunzalgoname_text(self, ctx:utils.Context, text:str):
+    async def fixunzalgoname_text(self, ctx:utils.Context, *, text:str):
         """
         Fixes a user's nickname to remove dumbass characters.
         """
