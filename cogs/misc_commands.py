@@ -3,7 +3,7 @@ import random
 from urllib.parse import urlencode
 import io
 import http
-import aiohttp
+import asyncio
 import collections
 
 import discord
@@ -17,7 +17,7 @@ class MiscCommands(utils.Cog):
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
-        self.button_message_locks = collections.defaultdict(aiohttp.Lock)
+        self.button_message_locks = collections.defaultdict(asyncio.Lock)
 
     @utils.group(aliases=['topics'], invoke_without_command=False)
     @commands.bot_has_permissions(send_messages=True)
