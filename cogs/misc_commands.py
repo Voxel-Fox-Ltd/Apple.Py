@@ -3,6 +3,8 @@ import random
 from urllib.parse import urlencode
 import io
 import http
+import aiohttp
+import collections
 
 import discord
 from discord.ext import commands
@@ -12,6 +14,10 @@ import voxelbotutils as utils
 
 
 class MiscCommands(utils.Cog):
+
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.button_message_locks = collections.defaultdict(aiohttp.Lock)
 
     @utils.group(aliases=['topics'], invoke_without_command=False)
     @commands.bot_has_permissions(send_messages=True)
@@ -202,15 +208,16 @@ class MiscCommands(utils.Cog):
 
         if not payload.component.custom_id.startswith("DISABLE_BUTTON_COMMAND"):
             return
-        components = utils.MessageComponents(*[
-            utils.ActionRow(*[
-                utils.Button.from_dict(b) for b in r['components']
-            ]) for r in payload.data['message']['components']
-        ])
-        b = components.get_component(payload.component.custom_id)
-        b.disable()
-        await payload.ack()
-        await payload.message.edit(components=components)
+        async with self.button_message_locks[payload.message.id]:
+            components = utils.MessageComponents(*[
+                utils.ActionRow(*[
+                    utils.Button.from_dict(b) for b in r['components']
+                ]) for r in payload.data['message']['components']
+            ])
+            b = components.get_component(payload.component.custom_id)
+            b.disable()
+            await payload.ack()
+            await payload.message.edit(components=components)
 
 
 def setup(bot:utils.Bot):
