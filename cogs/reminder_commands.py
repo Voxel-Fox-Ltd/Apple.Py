@@ -85,8 +85,10 @@ class ReminderCommands(utils.Cog):
 
         # Chuck the info in the database
         await db(
-            """INSERT INTO reminders (reminder_id, guild_id, channel_id, timestamp, user_id, message) VALUES ($1, $2, $3, $4, $5, $6)""",
-            reminder_id, guild_id, ctx.channel.id, dt.utcnow() + time.delta, ctx.author.id, message
+            """INSERT INTO reminders (reminder_id, guild_id, channel_id, message_id, timestamp, user_id, message)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)""",
+            reminder_id, guild_id, ctx.channel.id, ctx.message.id, dt.utcnow() + time.delta,
+            ctx.author.id, message,
         )
         await db.disconnect()
 
@@ -111,6 +113,7 @@ class ReminderCommands(utils.Cog):
         for reminder in rows:
             channel_id = reminder["channel_id"]
             user_id = reminder["user_id"]
+            message_id = reminder["message_id"]
             message = reminder["message"]
             reminder_id = reminder["reminder_id"]
 
@@ -122,6 +125,8 @@ class ReminderCommands(utils.Cog):
                 "content": f"<@{user_id}> reminder `{reminder_id}` triggered - {message}",
                 "allowed_mentions": discord.AllowedMentions(users=[discord.Object(user_id)]),
             }
+            # if message_id:
+            #     sendable.update({})
             try:
                 await channel.send(**sendable)
             except discord.Forbidden:

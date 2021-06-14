@@ -128,6 +128,7 @@ CREATE TABLE IF NOT EXISTS reminders(
     reminder_id VARCHAR(5) PRIMARY KEY,
     guild_id BIGINT,
     channel_id BIGINT,
+    message_id BIGINT,
     timestamp TIMESTAMP,
     user_id BIGINT,
     message TEXT
