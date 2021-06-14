@@ -5,8 +5,8 @@ import voxelbotutils as vbu
 class LockComamnds(vbu.Cog):
 
     @vbu.command()
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_channels=True, manage_roles=True)
+    @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
     @commands.guild_only()
     async def lock(self, ctx: vbu.Context):
         """
@@ -18,8 +18,8 @@ class LockComamnds(vbu.Cog):
         await ctx.send("Done.")
 
     @vbu.command()
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_channels=True, manage_roles=True)
+    @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
     @commands.guild_only()
     async def unlock(self, ctx: vbu.Context):
         """
