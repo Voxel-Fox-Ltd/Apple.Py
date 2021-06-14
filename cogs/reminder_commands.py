@@ -125,8 +125,11 @@ class ReminderCommands(utils.Cog):
                 "content": f"<@{user_id}> reminder `{reminder_id}` triggered - {message}",
                 "allowed_mentions": discord.AllowedMentions(users=[discord.Object(user_id)]),
             }
-            # if message_id:
-            #     sendable.update({})
+            if message_id:
+                sendable.update({
+                    "reference": discord.MessageReference(message_id=message_id, channel_id=channel_id),
+                    "mention_author": True,
+                })
             try:
                 await channel.send(**sendable)
             except discord.Forbidden:
