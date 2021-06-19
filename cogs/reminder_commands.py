@@ -131,7 +131,11 @@ class ReminderCommands(utils.Cog):
                     "mention_author": True,
                 })
             try:
-                await channel.send(**sendable)
+                try:
+                    await channel.send(**sendable)
+                except Exception as e:
+                    sendable.pop("reference")
+                    await channel.send(**sendable)
             except discord.Forbidden:
                 try:
                     user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
