@@ -83,17 +83,17 @@ class ReminderCommands(utils.Cog):
             if not data:
                 break
 
+        # Let them know its been set
+        m = await ctx.send(f"Reminder set for {time.clean_spaced}.")
+
         # Chuck the info in the database
         await db(
             """INSERT INTO reminders (reminder_id, guild_id, channel_id, message_id, timestamp, user_id, message)
             VALUES ($1, $2, $3, $4, $5, $6, $7)""",
-            reminder_id, guild_id, ctx.channel.id, ctx.message.id, dt.utcnow() + time.delta,
+            reminder_id, guild_id, ctx.channel.id, m.id, dt.utcnow() + time.delta,
             ctx.author.id, message,
         )
         await db.disconnect()
-
-        # Let them know its been set
-        await ctx.send(f"Reminder set for {time.clean_spaced}.")
 
     @tasks.loop(seconds=30)
     async def reminder_finish_handler(self):
