@@ -40,7 +40,7 @@ class EmojiCommands(utils.Cog):
 
         emoji_name = emoji.name
         await emoji.delete()
-        await ctx.send(f"Deleted emoji `emoji_name`.")
+        await ctx.send(f"Deleted emoji `{emoji_name}`.")
 
     @staticmethod
     def calculate_new_size(image:Image, intended_size:int=256_000) -> tuple:
