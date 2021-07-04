@@ -1,5 +1,5 @@
 import discord
-import voxelbotvbu as vbu
+import voxelbotutils as vbu
 
 
 # class BotSettings(vbu.Cog):
