@@ -19,7 +19,7 @@ CSUPPORT_COMPONENTS = vbu.MessageComponents(
 )
 FAQ_COMPONENTS = vbu.MessageComponents(
     vbu.ActionRow(
-        vbu.Button("MarriageBot", "_", disabled=True),
+        vbu.Button("MarriageBot FAQs ->", "_", disabled=True),
         vbu.Button("I can't disown my child", "FAQ CANT_DISOWN", style=vbu.ButtonStyle.SECONDARY),
         vbu.Button("None of the commands work", "FAQ NO_COMMANDS_WORK", style=vbu.ButtonStyle.SECONDARY),
         vbu.Button("Gold doesn't have my family tree", "FAQ COPY_FAMILY_TO_GOLD", style=vbu.ButtonStyle.SECONDARY),
