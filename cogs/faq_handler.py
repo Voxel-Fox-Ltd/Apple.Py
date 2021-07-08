@@ -67,6 +67,14 @@ class FAQHandler(vbu.Cog):
             return
         await ctx.send(CSUPPORT_MESSAGE, components=CSUPPORT_COMPONENTS)
 
+    @vbu.command(hidden=True)
+    async def faq(self, ctx: vbu.Context):
+        """
+        Post the FAQ message for people who don't want to look in the support channel.
+        """
+
+        return await ctx.send("Click a button to see the FAQ response.", components=FAQ_COMPONENTS)
+
     @vbu.Cog.listener()
     async def on_component_interaction(self, payload):
         """
