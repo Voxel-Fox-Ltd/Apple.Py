@@ -12,7 +12,12 @@ Please give a detailed report of:
 
 Ping `@Support Team` for a faster response
 """
-COMPONENTS = vbu.MessageComponents(
+CSUPPORT_COMPONENTS = vbu.MessageComponents(
+    vbu.ActionRow(
+        vbu.Button("See the FAQs", "FAQ")
+    )
+)
+FAQ_COMPONENTS = vbu.MessageComponents(
     vbu.ActionRow(
         vbu.Button("I can't disown my child", "FAQ CANT_DISOWN"),
         vbu.Button("None of the commands work", "FAQ NO_COMMANDS_WORK"),
@@ -59,7 +64,7 @@ class FAQHandler(vbu.Cog):
 
         if ctx.channel.id != self.SUPPORT_CHANNEL_ID:
             return
-        await ctx.send(CSUPPORT_MESSAGE, components=COMPONENTS)
+        await ctx.send(CSUPPORT_MESSAGE, components=CSUPPORT_COMPONENTS)
 
     @vbu.Cog.listener()
     async def on_component_interaction(self, payload):
@@ -67,9 +72,12 @@ class FAQHandler(vbu.Cog):
         See if an FAQ component was clicked.
         """
 
-        if not payload.component.custom_id.startswith("FAQ "):
+        if not payload.component.custom_id.startswith("FAQ"):
             return
-        _, asking_for = payload.component.custom_id.split(" ")
+        try:
+            _, asking_for = payload.component.custom_id.split(" ")
+        except ValueError:
+            return await payload.respond("Click a button to see the FAQ response.", components=FAQ_COMPONENTS, ephemeral=True)
         data = await self.get_output(asking_for)
         return await payload.respond(**data, ephemeral=True)
 
