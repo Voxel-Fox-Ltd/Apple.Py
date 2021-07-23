@@ -240,9 +240,10 @@ class LibraryDocs(utils.Cog):
             if projname == 'discord.py':
                 key = key.replace('discord.ext.commands.', '').replace('discord.', '')
             if projname == 'voxelbotutils':
-                if key.startswith("voxelbotutils.cogs.utils."):
+                display_key = f'{prefix}{key}'
+                if display_key.startswith("voxelbotutils.cogs.utils."):
                     continue
-                elif key.startswith("label:"):
+                elif display_key.startswith("label:"):
                     if "/apireference.html" in location:
                         continue
                     elif "/changelog.html" in location:
