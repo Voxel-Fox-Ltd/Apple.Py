@@ -244,15 +244,16 @@ class LibraryDocs(utils.Cog):
                 if display_key.startswith("voxelbotutils.cogs.utils."):
                     continue
                 elif display_key.startswith("label:"):
-                    if "/apireference.html" in location:
+                    direct_location = os.path.join(url, location)
+                    if "/apireference.html" in direct_location:
                         continue
-                    elif "/changelog.html" in location:
+                    elif "/changelog.html" in direct_location:
                         continue
-                    elif "/py-modindex.html" in location:
+                    elif "/py-modindex.html" in direct_location:
                         continue
-                    elif "/genindex.html" in location:
+                    elif "/genindex.html" in direct_location:
                         continue
-                    elif "/search.html" in location:
+                    elif "/search.html" in direct_location:
                         continue
 
             result[f'{prefix}{key}'] = os.path.join(url, location)
