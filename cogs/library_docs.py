@@ -239,7 +239,7 @@ class LibraryDocs(utils.Cog):
 
             if projname == 'discord.py':
                 key = key.replace('discord.ext.commands.', '').replace('discord.', '')
-            if projname == 'voxelbotutils':
+            if projname.lower() == 'voxelbotutils':
                 display_key = f'{prefix}{key}'
                 if display_key.startswith("voxelbotutils.cogs.utils."):
                     continue
