@@ -60,12 +60,12 @@ class LibraryDocs(utils.Cog):
 
         if message.author.bot:
             return
-        
+
         possible_links = {
             "vbu.git": "https://github.com/Voxel-Fox-Ltd/VoxelBotUtils/",
             "vbu.docs": "https://voxelbotutils.readthedocs.io/en/latest/"
         }
-        
+
         if message.content.lower() not in possible_links.keys():
             return
         try:
@@ -239,6 +239,20 @@ class LibraryDocs(utils.Cog):
 
             if projname == 'discord.py':
                 key = key.replace('discord.ext.commands.', '').replace('discord.', '')
+            if projname == 'voxelbotutils':
+                if key.startswith("voxelbotutils.cogs.utils."):
+                    continue
+                elif key.startswith("label:"):
+                    if "/apireference.html" in location:
+                        continue
+                    elif "/changelog.html" in location:
+                        continue
+                    elif "/py-modindex.html" in location:
+                        continue
+                    elif "/genindex.html" in location:
+                        continue
+                    elif "/search.html" in location:
+                        continue
 
             result[f'{prefix}{key}'] = os.path.join(url, location)
 
