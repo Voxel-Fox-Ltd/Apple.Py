@@ -2,9 +2,7 @@ import discord
 import voxelbotutils as vbu
 
 
-CSUPPORT_MESSAGE = """\u200b\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n
-\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n
-\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n
+CSUPPORT_MESSAGE = """\u200b\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n
 Please give a detailed report of:
 * What you thought would happen vs what actually happened
 * How you cause the issue to happen
