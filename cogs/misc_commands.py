@@ -39,11 +39,7 @@ class MiscCommands(utils.Cog):
         Gives you a conversation topic.
         """
 
-        async with self.bot.database() as db:
-            rows = await db("SELECT * FROM topics ORDER BY RANDOM() LIMIT 1")
-        if not rows:
-            return await ctx.send("There aren't any topics set up in the database for this bot :<")
-        return await ctx.send(rows[0]['topic'])
+        await self.topic(ctx)
 
     @topic.command(name="add")
     @utils.checks.is_bot_support()
