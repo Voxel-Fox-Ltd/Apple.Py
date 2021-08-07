@@ -264,10 +264,10 @@ class LibraryDocs(vbu.Cog):
         cache = {}
         for key, page in page_types.items():
             cache[key] = {}
-            async with self.bot.session.get(page + '/objects.inv') as resp:
-                if resp.status != 200:
+            async with self.bot.session.get(page + '/objects.inv') as r:
+                if not r.okay:
                     raise RuntimeError('Cannot build rtfm lookup table, try again later.')
-                stream = SphinxObjectFileReader(await resp.read())
+                stream = SphinxObjectFileReader(await r.read())
                 cache[key] = self.parse_object_inv(stream, page)
         self._rtfm_cache = cache
 
