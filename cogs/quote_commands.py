@@ -1,15 +1,14 @@
 import string
 import random
-import typing
 import re
 import asyncio
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-def create_id(n:int=5):
+def create_id(n: int = 5):
     """
     Generates a generic 5 character-string to use as an ID.
     """
@@ -17,12 +16,12 @@ def create_id(n:int=5):
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=n)).lower()
 
 
-class QuoteCommands(utils.Cog):
+class QuoteCommands(vbu.Cog):
 
     IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
     QUOTE_SEARCH_CHARACTER_CUTOFF = 100
 
-    async def get_quote_messages(self, ctx, messages, *, allow_self_quote:bool=False) -> dict:
+    async def get_quote_messages(self, ctx, messages, *, allow_self_quote: bool = False) -> dict:
         """
         Gets the messages that the user has quoted, returning a dict with keys `success` (bool) and `message` (str or voxelbotutils.Embed).
         If `success` is `False`, then the resulting `message` can be directly output to the user, and if it's `True` then we can go ahead
@@ -92,7 +91,7 @@ class QuoteCommands(utils.Cog):
             return {'success': False, 'message': "You can't quote yourself :/"}
 
         # Return an embed
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
             if quote_is_url:
                 embed.set_image(text)
@@ -101,10 +100,10 @@ class QuoteCommands(utils.Cog):
             embed.timestamp = timestamp
         return {'success': True, 'message': embed, 'user': user, 'timestamp': timestamp}
 
-    @utils.group(invoke_without_command=True, add_slash_command=False)
+    @vbu.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
-    async def quote(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
+    async def quote(self, ctx: vbu.Context, messages: commands.Greedy[discord.Message]):
         """
         Quotes a user's message to the guild's quote channel.
         """
@@ -173,10 +172,20 @@ class QuoteCommands(utils.Cog):
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed)
 
+    @quote.command(name="create", context_command_type=vbu.ApplicationCommandType.MESSAGE, context_command_name="Quote message")
+    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
+    @commands.guild_only()
+    async def quote_create(self, ctx: vbu.Context, message: discord.Message):
+        """
+        Quotes a user's message to the guild's quote channel.
+        """
+
+        await self.quote(ctx, [message])
+
     @quote.command(name="force", add_slash_command=False)
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def quote_force(self, ctx:utils.Context, messages:commands.Greedy[discord.Message]):
+    async def quote_force(self, ctx: vbu.Context, messages: commands.Greedy[discord.Message]):
         """
         Quotes a user's message to the guild's quote channel.
         """
@@ -220,7 +229,7 @@ class QuoteCommands(utils.Cog):
 
     @quote.command(name="get", add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def quote_get(self, ctx:utils.Context, identifier:commands.clean_content):
+    async def quote_get(self, ctx: vbu.Context, identifier: commands.clean_content):
         """
         Gets a quote from the guild's quote channel.
         """
@@ -260,7 +269,7 @@ class QuoteCommands(utils.Cog):
 
     @quote.command(name="random", add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def quote_random(self, ctx:utils.Context, user:discord.User=None):
+    async def quote_random(self, ctx: vbu.Context, user: discord.User = None):
         """
         Gets a random quote for a given user.
         """
@@ -309,7 +318,7 @@ class QuoteCommands(utils.Cog):
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def quote_alias(self, ctx:utils.Context, quote_id:commands.clean_content, alias:commands.clean_content):
+    async def quote_alias(self, ctx: vbu.Context, quote_id: commands.clean_content, alias: commands.clean_content):
         """
         Adds an alias to a quote.
         """
@@ -332,7 +341,7 @@ class QuoteCommands(utils.Cog):
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def quote_list(self, ctx:utils.Context, user:discord.Member=None):
+    async def quote_list(self, ctx: vbu.Context, user: discord.Member=None):
         """
         List the IDs of quotes for a user.
         """
@@ -342,11 +351,11 @@ class QuoteCommands(utils.Cog):
         async with self.bot.database() as db:
             rows = await db("SELECT quote_id FROM user_quotes WHERE user_id=$1 AND guild_id=$2", user, ctx.guild.id)
         if not rows:
-            embed = utils.Embed(
+            embed = vbu.Embed(
                 use_random_colour=True, description="This user has no quotes.",
             ).set_author_to_user(user)
             return await ctx.send(embed=embed)
-        embed = utils.Embed(
+        embed = vbu.Embed(
             use_random_colour=True, description="\n".join([i['quote_id'] for i in rows[:50]]),
         ).set_author_to_user(user)
         return await ctx.send(embed=embed)
@@ -355,7 +364,7 @@ class QuoteCommands(utils.Cog):
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def quote_alias_remove(self, ctx:utils.Context, alias:commands.clean_content):
+    async def quote_alias_remove(self, ctx: vbu.Context, alias: commands.clean_content):
         """
         Deletes an alias from a quote.
         """
@@ -377,7 +386,7 @@ class QuoteCommands(utils.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def quote_delete(self, ctx:utils.Context, *quote_ids:str):
+    async def quote_delete(self, ctx: vbu.Context, *quote_ids: str):
         """
         Deletes a quote from your server.
         """
@@ -414,6 +423,6 @@ class QuoteCommands(utils.Cog):
         return await ctx.send("Deleted quote(s).")
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = QuoteCommands(bot)
     bot.add_cog(x)
