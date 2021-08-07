@@ -265,7 +265,7 @@ class LibraryDocs(vbu.Cog):
         for key, page in page_types.items():
             cache[key] = {}
             async with self.bot.session.get(page + '/objects.inv') as r:
-                if not r.okay:
+                if not r.ok:
                     raise RuntimeError('Cannot build rtfm lookup table, try again later.')
                 stream = SphinxObjectFileReader(await r.read())
                 cache[key] = self.parse_object_inv(stream, page)
