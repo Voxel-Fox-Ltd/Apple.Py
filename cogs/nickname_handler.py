@@ -292,7 +292,7 @@ class NicknameHandler(utils.Cog):
         await ctx.invoke(self.bot.get_command("addfixableletters"), user.display_name, fixed_name)
         await ctx.invoke(self.bot.get_command("fixunzalgoname"), user)
 
-    @utils.command(ignore_extra=False)
+    @utils.command(ignore_extra=False, add_slash_comamnd=False)
     @utils.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
     async def addfixableletters(self, ctx:utils.Context, phrase1:str, phrase2:str):

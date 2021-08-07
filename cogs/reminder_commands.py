@@ -4,10 +4,10 @@ import string
 
 import discord
 from discord.ext import commands, tasks
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-def create_id(n:int=5):
+def create_id(n: int = 5):
     """
     Generates a generic 5 character-string to use as an ID.
     """
@@ -15,18 +15,19 @@ def create_id(n:int=5):
     return ''.join(random.choices(string.digits, k=n))
 
 
-class ReminderCommands(utils.Cog):
+class ReminderCommands(vbu.Cog):
 
     def __init__(self, bot):
         super().__init__(bot)
-        self.reminder_finish_handler.start()
+        if bot.database.enabled:
+            self.reminder_finish_handler.start()
 
     def cog_unload(self):
         self.reminder_finish_handler.stop()
 
-    @utils.group(aliases=["reminders"], invoke_without_command=True)
+    @vbu.group(aliases=["reminders"], invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def reminder(self, ctx:utils.Context):
+    async def reminder(self, ctx: vbu.Context):
         """
         The parent group for the reminder commands.
         """
@@ -37,7 +38,7 @@ class ReminderCommands(utils.Cog):
 
     @reminder.command(name="list")
     @commands.bot_has_permissions(send_messages=True)
-    async def reminder_list(self, ctx:utils.Context):
+    async def reminder_list(self, ctx: vbu.Context):
         """
         Shows you your reminders.
         """
@@ -55,7 +56,7 @@ class ReminderCommands(utils.Cog):
         # Format an output string
         reminders = ""
         for reminder in rows:
-            expiry = utils.TimeValue((reminder['timestamp'] - dt.utcnow()).total_seconds()).clean_spaced or 'now'
+            expiry = vbu.TimeValue((reminder['timestamp'] - dt.utcnow()).total_seconds()).clean_spaced or 'now'
             reminders += f"\n`{reminder['reminder_id']}` - {reminder['message'][:70]} ({expiry})"
         message = f"Your reminders: {reminders}"
 
@@ -64,7 +65,7 @@ class ReminderCommands(utils.Cog):
 
     @reminder.command(name="set", aliases=['create'])
     @commands.bot_has_permissions(send_messages=True)
-    async def reminder_set(self, ctx:utils.Context, time:utils.TimeValue, *, message:str):
+    async def reminder_set(self, ctx: vbu.Context, time: vbu.TimeValue, *, message: str):
         """
         Adds a reminder to your account.
         """
@@ -133,7 +134,7 @@ class ReminderCommands(utils.Cog):
             try:
                 try:
                     await channel.send(**sendable)
-                except Exception as e:
+                except Exception:
                     sendable.pop("reference")
                     await channel.send(**sendable)
             except discord.Forbidden:
@@ -151,6 +152,6 @@ class ReminderCommands(utils.Cog):
         await db.disconnect()
 
 
-def setup(bot:utils.Bot):
+def setup(bot:vbu.Bot):
     x = ReminderCommands(bot)
     bot.add_cog(x)

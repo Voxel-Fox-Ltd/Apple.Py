@@ -26,7 +26,7 @@ class ImageUrl(commands.Converter):
 
 class EmojiCommands(utils.Cog):
 
-    @utils.command(aliases=['removeemoji', 'delemoji'])
+    @utils.command(aliases=['removeemoji', 'delemoji'], add_slash_command=False)
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.guild_only()

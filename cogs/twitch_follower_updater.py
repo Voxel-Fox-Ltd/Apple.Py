@@ -3,10 +3,10 @@ import collections
 
 import discord
 from discord.ext import tasks
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class TwitchFollowerUpdater(utils.Cog):
+class TwitchFollowerUpdater(vbu.Cog):
 
     TWITCH_OAUTH_URL = "https://id.twitch.tv/oauth2/authorize"  # Used to make the login url
     TWITCH_VALIDATE_URL = "https://id.twitch.tv/oauth2/validate"  # Used to check their auth token
@@ -18,10 +18,11 @@ class TwitchFollowerUpdater(utils.Cog):
         "scope": "channel:read:subscriptions",
     }
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.last_twitch_checked = dt.utcnow()
-        self.twitch_follower_checker_loop.start()
+        if bot.database.enabled:
+            self.twitch_follower_checker_loop.start()
 
     def cog_unload(self):
         self.twitch_follower_checker_loop.cancel()
@@ -66,7 +67,7 @@ class TwitchFollowerUpdater(utils.Cog):
         self.last_twitch_checked = new_last_timestamp
         await db.disconnect()
 
-    async def get_new_followers(self, bearer_token:str, user_id:str, after:str) -> list:
+    async def get_new_followers(self, bearer_token: str, user_id: str, after: str) -> list:
         """
         Gives you a list of new followers from after a given datetime.
         """
@@ -90,6 +91,6 @@ class TwitchFollowerUpdater(utils.Cog):
         return output, data.get('pagination', {}).get('cursor', None)
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = TwitchFollowerUpdater(bot)
     bot.add_cog(x)

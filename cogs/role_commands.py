@@ -8,7 +8,7 @@ import voxelbotutils as utils
 
 class RoleCommands(utils.Cog):
 
-    @utils.command()
+    @utils.command(add_slash_command=False)
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
     async def permissions(self, ctx:utils.Context, user:typing.Union[discord.Member, discord.Role], channel:typing.Optional[discord.TextChannel]):

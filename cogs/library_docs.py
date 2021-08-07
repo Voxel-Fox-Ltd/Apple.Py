@@ -8,7 +8,7 @@ import unicodedata
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
 class SphinxObjectFileReader(object):
@@ -44,16 +44,16 @@ class SphinxObjectFileReader(object):
                 pos = buf.find(b'\n')
 
 
-class LibraryDocs(utils.Cog):
+class LibraryDocs(vbu.Cog):
 
     DISCORDJS_DOCS = None
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self._rtfm_cache = {}  # {library: {class_or_method: url_to_doc}}
 
-    @utils.Cog.listener()
-    async def on_message(self, message:discord.Message):
+    @vbu.Cog.listener()
+    async def on_message(self, message: discord.Message):
         """
         Listens for "vbu.git" and responds with a Git url or "vbu.docs" to respond with a readthedocs url.
         """
@@ -62,8 +62,8 @@ class LibraryDocs(utils.Cog):
             return
 
         possible_links = {
-            "vbu.git": "https://github.com/Voxel-Fox-Ltd/VoxelBotUtils/",
-            "vbu.docs": "https://voxelbotutils.readthedocs.io/en/latest/"
+            "vbu.git": "https://github.com/Voxel-Fox-Ltd/VoxelBotvbu/",
+            "vbu.docs": "https://voxelbotvbu.readthedocs.io/en/latest/"
         }
 
         if message.content.lower() not in possible_links.keys():
@@ -117,7 +117,7 @@ class LibraryDocs(utils.Cog):
             return {"content": "I couldn't find anything. Sorry."}
 
         # Yo there's a result. Let's embed that.
-        embed = utils.Embed(use_random_colour=True)
+        embed = vbu.Embed(use_random_colour=True)
         outputs.sort(key=lambda i: (i[2], i[0]), reverse=True)
         embed.description = ""
         for key, url, weight in outputs:
@@ -239,9 +239,9 @@ class LibraryDocs(utils.Cog):
 
             if projname == 'discord.py':
                 key = key.replace('discord.ext.commands.', '').replace('discord.', '')
-            if projname.lower() == 'voxelbotutils':
+            if projname.lower() == 'voxelbotvbu':
                 display_key = f'{prefix}{key}'
-                if display_key.startswith("voxelbotutils.cogs.utils."):
+                if display_key.startswith("voxelbotvbu.cogs.vbu."):
                     continue
                 elif display_key.startswith("label:"):
                     direct_location = os.path.join(url, location)
@@ -280,7 +280,7 @@ class LibraryDocs(utils.Cog):
             'latest': 'https://discordpy.readthedocs.io/en/latest',
             'python': 'https://docs.python.org/3',
             'pygame': 'https://www.pygame.org/docs',
-            'voxelbotutils': 'https://voxelbotutils.readthedocs.io/en/latest',
+            'voxelbotvbu': 'https://voxelbotvbu.readthedocs.io/en/latest',
         }
         non_sphinx_page_types = {
             'djs': self.get_discordjs_docs,
@@ -313,8 +313,8 @@ class LibraryDocs(utils.Cog):
 
         return await ctx.send(**self.get_embed_from_cache(self._rtfm_cache[key], obj))
 
-    @utils.command(aliases=['dedent'])
-    async def unindent(self, ctx:utils.Context, message:discord.Message):
+    @vbu.command(aliases=['dedent'])
+    async def unindent(self, ctx: vbu.Context, message: discord.Message):
         """
         Unindents the codeblock inside of a message.
         """
@@ -333,7 +333,7 @@ class LibraryDocs(utils.Cog):
             return await ctx.send("I couldn't regex that message for codeblocks.")
         return await ctx.send(f"```{block_match.group(1)}\n{textwrap.dedent(block_match.group(2))}\n```")
 
-    @utils.group()
+    @vbu.group()
     async def rtfm(self, ctx):
         """
         Get some data from the docs.
@@ -343,7 +343,7 @@ class LibraryDocs(utils.Cog):
 
     @rtfm.command(name="djs")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def rtfm_djs(self, ctx:utils.Context, *, item:str):
+    async def rtfm_djs(self, ctx: vbu.Context, *, item: str):
         """
         Get an item from the Discord.js documentation.
         """
@@ -352,7 +352,7 @@ class LibraryDocs(utils.Cog):
 
     @rtfm.command(name="jda")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def rtfm_jda(self, ctx:utils.Context, *, item:str):
+    async def rtfm_jda(self, ctx: vbu.Context, *, item: str):
         """
         Get an item from the JDA documentation.
         """
@@ -361,7 +361,7 @@ class LibraryDocs(utils.Cog):
 
     @rtfm.command(name="java")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def rtfm_java(self, ctx:utils.Context, *, item:str):
+    async def rtfm_java(self, ctx: vbu.Context, *, item: str):
         """
         Get an item from the Java documentation.
         """
@@ -369,7 +369,7 @@ class LibraryDocs(utils.Cog):
         await self.do_rtfm(ctx, "java", item)
 
     @rtfm.command(name="dpy")
-    async def rtdm_dpy(self, ctx, *, obj:str):
+    async def rtdm_dpy(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a discord.py entity.
         Events, objects, and functions are all supported through a
@@ -379,15 +379,15 @@ class LibraryDocs(utils.Cog):
         await self.do_rtfm(ctx, "latest", obj)
 
     @rtfm.command(name="vbu")
-    async def rtdm_vbu(self, ctx, *, obj:str):
+    async def rtdm_vbu(self, ctx, *, obj: str):
         """
-        Gives you a item from the docs of VoxelBotUtils
+        Gives you a item from the docs of VoxelBotvbu
         """
 
-        await self.do_rtfm(ctx, "voxelbotutils", obj)
+        await self.do_rtfm(ctx, "voxelbotvbu", obj)
 
     @rtfm.command(name="python", aliases=["py"])
-    async def rtdm_python(self, ctx, *, obj:str):
+    async def rtdm_python(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a Python entity.
         """
@@ -395,7 +395,7 @@ class LibraryDocs(utils.Cog):
         await self.do_rtfm(ctx, "python", obj)
 
     @rtfm.command(name="pygame")
-    async def rtdm_pygame(self, ctx, *, obj:str):
+    async def rtdm_pygame(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a PyGame entity.
         """
@@ -403,7 +403,7 @@ class LibraryDocs(utils.Cog):
         await self.do_rtfm(ctx, "pygame", obj)
 
     @rtfm.command(name="js", aliases=['javascript'])
-    async def rtdm_js(self, ctx, *, obj:str):
+    async def rtdm_js(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a Javascript entity.
         """
@@ -420,7 +420,7 @@ class LibraryDocs(utils.Cog):
             data = await r.json()
         if not data['documents']:
             return await ctx.send("I couldn't find anything. Sorry.")
-        embed = utils.Embed(use_random_colour=True, description="")
+        embed = vbu.Embed(use_random_colour=True, description="")
         for i in data['documents']:
             if 'web/javascript' not in i['slug']:
                 continue
@@ -430,7 +430,7 @@ class LibraryDocs(utils.Cog):
         return await ctx.send(embed=embed)
 
     @rtfm.command(name="dotnet", aliases=['.net'])
-    async def rtdm_dotnet(self, ctx, *, obj:str):
+    async def rtdm_dotnet(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a Javascript entity.
         """
@@ -449,16 +449,16 @@ class LibraryDocs(utils.Cog):
             data = await r.json()
         if not data['results']:
             return await ctx.send("I couldn't find anything. Sorry.")
-        embed = utils.Embed(use_random_colour=True, description="")
+        embed = vbu.Embed(use_random_colour=True, description="")
         for i in data['results']:
             embed.description += f"[`{i['displayName']}`]({i['url']})\n"
             if embed.description.count("\n") >= 8:
                 break
         return await ctx.send(embed=embed)
 
-    @utils.command(aliases=['pip'])
+    @vbu.command(aliases=['pip'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def pypi(self, ctx:utils.Context, module:commands.clean_content):
+    async def pypi(self, ctx: vbu.Context, module: commands.clean_content):
         """
         Grab data from PyPi.
         """
@@ -466,21 +466,21 @@ class LibraryDocs(utils.Cog):
         # Get data
         async with self.bot.session.get(f"https://pypi.org/pypi/{module}/json") as r:
             if r.status != 200:
-                with utils.Embed(use_random_colour=True) as embed:
+                with vbu.Embed(use_random_colour=True) as embed:
                     embed.title = f"Module `{module}` not found"
                     embed.description = f"[Search Results](https://pypi.org/search/?q={module})"
                 return await ctx.send(embed=embed)
             data = await r.json()
 
         # Format into an embed
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_author(name=data['info']['name'], url=f"https://pypi.org/project/{module}")
             embed.description = data['info']['summary']
         return await ctx.send(embed=embed)
 
-    @utils.command(aliases=['npmjs'])
+    @vbu.command(aliases=['npmjs'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def npm(self, ctx:utils.Context, package_name:str):
+    async def npm(self, ctx: vbu.Context, package_name: str):
         """
         Check NPM for a package.
         """
@@ -496,14 +496,14 @@ class LibraryDocs(utils.Cog):
             data = await e.json()
 
         # make a lil embed
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_author(name=data['name'], url=f"https://www.npmjs.com/package/{package_name}")
             embed.description = data['description']
         await ctx.send(embed=embed)
 
-    @utils.command()
+    @vbu.command()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def nuget(self, ctx:utils.Context, package_name:str):
+    async def nuget(self, ctx: vbu.Context, package_name: str):
         """
         Check nuget for a package.
         """
@@ -516,7 +516,7 @@ class LibraryDocs(utils.Cog):
             data = await e.json()
 
         # make a lil embed
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             if data['data']:
                 embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{data['data'][0]['id']}")
                 embed.description = data['data'][0]['description']
@@ -525,7 +525,7 @@ class LibraryDocs(utils.Cog):
                 return
         await ctx.send(embed=embed)
 
-    @utils.command()
+    @vbu.command()
     @commands.bot_has_permissions(send_messages=True)
     async def charinfo(self, ctx, *, characters: str):
         """
@@ -541,8 +541,8 @@ class LibraryDocs(utils.Cog):
             return await ctx.send('Output too long to display.')
         await ctx.send(msg)
 
-    @utils.command()
-    async def getinterval(self, ctx:utils.Context, message1:int, message2:int):
+    @vbu.command(add_slash_command=False)
+    async def getinterval(self, ctx: vbu.Context, message1: int, message2: int):
         """
         Get the interval between two snowflakes.
         """
@@ -551,6 +551,6 @@ class LibraryDocs(utils.Cog):
         return await ctx.send(timestamps[0] - timestamps[1])
 
 
-def setup(bot:utils.Bot):
+def setup(bot:vbu.Bot):
     x = LibraryDocs(bot)
     bot.add_cog(x)

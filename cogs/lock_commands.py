@@ -4,7 +4,7 @@ import voxelbotutils as vbu
 
 class LockComamnds(vbu.Cog):
 
-    @vbu.command()
+    @vbu.command(add_slash_command=False)
     @commands.has_permissions(manage_channels=True, manage_roles=True)
     @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
     @commands.guild_only()
@@ -17,7 +17,7 @@ class LockComamnds(vbu.Cog):
         await ctx.channel.set_permissions(ctx.guild.default_role, read_messages=False)
         await ctx.send("Done.")
 
-    @vbu.command()
+    @vbu.command(add_slash_command=False)
     @commands.has_permissions(manage_channels=True, manage_roles=True)
     @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
     @commands.guild_only()

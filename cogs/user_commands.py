@@ -55,7 +55,7 @@ class UserCommands(utils.Cog):
             percentage = ((user.id + user2.id + 4500) % 10001) / 100
         return await ctx.send(f"{user.mention} \N{REVOLVING HEARTS} **{percentage:.2f}%** \N{REVOLVING HEARTS} {user2.mention}", allowed_mentions=discord.AllowedMentions(users=False))
 
-    @utils.command()
+    @utils.command(add_slash_command=False)
     @utils.checks.is_bot_support()
     @commands.bot_has_permissions(add_reactions=True)
     async def addship(self, ctx:utils.Context, user1:discord.Member, user2:typing.Optional[discord.Member]=None, percentage:float=0):

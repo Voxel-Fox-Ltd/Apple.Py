@@ -147,7 +147,7 @@ class MiscCommands(utils.Cog):
             embed.set_image(url=f"https://www.htmlcsscolor.com/preview/gallery/{hex_colour:0>6X}.png")
         await ctx.send(embed=embed)
 
-    @utils.command(cooldown_after_parsing=True)
+    @utils.command(add_slash_command=False, cooldown_after_parsing=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(send_messages=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.guild)
