@@ -3,14 +3,14 @@ import typing
 from datetime import datetime as dt, timedelta
 
 import discord
-import voxelbotutils as utils
+import voxelbotutils as vbu
 import pytz
 
 
-class TimezoneInfo(utils.Cog):
+class TimezoneInfo(vbu.Cog):
 
-    @utils.group(aliases=['tz'])
-    async def timezone(self, ctx:utils.Context):
+    @vbu.group(aliases=['tz'])
+    async def timezone(self, ctx: vbu.Context):
         """
         The parent group for timezone commands.
         """
@@ -35,7 +35,7 @@ class TimezoneInfo(utils.Cog):
         return name
 
     @timezone.command(name="set")
-    async def timezone_set(self, ctx:utils.Context, *, offset:str=None):
+    async def timezone_set(self, ctx: vbu.Context, *, offset: str = None):
         """
         Sets and stores your UTC offset into the bot.
         """
@@ -72,8 +72,8 @@ class TimezoneInfo(utils.Cog):
             )
         await ctx.send(f"I think your current time is **{dt.utcnow().replace(tzinfo=pytz.utc).astimezone(zone).strftime('%-I:%M %p')}** - I've stored this in the database.")
 
-    @timezone.command(name="get")
-    async def timezone_get(self, ctx:utils.Context, target:typing.Union[discord.Member, str]=None):
+    @timezone.command(name="get", context_command_type=vbu.ApplicationCommandType.USER, context_command_name="Get user's timezone")
+    async def timezone_get(self, ctx: vbu.Context, target: typing.Union[discord.Member, str] = None):
         """
         Get the current time for a given user.
         """
@@ -109,6 +109,6 @@ class TimezoneInfo(utils.Cog):
             await ctx.send(f"The current time for {target.mention} is estimated to be **{formatted_time}**.", allowed_mentions=discord.AllowedMentions.none())
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = TimezoneInfo(bot)
     bot.add_cog(x)
