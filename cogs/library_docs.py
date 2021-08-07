@@ -62,8 +62,8 @@ class LibraryDocs(vbu.Cog):
             return
 
         possible_links = {
-            "vbu.git": "https://github.com/Voxel-Fox-Ltd/VoxelBotvbu/",
-            "vbu.docs": "https://voxelbotvbu.readthedocs.io/en/latest/"
+            "vbu.git": "https://github.com/Voxel-Fox-Ltd/VoxelBotUtils/",
+            "vbu.docs": "https://voxelbotutils.readthedocs.io/en/latest/"
         }
 
         if message.content.lower() not in possible_links.keys():
@@ -239,9 +239,9 @@ class LibraryDocs(vbu.Cog):
 
             if projname == 'discord.py':
                 key = key.replace('discord.ext.commands.', '').replace('discord.', '')
-            if projname.lower() == 'voxelbotvbu':
+            if projname.lower() == 'voxelbotutils':
                 display_key = f'{prefix}{key}'
-                if display_key.startswith("voxelbotvbu.cogs.vbu."):
+                if display_key.startswith("voxelbotutils.cogs.vbu."):
                     continue
                 elif display_key.startswith("label:"):
                     direct_location = os.path.join(url, location)
@@ -281,7 +281,7 @@ class LibraryDocs(vbu.Cog):
             'latest': 'https://discordpy.readthedocs.io/en/latest',
             'python': 'https://docs.python.org/3',
             'pygame': 'https://www.pygame.org/docs',
-            'voxelbotvbu': 'https://voxelbotvbu.readthedocs.io/en/latest',
+            'voxelbotutils': 'https://voxelbotutils.readthedocs.io/en/latest',
         }
         non_sphinx_page_types = {
             'djs': self.get_discordjs_docs,
@@ -382,10 +382,10 @@ class LibraryDocs(vbu.Cog):
     @rtfm.command(name="vbu")
     async def rtdm_vbu(self, ctx, *, obj: str):
         """
-        Gives you a item from the docs of VoxelBotvbu
+        Gives you a item from the docs of VoxelBotUtils
         """
 
-        await self.do_rtfm(ctx, "voxelbotvbu", obj)
+        await self.do_rtfm(ctx, "voxelbotutils", obj)
 
     @rtfm.command(name="python", aliases=["py"])
     async def rtdm_python(self, ctx, *, obj: str):
