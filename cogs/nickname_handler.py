@@ -256,7 +256,7 @@ class NicknameHandler(utils.Cog):
         new_name = await self.fix_user_nickname(user, force_to_animal=force_to_animal)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
 
-    @fixunzalgoname.command(name='text')
+    @fixunzalgoname.command(name='text', add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True)
     async def fixunzalgoname_text(self, ctx:utils.Context, *, text:str):
         """
