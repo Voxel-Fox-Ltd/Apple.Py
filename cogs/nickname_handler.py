@@ -5,7 +5,7 @@ import re
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
 ZALGO_CHARACTERS = [
@@ -22,21 +22,21 @@ ZALGO_CHARACTERS = [
     '\u036a', '\u036b', '\u036c', '\u036d',
     '\u036e', '\u036f', '\u033e', '\u035b',
     '\u0346', '\u031a',
-    '\u0316', '\u0317', '\u0318','\u0319',
-    '\u031c', '\u031d', '\u031e','\u031f',
-    '\u0320', '\u0324', '\u0325','\u0326',
-    '\u0329', '\u032a', '\u032b','\u032c',
-    '\u032d', '\u032e', '\u032f','\u0330',
-    '\u0331', '\u0332', '\u0333','\u0339',
-    '\u033a', '\u033b', '\u033c','\u0345',
-    '\u0347', '\u0348', '\u0349','\u034d',
-    '\u034e', '\u0353', '\u0354','\u0355',
-    '\u0356', '\u0359', '\u035a','\u0323',
-    '\u0315', '\u031b', '\u0340','\u0341',
-    '\u0358', '\u0321', '\u0322','\u0327',
-    '\u0328', '\u0334', '\u0335','\u0336',
-    '\u034f', '\u035c', '\u035d','\u035e',
-    '\u035f', '\u0360', '\u0362','\u0338',
+    '\u0316', '\u0317', '\u0318', '\u0319',
+    '\u031c', '\u031d', '\u031e', '\u031f',
+    '\u0320', '\u0324', '\u0325', '\u0326',
+    '\u0329', '\u032a', '\u032b', '\u032c',
+    '\u032d', '\u032e', '\u032f', '\u0330',
+    '\u0331', '\u0332', '\u0333', '\u0339',
+    '\u033a', '\u033b', '\u033c', '\u0345',
+    '\u0347', '\u0348', '\u0349', '\u034d',
+    '\u034e', '\u0353', '\u0354', '\u0355',
+    '\u0356', '\u0359', '\u035a', '\u0323',
+    '\u0315', '\u031b', '\u0340', '\u0341',
+    '\u0358', '\u0321', '\u0322', '\u0327',
+    '\u0328', '\u0334', '\u0335', '\u0336',
+    '\u034f', '\u035c', '\u035d', '\u035e',
+    '\u035f', '\u0360', '\u0362', '\u0338',
     '\u0337', '\u0361', '\u0489',
     '\u0670',
     '\u25ce', '\u20d2',
@@ -52,13 +52,13 @@ ZALGO_CHARACTERS = [
 ANIMAL_NAMES = "https://raw.githubusercontent.com/skjorrface/animals.txt/master/animals.txt"
 
 
-class NicknameHandler(utils.Cog):
+class NicknameHandler(vbu.Cog):
 
     LETTER_REPLACEMENT_FILE_PATH = "config/letter_replacements.json"
     # ZALGO_FILE_PATH = "config/zalgo_characters.json"
     ASCII_CHARACTERS = string.ascii_letters + string.digits + string.punctuation
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.animal_names = None
         self.letter_replacements = None
@@ -90,8 +90,8 @@ class NicknameHandler(utils.Cog):
             self.letter_replacements[i] = i
         return self.get_letter_replacements()
 
-    @utils.Cog.listener()
-    async def on_member_join(self, member:discord.Member):
+    @vbu.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
         """
         Pings a member nickname update on member join.
         """
@@ -119,8 +119,8 @@ class NicknameHandler(utils.Cog):
             self.logger.info(f"Pinging nickname update for member join (G{member.guild.id}/U{member.id})")
             await self.fix_user_nickname(member)
 
-    @utils.Cog.listener()
-    async def on_member_update(self, before:discord.Member, member:discord.Member):
+    @vbu.Cog.listener()
+    async def on_member_update(self, before: discord.Member, member: discord.Member):
         """
         Pings a member nickname update on nickname update.
         """
@@ -170,7 +170,7 @@ class NicknameHandler(utils.Cog):
 
             # Change nickname back
             try:
-                await member.edit(nick=before.nick or before.name,reason= "Changed by Apple.Py due to nickname ban role")
+                await member.edit(nick=before.nick or before.name, reason="Changed by Apple.Py due to nickname ban role")
                 self.logger.info(f"User {member.id} on guild {member.guild.id} changed nickname - changing back due to nickname ban role")
             except discord.Forbidden as e:
                 self.logger.error(f"Can't change user {member.id}'s nickname on guild {member.guild.id} - {e}")
@@ -194,7 +194,7 @@ class NicknameHandler(utils.Cog):
             self.logger.info(f"Pinging nickname update for member update (G{member.guild.id}/U{member.id})")
             await self.fix_user_nickname(member)
 
-    async def fix_user_nickname(self, user:discord.Member, *, force_to_animal:bool=False) -> str:
+    async def fix_user_nickname(self, user: discord.Member, *, force_to_animal: bool = False) -> str:
         """
         Fix the nickname of a user.
         """
@@ -238,13 +238,13 @@ class NicknameHandler(utils.Cog):
 
         # Change their name
         self.logger.info(f"Updating nickname '{current_name}' to '{new_name}' (G{user.guild.id}/U{user.id})")
-        await user.edit(nick=new_name,reason= "Changed by Apple.Py automagically")
+        await user.edit(nick=new_name, reason="Changed by Apple.Py automagically")
         return new_name
 
-    @utils.group(aliases=['fun'], invoke_without_command=True)
+    @vbu.group(aliases=['fun'], invoke_without_command=True)
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
-    async def fixunzalgoname(self, ctx:utils.Context, user:discord.Member, force_to_animal:bool=False):
+    async def fixunzalgoname(self, ctx: vbu.Context, user: discord.Member, force_to_animal: bool = False):
         """
         Fixes a user's nickname to remove dumbass characters.
         """
@@ -256,9 +256,19 @@ class NicknameHandler(utils.Cog):
         new_name = await self.fix_user_nickname(user, force_to_animal=force_to_animal)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
 
+    @fixunzalgoname.command(aliases=['fun'], context_command_type=vbu.ApplicationCommandType.USER, context_command_name="Fix user's name")
+    @commands.has_permissions(manage_nicknames=True)
+    @commands.bot_has_permissions(manage_nicknames=True)
+    async def fixunzalgoname_user(self, ctx: vbu.Context, user: discord.Member, force_to_animal: bool = False):
+        """
+        Fixes a user's nickname to remove dumbass characters.
+        """
+
+        await self.fixunzalgoname(ctx, user, force_to_animal)
+
     @fixunzalgoname.command(name='text', add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True)
-    async def fixunzalgoname_text(self, ctx:utils.Context, *, text:str):
+    async def fixunzalgoname_text(self, ctx: vbu.Context, *, text: str):
         """
         Fixes a user's nickname to remove dumbass characters.
         """
@@ -283,19 +293,19 @@ class NicknameHandler(utils.Cog):
 
         return await ctx.send(f"I would change that from `{text}` to `{new_name}`.")
 
-    @utils.command()
-    @utils.checks.is_bot_support()
+    @vbu.command(add_slash_comamnd=False)
+    @vbu.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
-    async def addfixablename(self, ctx:utils.Context, user:discord.Member, *, fixed_name:str):
+    async def addfixablename(self, ctx: vbu.Context, user: discord.Member, *, fixed_name: str):
         """Adds a given user's name to the fixable letters"""
 
         await ctx.invoke(self.bot.get_command("addfixableletters"), user.display_name, fixed_name)
         await ctx.invoke(self.bot.get_command("fixunzalgoname"), user)
 
-    @utils.command(ignore_extra=False, add_slash_comamnd=False)
-    @utils.checks.is_bot_support()
+    @vbu.command(ignore_extra=False, add_slash_comamnd=False)
+    @vbu.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
-    async def addfixableletters(self, ctx:utils.Context, phrase1:str, phrase2:str):
+    async def addfixableletters(self, ctx: vbu.Context, phrase1: str, phrase2: str):
         """Adds fixable letters to the replacement list"""
 
         if len(phrase1) != len(phrase2):
@@ -315,6 +325,6 @@ class NicknameHandler(utils.Cog):
         return await ctx.send("Written to file successfully.")
 
 
-def setup(bot:utils.Bot):
+def setup(bot:vbu.Bot):
     x = NicknameHandler(bot)
     bot.add_cog(x)
