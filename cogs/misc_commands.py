@@ -84,7 +84,7 @@ class MiscCommands(utils.Cog):
             except ValueError:
                 return ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
 
-        await ctx.channel.trigger_typing()
+        await ctx.trigger_typing()
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get(f"https://http.cat/{errorcode}", headers=headers) as r:
             if r.status == 404:
@@ -117,7 +117,7 @@ class MiscCommands(utils.Cog):
             except ValueError:
                 return ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
 
-        await ctx.channel.trigger_typing()
+        await ctx.trigger_typing()
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg",
                                         headers=headers, allow_redirects=False) as r:

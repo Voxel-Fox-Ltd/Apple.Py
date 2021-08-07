@@ -12,7 +12,7 @@ class AnimalCommands(utils.Cog):
         Gives you some kitty pictures.
         """
 
-        await ctx.channel.trigger_typing()
+        await ctx.trigger_typing()
         headers = {
             "User-Agent": self.bot.user_agent,
             "x-api-key": self.bot.config['api_keys']['cat_api']
@@ -37,7 +37,7 @@ class AnimalCommands(utils.Cog):
         Gives you some dog pictures.
         """
 
-        await ctx.channel.trigger_typing()
+        await ctx.trigger_typing()
         headers = {"User-Agent": self.bot.user_agent}
         if breed is None:
             url = "https://dog.ceo/api/breeds/image/random"
@@ -58,7 +58,7 @@ class AnimalCommands(utils.Cog):
         Gives you some fox pictures.
         """
 
-        await ctx.channel.trigger_typing()
+        await ctx.trigger_typing()
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://randomfox.ca/floof/", headers=headers) as r:
             data = await r.json()
@@ -71,7 +71,7 @@ class AnimalCommands(utils.Cog):
     async def bird(self, ctx:utils.Context):
         """Gives you some bird pictures"""
 
-        await ctx.channel.trigger_typing()
+        await ctx.trigger_typing()
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://some-random-api.ml/img/birb", headers=headers) as r:
             data = await r.json()
@@ -86,7 +86,7 @@ class AnimalCommands(utils.Cog):
         Gives you some panda pictures.
         """
 
-        await ctx.channel.trigger_typing()
+        await ctx.trigger_typing()
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://some-random-api.ml/img/panda", headers=headers) as r:
             data = await r.json()
@@ -101,7 +101,7 @@ class AnimalCommands(utils.Cog):
         Gives you some red panda pictures.
         """
 
-        await ctx.channel.trigger_typing()
+        await ctx.trigger_typing()
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://some-random-api.ml/img/red_panda", headers=headers) as r:
             data = await r.json()
@@ -116,7 +116,7 @@ class AnimalCommands(utils.Cog):
         Gives you some koala pictures.
         """
 
-        await ctx.channel.trigger_typing()
+        await ctx.trigger_typing()
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://some-random-api.ml/img/koala", headers=headers) as r:
             data = await r.json()
