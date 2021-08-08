@@ -85,6 +85,12 @@ class QuoteCommands(vbu.Cog):
         if len(set([i.author.id for i in messages])) != 1:
             return {'success': False, 'message': "You can only quote one person at a time."}
 
+        # Make sure they're not quoting themself if there are no reactions needed
+        message_author = messages[0].author
+        reactions_needed = self.bot.guild_settings[ctx.guild.id]['quote_reactions_needed']
+        if reactions_needed and ctx.author.id == message_author.id and allow_self_quote is False and ctx.author.id not in self.bot.owner_ids:
+            return {'success': False, 'message': "You can't quote yourself when there's no vote :/"}
+
         # Return an embed
         with vbu.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
@@ -116,9 +122,7 @@ class QuoteCommands(vbu.Cog):
         timestamp = response['timestamp']
 
         # See if we should bother saving it
-        async with self.bot.database() as db:
-            rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1", ctx.guild.id)
-        reactions_needed = rows[0]['quote_reactions_needed']
+        reactions_needed = self.bot.guild_settings[ctx.guild.id]['quote_reactions_needed']
         ask_to_save_message = await ctx.send(
             f"Should I save this quote? If I receive {reactions_needed} positive reactions in the next 60 seconds, the quote will be saved.",
             embed=embed,
