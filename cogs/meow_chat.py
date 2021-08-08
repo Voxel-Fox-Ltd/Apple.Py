@@ -1,5 +1,6 @@
 import asyncio
 import re
+from datetime import datetime as dt
 
 import discord
 from discord.ext import commands
@@ -98,7 +99,7 @@ class MeowChat(vbu.Cog):
                     await ctx.send("Turned off meow chat as scheduled :<")
                 except KeyError:
                     pass
-            _, current_task: asyncio.Task = self.meow_disable_tasks.get(ctx.channel.id, (None, None))
+            _, current_task = self.meow_disable_tasks.get(ctx.channel.id, (None, None))
             if current_task:
                 current_task.cancel()
             self.meow_disable_tasks[ctx.channel.id] = (dt.utcnow() + duration.delta, self.bot.loop.create_task(waiter()))
@@ -118,7 +119,7 @@ class MeowChat(vbu.Cog):
         await ctx.send(f"Meow chat has been disabled in {ctx.channel.mention} :<")
 
         # See if there's a running task to keep it alive
-        expiry_time, current_task: asyncio.Task = self.meow_disable_tasks.pop(ctx.channel.id, (None, None))
+        expiry_time, current_task = self.meow_disable_tasks.pop(ctx.channel.id, (None, None))
         if current_task:
             current_task.cancel()
 
