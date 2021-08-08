@@ -56,11 +56,11 @@ class MeowChat(vbu.Cog):
             await message.delete()
             expiry_time, _ = self.meow_disable_tasks.get(message.channel.id, (None, None))
             if message.author.permissions_in(message.channel).manage_messages:
-                text = f"{message.author.mention}, your message needs to have a 'meow' in it to be valid (to disable, run the `meow off` command)."
+                text = f"{message.author.mention}, your message needs to have a 'meow' in it (to disable, run the `meow off` command)."
             else:
-                text = f"{message.author.mention}, your message needs to have a 'meow' in it to be valid :<"
+                text = f"{message.author.mention}, your message needs to have a 'meow' in it :<"
             if expiry_time:
-                text = text.replace("in it", f"in it for {vbu.TimeFormatter(expiry_time).relative_time} more")
+                text = text.replace("in it", f"in it until meow chat expires {vbu.TimeFormatter(expiry_time).relative_time}")
             await message.channel.send(text, delete_after=3)
         except discord.HTTPException:
             pass
