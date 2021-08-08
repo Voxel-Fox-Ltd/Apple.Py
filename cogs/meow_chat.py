@@ -54,7 +54,7 @@ class MeowChat(vbu.Cog):
             return
         try:
             await message.delete()
-            expiry_time, _ = self.meow_disable_tasks.get(ctx.channel.id, (None, None))
+            expiry_time, _ = self.meow_disable_tasks.get(message.channel.id, (None, None))
             if message.author.permissions_in(message.channel).manage_messages:
                 text = f"{message.author.mention}, your message needs to have a 'meow' in it to be valid (to disable, run the `meow off` command)."
             else:
