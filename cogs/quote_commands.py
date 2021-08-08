@@ -85,11 +85,6 @@ class QuoteCommands(vbu.Cog):
         if len(set([i.author.id for i in messages])) != 1:
             return {'success': False, 'message': "You can only quote one person at a time."}
 
-        # Make sure they're not quoting themself
-        message_author = messages[0].author
-        if ctx.author.id == message_author.id and allow_self_quote is False and ctx.author.id not in self.bot.owner_ids:
-            return {'success': False, 'message': "You can't quote yourself :/"}
-
         # Return an embed
         with vbu.Embed(use_random_colour=True) as embed:
             embed.set_author_to_user(user)
