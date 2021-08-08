@@ -88,7 +88,7 @@ class QuoteCommands(vbu.Cog):
         # Make sure they're not quoting themself if there are no reactions needed
         message_author = messages[0].author
         reactions_needed = self.bot.guild_settings[ctx.guild.id]['quote_reactions_needed']
-        if ctx.author.id not in self.bot.owner_id:
+        if ctx.author.id not in self.bot.owner_ids:
             pass
         elif ctx.author.id == message_author.id and (reactions_needed or allow_self_quote is False):
             return {'success': False, 'message': "You can't quote yourself when there's no vote :/"}
