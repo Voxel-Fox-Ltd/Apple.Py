@@ -3,10 +3,10 @@ import re
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class MeowChat(utils.Cog):
+class MeowChat(vbu.Cog):
 
     VALID_KEYWORDS = (
         "mew",
@@ -24,20 +24,20 @@ class MeowChat(utils.Cog):
     )
     EMOJI_REGEX = re.compile(r"<a?:.+?:\d+?>")
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.meow_chats = set()
         self.meow_disable_tasks = {}
 
-    @utils.Cog.listener()
-    async def on_message(self, message:discord.Message):
+    @vbu.Cog.listener()
+    async def on_message(self, message: discord.Message):
         await self.check_message(message)
 
-    @utils.Cog.listener()
-    async def on_message_edit(self, before:discord.Message, after:discord.Message):
+    @vbu.Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
         await self.check_message(after)
 
-    async def check_message(self, message:discord.Message):
+    async def check_message(self, message: discord.Message):
         """
         Handles deleting any messages that aren't meow-friendly.
         """
@@ -53,17 +53,21 @@ class MeowChat(utils.Cog):
             return
         try:
             await message.delete()
+            expiry_time, _ = self.meow_disable_tasks.get(ctx.channel.id, (None, None))
             if message.author.permissions_in(message.channel).manage_messages:
-                await message.channel.send(f"{message.author.mention}, your message needs to have a 'meow' in it to be valid (to disable, run the `meow off` command).", delete_after=6)
+                text = f"{message.author.mention}, your message needs to have a 'meow' in it to be valid (to disable, run the `meow off` command)."
             else:
-                await message.channel.send(f"{message.author.mention}, your message needs to have a 'meow' in it to be valid :<", delete_after=3)
+                text = f"{message.author.mention}, your message needs to have a 'meow' in it to be valid :<"
+            if expiry_time:
+                text = text.replace("in it", f"in it for {vbu.TimeFormatter(expiry_time).relative_time} more")
+            await message.channel.send(text, delete_after=3)
         except discord.HTTPException:
             pass
 
-    @utils.group()
+    @vbu.group()
     @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(send_messages=True, manage_messages=True)
-    async def meow(self, ctx:utils.Context):
+    @vbu.bot_has_permissions(send_messages=True, manage_messages=True)
+    async def meow(self, ctx: vbu.Context):
         """
         The parent group for the meow chat commands.
         """
@@ -73,8 +77,8 @@ class MeowChat(utils.Cog):
 
     @meow.command(name="enable", aliases=["start", "on"])
     @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(send_messages=True, manage_messages=True)
-    async def meow_enable(self, ctx:utils.Context, duration:utils.TimeValue=None):
+    @vbu.bot_has_permissions(send_messages=True, manage_messages=True)
+    async def meow_enable(self, ctx: vbu.Context, duration: vbu.TimeValue = None):
         """
         Turn on meow chat for this channel.
         """
@@ -94,15 +98,15 @@ class MeowChat(utils.Cog):
                     await ctx.send("Turned off meow chat as scheduled :<")
                 except KeyError:
                     pass
-            current_task: asyncio.Task = self.meow_disable_tasks.get(ctx.channel.id)
+            _, current_task: asyncio.Task = self.meow_disable_tasks.get(ctx.channel.id, (None, None))
             if current_task:
                 current_task.cancel()
-            self.meow_disable_tasks[ctx.channel.id] = self.bot.loop.create_task(waiter())
+            self.meow_disable_tasks[ctx.channel.id] = (dt.utcnow() + duration.delta, self.bot.loop.create_task(waiter()))
 
     @meow.command(name="disable", aliases=["stop", "off"])
     @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(send_messages=True, manage_messages=True)
-    async def meow_disable(self, ctx:utils.Context):
+    @vbu.bot_has_permissions(send_messages=True, manage_messages=True)
+    async def meow_disable(self, ctx: vbu.Context):
         """
         Turn off meow chat for this channel.
         """
@@ -114,11 +118,11 @@ class MeowChat(utils.Cog):
         await ctx.send(f"Meow chat has been disabled in {ctx.channel.mention} :<")
 
         # See if there's a running task to keep it alive
-        current_task: asyncio.Task = self.meow_disable_tasks.pop(ctx.channel.id, None)
+        expiry_time, current_task: asyncio.Task = self.meow_disable_tasks.pop(ctx.channel.id, (None, None))
         if current_task:
             current_task.cancel()
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = MeowChat(bot)
     bot.add_cog(x)
