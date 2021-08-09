@@ -218,7 +218,7 @@ class GithubCommands(utils.Cog):
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
                 return await ctx.send((
                     f"You need to link your {repo.host} account to Discord to run this "
-                    f"command - see `{ctx.clean_prefix}website`."
+                    f"command - see the website at `{ctx.clean_prefix}info`."
                 ))
 
         # Ask if we want to do this
@@ -316,7 +316,7 @@ class GithubCommands(utils.Cog):
         async with self.bot.database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
-                return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+                return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see the website at `{ctx.clean_prefix}info`.")
 
         # Get the issues
         if repo.host == "Github":
@@ -383,7 +383,7 @@ class GithubCommands(utils.Cog):
         async with self.bot.database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
-                return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+                return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see the website at `{ctx.clean_prefix}info`.")
 
         # Add attachments
         attachment_urls = []
@@ -433,7 +433,7 @@ class GithubCommands(utils.Cog):
         async with self.bot.database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{host.lower()}_username']:
-                return await ctx.send(f"You need to link your {host} account to Discord to run this command - see `{ctx.clean_prefix}website`.")
+                return await ctx.send(f"You need to link your {host} account to Discord to run this command - see the website at `{ctx.clean_prefix}info`.")
 
         # Get the issues
         if host == "Github":

@@ -61,7 +61,7 @@ class TimezoneInfo(vbu.Cog):
         try:
             zone = pytz.timezone(offset)
         except pytz.UnknownTimeZoneError:
-            return await ctx.send(f"I can't work out what timezone you're referring to - please run this command again to try later, or go to the website (`{ctx.clean_prefix}website`) and I can work it out automatically.")
+            return await ctx.send(f"I can't work out what timezone you're referring to - please run this command again to try later, or go to the website (`{ctx.clean_prefix}info`) and I can work it out automatically.")
 
         # Store it in the database
         async with self.bot.database() as db:
