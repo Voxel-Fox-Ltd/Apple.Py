@@ -87,6 +87,10 @@ class VCAdmin(vbu.Cog):
         guild = member.guild
         channel = after.channel
 
+        # Make sure stream status updated
+        if before.self_stream == after.self_stream:
+            return
+
         # Get the database info
         async with self.bot.database() as db:
             roles_rows = await db(
