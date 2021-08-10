@@ -1,0 +1,126 @@
+import discord
+from discord.ext import commands
+import voxelbotutils as vbu
+
+
+class VCAdmin(vbu.Cog):
+
+    @vbu.group()
+    async def vcadmin(self, ctx: vbu.Context):
+        """
+        The parent group for VC admin commands.
+        """
+
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
+
+    @vcadmin.command(aliases=["set"])
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def add(self, ctx: vbu.Context, channel: discord.VoiceChannel, role: discord.Role):
+        """
+        Sets a voice channel's admin role.
+        """
+
+        # Set the channel's admin role
+        async with self.bot.database() as db:
+            await db(
+                """INSERT INTO vc_admin_pair (guild_id, channel_id, role_id)
+                VALUES ($1, $2, $3) ON CONFLICT (channel_id, role_id) DO UPDATE SET role_id = $3""",
+                ctx.guild.id, channel.id, role.id
+            )
+
+        # Send a confirmation message
+        await ctx.send(f"Set {channel.mention}'s admin role to {role.mention}", allowed_mentions=discord.AllowedMentions.none())
+
+    @vcadmin.command(aliases=["delete"])
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def remove(self, ctx: vbu.Context, channel: discord.VoiceChannel):
+        """
+        Removes a voice channel's admin role.
+        """
+
+        # Remove the channel's admin role
+        async with self.bot.database() as db:
+            await db(
+                """DELETE FROM vc_admin_pair WHERE guild_id = $1 AND channel_id = $2""",
+                ctx.guild.id, channel.id
+            )
+
+        # Send a confirmation message
+        await ctx.send(f"Removed {channel.mention}'s admin role", allowed_mentions=discord.AllowedMentions.none())
+        
+    @vcadmin.command()
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def role(self, ctx: vbu.Context, channel: discord.VoiceChannel):
+        """
+        Sends a voice channel's admin roles.
+        """
+        
+        # Get the channel's admin roles
+        async with self.bot.database() as db:
+            roles_rows = await db(
+                """SELECT role_id FROM vc_admin_pair WHERE guild_id = $1 AND channel_id = $2""",
+                ctx.guild.id, channel.id
+            )
+
+        # If there are no roles
+        if not roles_rows:
+            return await ctx.send(f"{channel.mention} does not have a VC administrator role set-up. Set one up by running the `{ctx.prefix}vcadmin add <channel_id> <role>` command.")
+
+        # Get a the role object
+        role = await ctx.guild.get_role(roles_rows[0]['role_id'])
+
+        # Send the message
+        await ctx.send(f"{channel.mention}'s VC administrator role is {role.mention}", allowed_mentions=discord.AllowedMentions.none())
+        
+
+    @vbu.Cog.listener()
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+        """
+        Give the user who's streaming the admin role
+        """
+
+        # Set up our variables
+        guild = member.guild
+        channel = after.channel
+
+        # Get the database info
+        async with self.bot.database() as db:
+            roles_rows = await db(
+                """SELECT * FROM vc_admin_pair WHERE guild_id = $1 AND channel_id = $2""",
+                guild, channel
+            )
+
+        # Create a dictionary of the channels: roles
+        roles = {row['channel_id']: row['role_id'] for row in roles_rows}
+
+        # Check that we're in a voice channel that we have a VC admin role for
+        if channel.id not in roles.keys():
+            return
+        
+        # Get the role object
+        role = await guild.get_role(roles[channel.id])
+
+        # Check that the user has either stopped streaming or begun streaming
+        if not (before.self_mute or after.self_mute):
+            return
+
+        # Determine the method we'll use
+        method = {
+            True: member.add_roles,
+            False: member.remove_roles
+        }[after.self_stream]
+
+        # Apply the method
+        await method(role, reason="Streaming status changed.")
+        
+        # Log our info
+        self.logger.info(f"Gave {member.id} the role {role.id} for channel {channel.id} for stream status change.")
+
+
+def setup(bot:vbu.Bot):
+    x = VCAdmin(bot)
+    bot.add_cog(x)
