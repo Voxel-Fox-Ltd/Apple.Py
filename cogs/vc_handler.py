@@ -1,20 +1,26 @@
 import discord
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class VCHandler(utils.Cog):
 
+    async def cache_setup(self, db):
+        data = await self.bot._get_list_table_data(db, "channel_list", "MaxVCMembers")
+        for row in data:
+            self.bot.guild_settings[row['guild_id']].setdefault('max_vc_members', dict())[row['channel_id']] = int(row['value'])
+
     @utils.Cog.listener()
     async def on_voice_state_update(self, member:discord.Member, before:discord.VoiceState, after:discord.VoiceState):
-        """Pinged when a user joins/leaves a voice chat"""
+        """
+        Pinged when a user joins/leaves a voice chat.
+        """
 
         # Check how many people are in the VC
         channels = list(set([i for i in [after.channel, before.channel] if i is not None]))
         for channel in channels:
 
             # Get allowed data
-            allowed_members_for_channel = self.bot.guild_settings[member.guild.id]['max_vc_members'].get(channel.id)
+            allowed_members_for_channel = self.bot.guild_settings[member.guild.id].setdefault('max_vc_members', dict()).get(channel.id)
             if allowed_members_for_channel is None:
                 continue
 
@@ -25,10 +31,6 @@ class VCHandler(utils.Cog):
 
             # See how many are muted
             current_muted_member_count = len([i for i in channel.members if user_counts_as_muted(i.voice)])
-
-            # # See if we need to add our newly-cached member to that
-            # if after.channel == channel:
-            # TODO
 
             new_limit = allowed_members_for_channel + current_muted_member_count
             try:

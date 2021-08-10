@@ -1,19 +1,14 @@
-import re as regex
+import re
 
 import discord
-from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class SteamCommand(utils.Cog):
 
     ALL_GAMES_URL = "https://api.steampowered.com/ISteamApps/GetAppList/v2/"
     GAME_DATA_URL = "https://store.steampowered.com/api/appdetails"
-    GAME_URL_REGEX = regex.compile(r"https:\/\/store\.steampowered\.com\/app\/(\d+)")
-    headers = {
-        "User-Agent": "Apple.py/0.0.1 - Discord@Caleb#2831"
-    }
+    GAME_URL_REGEX = re.compile(r"https:\/\/store\.steampowered\.com\/app\/(\d+)")
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
@@ -21,12 +16,17 @@ class SteamCommand(utils.Cog):
         self.sent_message_cache = {}  # MessageID: {embed: Embed, index: ScreenshotIndex, screenshots: List[str]}
 
     async def load_game_cache(self):
-        """Loads the games from Steam into cache"""
+        """
+        Loads the games from Steam into cache.
+        """
 
         params = {
             "key": self.bot.config['api_keys']['steam']
         }
-        async with self.bot.session.get(self.ALL_GAMES_URL, params=params, headers=self.headers) as r:
+        headers = {
+            "User-Agent": self.bot.user_agent
+        }
+        async with self.bot.session.get(self.ALL_GAMES_URL, params=params, headers=headers) as r:
             data = await r.json()
         apps = data['applist']['apps']
         self.game_cache = apps
@@ -34,9 +34,12 @@ class SteamCommand(utils.Cog):
     def get_valid_name(self, name):
         return ''.join(i for i in name if i.isdigit() or i.isalpha() or i.isspace())
 
-    @commands.command(cls=utils.Command, aliases=['steam'])
+    @utils.command(aliases=['steam'])
+    @utils.checks.is_config_set('api_keys', 'steam')
     async def steamsearch(self, ctx:utils.Context, *, app_name:str):
-        """Search Steam for an item"""
+        """
+        Search Steam for an item.
+        """
 
         # Load cache
         if self.game_cache is None:
@@ -68,9 +71,11 @@ class SteamCommand(utils.Cog):
             if full_title_match:
                 valid_items = [full_title_match[0]]
             if len(valid_items) > 1:
-                return await ctx.send("There are multiple results with that name.")  # TODO
+                output_items = valid_items[:10]
+                output_ids = [f"`{i['appid']}` - {i['name']}" for i in output_items]
+                return await ctx.send("There are multiple results with that name:\n" + "\n".join(output_ids))  # TODO
             elif len(valid_items) == 0:
-                return await ctx.send("There are no results with that name.")  # TODO
+                return await ctx.send("There are no results with that name.")
             app_object = valid_items[0]
             appid = app_object['appid']
 
@@ -78,7 +83,10 @@ class SteamCommand(utils.Cog):
         params = {
             "appids": appid
         }
-        async with self.bot.session.get(self.GAME_DATA_URL, params=params, headers=self.headers) as r:
+        headers = {
+            "User-Agent": self.bot.user_agent
+        }
+        async with self.bot.session.get(self.GAME_DATA_URL, params=params, headers=headers) as r:
             game_data = await r.json()
         if game_data[str(appid)]['success'] is False:
             return await ctx.send(f"I couldn't find an application with ID `{appid}`.")
@@ -93,9 +101,9 @@ class SteamCommand(utils.Cog):
             embed.title = game_object['name']
             embed.set_footer(text=f"AppID: {appid}")
             embed.description = game_object['short_description']
-            embed.add_field("Developer", ', '.join(game_object['developers']), inline=True)
-            embed.add_field("Publisher", ', '.join(game_object['publishers']), inline=True)
-            embed.add_field("Genre", ', '.join(i['description'] for i in game_object['genres']), inline=True)
+            embed.add_field("Developer", ', '.join(game_object.get('developers', list())) or 'None', inline=True)
+            embed.add_field("Publisher", ', '.join(game_object.get('publishers', list())) or 'None', inline=True)
+            embed.add_field("Genre", ', '.join(i['description'] for i in game_object['genres']) or 'None', inline=True)
             if game_object.get('price_overview') is not None:
                 initial_price = game_object['price_overview']['initial_formatted']
                 final_price = game_object['price_overview']['final_formatted']

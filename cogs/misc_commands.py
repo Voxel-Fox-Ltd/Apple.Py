@@ -1,86 +1,138 @@
-import asyncio
 import typing
+import random
+from urllib.parse import urlencode
+import io
+import http
+import asyncio
+import collections
 
 import discord
 from discord.ext import commands
 import unicodedata
-
-from cogs import utils
+from PIL import Image
+import voxelbotutils as utils
 
 
 class MiscCommands(utils.Cog):
 
-    @commands.command(aliases=['git', 'code'], cls=utils.Command)
-    @utils.checks.is_config_set('command_data', 'github')
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.button_message_locks = collections.defaultdict(asyncio.Lock)
+
+    @utils.group(aliases=['topics'], invoke_without_command=False)
     @commands.bot_has_permissions(send_messages=True)
-    async def github(self, ctx:utils.Context):
-        """Sends the GitHub Repository link"""
+    async def topic(self, ctx:utils.Context):
+        """
+        The parent group for the topic commands.
+        """
 
-        await ctx.send(f"<{self.bot.config['command_data']['github']}>")
+        async with self.bot.database() as db:
+            rows = await db("SELECT * FROM topics ORDER BY RANDOM() LIMIT 1")
+        if not rows:
+            return await ctx.send("There aren't any topics set up in the database for this bot :<")
+        return await ctx.send(rows[0]['topic'])
 
-    @commands.command(aliases=['support', 'guild'], cls=utils.Command)
-    @utils.checks.is_config_set('command_data', 'guild_invite')
+    @topic.command(name="get")
     @commands.bot_has_permissions(send_messages=True)
-    async def server(self, ctx:utils.Context):
-        """Gives the invite to the support server"""
+    async def topic_get(self, ctx:utils.Context):
+        """
+        Gives you a conversation topic.
+        """
 
-        await ctx.send(f"<{self.bot.config['command_data']['guild_invite']}>")
+        await self.topic(ctx)
 
-    @commands.command(aliases=['patreon'], cls=utils.Command)
-    @utils.checks.is_config_set('command_data', 'patreon')
+    @topic.command(name="add")
+    @utils.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
-    async def donate(self, ctx:utils.Context):
-        """Gives you the bot's creator's Patreon"""
+    async def topic_add(self, ctx:utils.Context, *, topic:str):
+        """
+        Add a new topic to the database.
+        """
 
-        await ctx.send(f"<{self.bot.config['command_data']['patreon']}>")
+        async with self.bot.database() as db:
+            await db("INSERT INTO topics VALUES ($1)", topic)
+        return await ctx.send("Added to database.")
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.bot_has_permissions(send_messages=True)
-    @utils.checks.is_config_set('command_data', 'invite_command_enabled')
-    async def invite(self, ctx:utils.Context):
-        """Gives you the bot's invite link"""
+    async def coinflip(self, ctx:utils.Context):
+        """
+        Flips a coin.
+        """
 
-        await ctx.send(f"<{self.bot.get_invite_link()}>")
+        coin = ["Heads", "Tails"]
+        return await ctx.send(random.choice(coin))
 
-    @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(send_messages=True)
-    @utils.checks.is_config_set('command_data', 'echo_command_enabled')
-    async def echo(self, ctx:utils.Context, *, content:str):
-        """Echos the given content into the channel"""
+    @utils.command(aliases=['http'])
+    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    async def httpcat(self, ctx:utils.Context, errorcode:str):
+        """
+        Gives you a cat based on an HTTP error code.
+        """
 
-        await ctx.send(content, allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
+        standard_errorcodes = [error.value for error in http.HTTPStatus]
 
-    @commands.command(cls=utils.Command, aliases=['status'])
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('command_data', 'stats_command_enabled')
-    async def stats(self, ctx:utils.Context):
-        """Gives you the stats for the bot"""
+        if errorcode in ('random', 'rand', 'r'):
+            errorcode = random.choice(standard_errorcodes)
+        else:
+            try:
+                errorcode = int(errorcode)
+            except ValueError:
+                return ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
 
-        # Get creator info
-        creator_id = self.bot.config["owners"][0]
-        creator = self.bot.get_user(creator_id) or await self.bot.fetch_user(creator_id)
-
-        # Make embed
-        with utils.Embed(colour=0x1e90ff) as embed:
-            embed.set_footer(str(self.bot.user), icon_url=self.bot.user.avatar_url)
-            embed.add_field("Creator", f"{creator!s}\n{creator_id}")
-            embed.add_field("Library", f"Discord.py {discord.__version__}")
-            if self.bot.shard_count != len(self.bot.shard_ids):
-                embed.add_field("Average Guild Count", int((len(self.bot.guilds) / len(self.bot.shard_ids)) * self.bot.shard_count))
-            else:
-                embed.add_field("Guild Count", len(self.bot.guilds))
-            embed.add_field("Shard Count", self.bot.shard_count)
-            embed.add_field("Average WS Latency", f"{(self.bot.latency * 1000):.2f}ms")
-            embed.add_field("Coroutines", f"{len([i for i in asyncio.Task.all_tasks() if not i.done()])} running, {len(asyncio.Task.all_tasks())} total.")
-
-        # Send it out wew let's go
+        await ctx.trigger_typing()
+        headers = {"User-Agent": self.bot.user_agent}
+        async with self.bot.session.get(f"https://http.cat/{errorcode}", headers=headers) as r:
+            if r.status == 404:
+                if errorcode not in standard_errorcodes:
+                    await ctx.send("That HTTP code doesn't exist.")
+                else:
+                    await ctx.send('Image for HTTP code not found on provider.')
+                return
+            if r.status != 200:
+                await ctx.send(f'Something went wrong, try again later. ({r.status})')
+                return
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_image(url=f'https://http.cat/{errorcode}')
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command, aliases=['color'])
+    @utils.command()
+    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    async def httpdog(self, ctx:utils.Context, errorcode:str):
+        """
+        Gives you a dog based on an HTTP error code.
+        """
+
+        standard_errorcodes = [error.value for error in http.HTTPStatus]
+
+        if errorcode in ('random', 'rand', 'r'):
+            errorcode = random.choice(standard_errorcodes)
+        else:
+            try:
+                errorcode = int(errorcode)
+            except ValueError:
+                return ctx.channel.send('Converting to "int" failed for parameter "errorcode".')
+
+        await ctx.trigger_typing()
+        headers = {"User-Agent": self.bot.user_agent}
+        async with self.bot.session.get(f"https://httpstatusdogs.com/img/{errorcode}.jpg",
+                                        headers=headers, allow_redirects=False) as r:
+            if str(r.status)[0] != "2":
+                if errorcode not in standard_errorcodes:
+                    await ctx.send("That HTTP code doesn't exist.")
+                else:
+                    await ctx.send('Image for HTTP code not found on provider.')
+                return
+        with utils.Embed(use_random_colour=True) as embed:
+            embed.set_image(url=f'https://httpstatusdogs.com/img/{errorcode}.jpg')
+        await ctx.send(embed=embed)
+
+    @utils.command(aliases=['color'], add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def colour(self, ctx:utils.Context, *, colour:typing.Union[discord.Role, discord.Colour, discord.Member]):
-        """Get you a colour"""
+    async def colour(self, ctx:utils.Context, *, colour:typing.Union[utils.converters.ColourConverter, discord.Role, discord.Member]):
+        """
+        Get you a colour.
+        """
 
         # https://www.htmlcsscolor.com/preview/gallery/5dadec.png
         if isinstance(colour, discord.Role):
@@ -95,34 +147,73 @@ class MiscCommands(utils.Cog):
             embed.set_image(url=f"https://www.htmlcsscolor.com/preview/gallery/{hex_colour:0>6X}.png")
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command)
-    @commands.bot_has_permissions(send_messages=True)
-    async def charinfo(self, ctx, *, characters: str):
-        """Shows you information about a number of characters.
-
-        Only up to 25 characters at a time.
-        """
-
-        def to_string(c):
-            digit = f'{ord(c):x}'
-            name = unicodedata.name(c, 'Name not found.')
-            return f'`\\U{digit:>08}`: {name} - {c} \N{EM DASH} <http://www.fileformat.info/info/unicode/char/{digit}>'
-        msg = '\n'.join(map(to_string, characters))
-        if len(msg) > 2000:
-            return await ctx.send('Output too long to display.')
-        await ctx.send(msg)
-
-    @commands.command(cls=utils.Command, cooldown_after_parsing=True)
+    @utils.command(add_slash_command=False, cooldown_after_parsing=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(send_messages=True)
     @utils.cooldown.cooldown(1, 60, commands.BucketType.guild)
     async def spam(self, ctx:utils.Context, amount:int, *, text:str):
-        """Spams a message a given amount of times"""
+        """
+        Spams a message a given amount of times.
+        """
 
         if amount > 10:
             return await ctx.send("That's too much to spam.")
         for _ in range(amount):
             await ctx.send(text)
+
+    @utils.command(aliases=['disconnectvc', 'clearvc'])
+    @commands.has_guild_permissions(move_members=True)
+    @commands.bot_has_guild_permissions(move_members=True)
+    @commands.bot_has_permissions(send_messages=True)
+    async def emptyvc(self, ctx:utils.Context, channel:discord.VoiceChannel):
+        """
+        Removes all the people from a given VC.
+        """
+
+        if not channel.members:
+            return await ctx.send("There are no people in that VC for me to remove.")
+        member_count = len(channel.members)
+        for member in channel.members:
+            try:
+                await member.edit(voice_channel=None)
+            except discord.Forbidden:
+                return await ctx.send("I don't have permission to remove members from that channel.")
+        return await ctx.send(f"Dropped {member_count} members from the VC.")
+
+    @utils.command()
+    @commands.bot_has_permissions(send_messages=True)
+    async def buttons(self, ctx: utils.Context):
+        """
+        Makes a cute lil message of clickable buttons.
+        """
+
+        def make_button(i):
+            return utils.Button("X", f"DISABLE_BUTTON_COMMAND {i}", style=utils.ButtonStyle(random.randint(1, 4)))
+        await ctx.send(
+            "OwO button time",
+            components=utils.MessageComponents.add_buttons_with_rows(
+                *[make_button(i) for i in range(25)]
+            ),
+        )
+
+    @utils.Cog.listener()
+    async def on_button_click(self, payload):
+        """
+        Disables a given button.
+        """
+
+        if not payload.component.custom_id.startswith("DISABLE_BUTTON_COMMAND"):
+            return
+        async with self.button_message_locks[payload.message.id]:
+            components = utils.MessageComponents(*[
+                utils.ActionRow(*[
+                    utils.Button.from_dict(b) for b in r['components']
+                ]) for r in payload.data['message']['components']
+            ])
+            b = components.get_component(payload.component.custom_id)
+            b.disable()
+            await payload.ack()
+            await payload.message.edit(components=components)
 
 
 def setup(bot:utils.Bot):

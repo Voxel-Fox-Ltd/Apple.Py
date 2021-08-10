@@ -17,8 +17,34 @@ CREATE TABLE IF NOT EXISTS user_settings(
     twitch_username VARCHAR(32),
     twitch_bearer_token VARCHAR(30),
     twitch_cursor VARCHAR(100),
+
     minecraft_username VARCHAR(16),
-    minecraft_uuid VARCHAR(32)
+    minecraft_uuid VARCHAR(32),
+
+    timezone_name VARCHAR(250),
+    timezone_offset INTEGER,  -- Kept for legacy reasons
+
+    github_username VARCHAR(40),
+    github_access_token VARCHAR(100),
+
+    gitlab_username VARCHAR(40),
+    gitlab_bearer_token VARCHAR(100),
+    gitlab_refresh_token VARCHAR(100),
+
+    google_email VARCHAR(40),
+    google_access_token VARCHAR(300),
+    google_refresh_token VARCHAR(300),
+
+    tumblr_username VARCHAR(100),
+    tumblr_oauth_token VARCHAR(100),
+    tumblr_oauth_token_secret VARCHAR(100),
+
+    reddit_username VARCHAR(100),
+    reddit_access_token VARCHAR(100),
+    reddit_refresh_token VARCHAR(100),
+
+    trello_username VARCHAR(100),
+    trello_token VARCHAR(100)
 );
 
 
@@ -28,14 +54,14 @@ CREATE TABLE IF NOT EXISTS user_quotes(
     channel_id BIGINT NOT NULL,
     message_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    timestamp TIMESTAMP NOT NULL
+    timestamp TIMESTAMP NOT NULL,
+    quoter_id BIGINT
 );
 
 
 CREATE TABLE IF NOT EXISTS quote_aliases(
     alias VARCHAR(2000) PRIMARY KEY,
-    quote_id VARCHAR(5) REFERENCES user_quotes(quote_id) ON DELETE CASCADE,
-    guild_id BIGINT
+    quote_id VARCHAR(5) REFERENCES user_quotes(quote_id) ON DELETE CASCADE
 );
 
 
@@ -73,10 +99,41 @@ CREATE TABLE IF NOT EXISTS user_points(
 );
 
 
-CREATE TABLE IF NOT EXISTS this_or_that(
-    compare_1 BIGINT,
-    compare_2 BIGINT,
-    choice BIGINT,
+CREATE TABLE IF NOT EXISTS ship_percentages(
+    user_id_1 BIGINT,
+    user_id_2 BIGINT,
+    percentage SMALLINT,
+    PRIMARY KEY (user_id_1, user_id_2)
+);
+
+
+DO $$ BEGIN
+    CREATE TYPE git_host AS ENUM ('Github', 'Gitlab');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+
+CREATE TABLE IF NOT EXISTS github_repo_aliases(
+    alias VARCHAR(100) PRIMARY KEY,
+    owner VARCHAR(300),
+    repo VARCHAR(300),
+    host git_host DEFAULT 'Github',
+    added_by BIGINT
+);
+
+
+CREATE TABLE IF NOT EXISTS reminders(
+    reminder_id VARCHAR(5) PRIMARY KEY,
+    guild_id BIGINT,
+    channel_id BIGINT,
+    message_id BIGINT,
+    timestamp TIMESTAMP,
     user_id BIGINT,
-    PRIMARY KEY (compare_1, compare_2, user_id)
+    message TEXT
+);
+
+
+CREATE TABLE IF NOT EXISTS topics(
+    topic TEXT PRIMARY KEY
 );

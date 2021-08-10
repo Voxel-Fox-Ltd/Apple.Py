@@ -1,22 +1,33 @@
 import typing
+import re
 
 import discord
 from discord.ext import commands
-
-from cogs import utils
+import voxelbotutils as utils
 
 
 class UserPoints(utils.Cog):
 
-    @commands.group(cls=utils.Group, invoke_without_command=True)
+    @utils.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def points(self, ctx:utils.Context, user:discord.Member=None):
-        """See how many points a given user has"""
+    async def points(self, ctx:utils.Context):
+        """
+        The parent group for the points commands.
+        """
 
         # See if they're running a subcommand
         if ctx.invoked_subcommand is not None:
             return
+        return await ctx.send_help(ctx.command)
+
+    @points.command(name="get")
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def points_get(self, ctx:utils.Context, user:discord.Member=None):
+        """
+        Get the number of points that a user has.
+        """
 
         # Get data
         user = user or ctx.author
@@ -28,12 +39,14 @@ class UserPoints(utils.Cog):
             return await ctx.send(f"{user.mention} has {rows[0]['points']} points.")
         await ctx.send(f"{user.mention} has 0 points.", allowed_mentions=discord.AllowedMentions(users=False))
 
-    @points.command(cls=utils.Command)
+    @points.command(name="add")
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def add(self, ctx:utils.Context, user:typing.Optional[discord.Member], points:int=1):
-        """Add a point to a user"""
+    async def points_add(self, ctx:utils.Context, user:typing.Optional[discord.Member], points:int=1):
+        """
+        Add a point to a user.
+        """
 
         # Alter data
         user = user or ctx.author
@@ -48,12 +61,14 @@ class UserPoints(utils.Cog):
         await ctx.send(f"Added {points} points to {user.mention}.", allowed_mentions=discord.AllowedMentions(users=False))
         self.bot.dispatch("leaderboard_update", ctx.guild)
 
-    @points.command(cls=utils.Command)
+    @points.command(name="remove")
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def remove(self, ctx:utils.Context, user:typing.Optional[discord.Member], points:int=1):
-        """Remove points from a user"""
+    async def points_remove(self, ctx:utils.Context, user:typing.Optional[discord.Member], points:int=1):
+        """
+        Remove points from a user.
+        """
 
         # Alter data
         user = user or ctx.author
@@ -68,11 +83,26 @@ class UserPoints(utils.Cog):
         await ctx.send(f"Removed {points} points from {user.mention}.", allowed_mentions=discord.AllowedMentions(users=False))
         self.bot.dispatch("leaderboard_update", ctx.guild)
 
-    @points.group(cls=utils.Group, invoke_without_command=True)
+    @points.subcommand_group(name="leaderboard", invoke_without_command=True, add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
-    async def leaderboard(self, ctx:utils.Context):
-        """Create a points leaderboard"""
+    async def points_leaderboard(self, ctx:utils.Context):
+        """
+        A parent group for the points leaderboard commands.
+        """
+
+        if ctx.invoked_subcommand is not None:
+            return
+        return await ctx.send_help(ctx.command)
+
+    @points_leaderboard.command(name="show")
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.guild_only()
+    async def points_leaderboard_show(self, ctx:utils.Context):
+        """
+        Show the points leaderboard without creating a new one.
+        """
 
         # See if they're running a subcommand
         if ctx.invoked_subcommand is not None:
@@ -97,12 +127,14 @@ class UserPoints(utils.Cog):
         # Output
         await ctx.send(embed=embed)
 
-    @leaderboard.command(cls=utils.Command)
+    @points_leaderboard.command(name="create")
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
-    async def create(self, ctx:utils.Context):
-        """Create a points leaderboard"""
+    async def points_leaderboard_create(self, ctx:utils.Context):
+        """
+        Create a points leaderboard.
+        """
 
         message = await ctx.send("Setting up leaderboard message...")
         async with self.bot.database() as db:
@@ -116,7 +148,9 @@ class UserPoints(utils.Cog):
 
     @utils.Cog.listener()
     async def on_leaderboard_update(self, guild:discord.Guild):
-        """Update the leaderboard message"""
+        """
+        Update the leaderboard message.
+        """
 
         # See if we can get the leaderboard message
         class FakeContext:
