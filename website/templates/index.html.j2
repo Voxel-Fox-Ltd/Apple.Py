@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apple.py Oauth Connection Page</title>
+    <link rel="stylesheet" type="text/css" href="{{ static('main.css') }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+
+<div id="buttons">
+
+    {% if session.logged_in %}
+
+        <a href="/logout">
+            <div class="button-holder">Logout of Discord (<b>{{ session.user_info.username }}#{{ session.user_info.discriminator }}</b>)</div>
+        </a>
+
+        <script type="text/javascript">
+            async function setTimezone(){
+                let jsonData = JSON.stringify({timezone: Intl.DateTimeFormat().resolvedOptions().timeZone});
+                console.log(`Sending data to /set_timezone: ${jsonData}`);
+                let data = await fetch("/set_timezone", {
+                    method: "POST",
+                    body: jsonData,
+                    headers: {"Content-Type": "application/json"}
+                })
+                return 300 > data.status && data.status >= 200;
+            }
+        </script>
+
+        <a href="javascript:setTimezone().then(d=>{if(d){location.reload()}});">
+            <div class="button-holder">Update your Timezone{% if timezone_name %} (<b>{{ timezone_name }}</b>){% endif %}</div>
+        </a>
+
+        {% if twitch_username %}
+            <a href="/twitch_logout">
+                <div class="button-holder">Logout of Twitch (<b>{{ twitch_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ twitch_login_url }}">
+                <div class="button-holder">Login with Twitch</div>
+            </a>
+        {% endif %}
+
+        {% if github_username %}
+            <a href="/github_logout">
+                <div class="button-holder">Logout of Github (<b>{{ github_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ github_login_url }}">
+                <div class="button-holder">Login with Github</div>
+            </a>
+        {% endif %}
+
+        {% if gitlab_username %}
+            <a href="/gitlab_logout">
+                <div class="button-holder">Logout of Gitlab (<b>{{ gitlab_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ gitlab_login_url }}">
+                <div class="button-holder">Login with Gitlab</div>
+            </a>
+        {% endif %}
+
+        {# {% if google_email %}
+            <a href="/google_logout">
+                <div class="button-holder">Logout of Google (<b>{{ google_email }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ google_login_url }}">
+                <div class="button-holder">Login with Google</div>
+            </a>
+        {% endif %} #}
+
+        {% if tumblr_username %}
+            <a href="/tumblr_logout">
+                <div class="button-holder">Logout of Tumblr (<b>{{ tumblr_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ tumblr_login_url }}">
+                <div class="button-holder">Login with Tumblr</div>
+            </a>
+        {% endif %}
+
+        {% if reddit_username %}
+            <a href="/reddit_logout">
+                <div class="button-holder">Logout of Reddit (<b>{{ reddit_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ reddit_login_url }}">
+                <div class="button-holder">Login with Reddit</div>
+            </a>
+        {% endif %}
+
+        {% if trello_username %}
+            <a href="/trello_logout">
+                <div class="button-holder">Logout of Trello (<b>{{ trello_username }}</b>)</div>
+            </a>
+        {% else %}
+            <a href="{{ trello_login_url }}">
+                <div class="button-holder">Login with Trello</div>
+            </a>
+        {% endif %}
+
+    {% else %}
+        <a href="{{ login_url }}">
+            <div class="button-holder">Login with Discord</div>
+        </a>
+    {% endif %}
+</div>
+
+</body>
+</html>

@@ -1,27 +1,53 @@
 import io
+from datetime import datetime as dt
+import typing
 
 import discord
 from discord.ext import commands
+import voxelbotutils as vbu
 
-from cogs import utils
 
+class UserInfo(vbu.Cog):
 
-class UserInfo(utils.Cog):
+    @vbu.command(aliases=["avatar", "av"], context_command_type=vbu.ApplicationCommandType.USER, context_command_name="Enlarge avatar")
+    async def enlarge(self, ctx: vbu.Context, target: typing.Union[discord.User, discord.PartialEmoji] = None):
+        """
+        Enlarges the avatar or given emoji.
+        """
 
-    @commands.command(cls=utils.Command)
-    async def avatar(self, ctx:utils.Context, user:discord.User=None):
-        """Shows you the avatar of a given user"""
-
-        if user is None:
-            user = ctx.author
-        with utils.Embed(use_random_colour=True) as embed:
-            embed.set_image(url=user.avatar_url)
+        target = target or ctx.author
+        if isinstance(target, (discord.User, discord.Member, discord.ClientUser)):
+            url = target.avatar_url
+        elif isinstance(target, (discord.Emoji, discord.PartialEmoji)):
+            url = target.url
+        with vbu.Embed(color=0x1) as embed:
+            embed.set_image(url=str(url))
         await ctx.send(embed=embed)
 
-    @commands.command(cls=utils.Command)
+    @vbu.command(aliases=["whoami"], context_command_type=vbu.ApplicationCommandType.USER, context_command_name="Whois")
+    async def whois(self, ctx: vbu.Context, user: discord.Member = None):
+        """
+        Give you some information about a user.
+        """
+
+        user = user or ctx.author
+        with vbu.Embed(use_random_colour=True) as embed:
+            embed.set_author_to_user(user)
+            account_creation_time_humanized = vbu.TimeValue((dt.utcnow() - user.created_at).total_seconds()).clean_full
+            create_value = f"{user.created_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{account_creation_time_humanized} ago"
+            embed.add_field("Account Creation Time", create_value, inline=False)
+            guild_join_time_humanized = vbu.TimeValue((dt.utcnow() - user.joined_at).total_seconds()).clean_full
+            join_value = f"{user.joined_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{guild_join_time_humanized} ago"
+            embed.add_field("Guild Join Time", join_value, inline=False)
+            embed.set_thumbnail(user.avatar_url_as(size=1024))
+        return await ctx.send(embed=embed)
+
+    @vbu.command()
     @commands.guild_only()
-    async def createlog(self, ctx:utils.Context, amount:int=100):
-        """Create a log of chat"""
+    async def createlog(self, ctx: vbu.Context, amount: int = 100):
+        """
+        Create a log of chat.
+        """
 
         # Create the data we're gonna send
         data = {
@@ -61,7 +87,6 @@ class UserInfo(utils.Cog):
             message_data.update({'embeds': embeds})
             data_messages.append(message_data)
 
-
         # Send data to the API
         data.update({"users": data_authors, "messages": data_messages[::-1]})
         async with self.bot.session.post("https://voxelfox.co.uk/discord/chatlog", json=data) as r:
@@ -71,6 +96,6 @@ class UserInfo(utils.Cog):
         await ctx.send(file=discord.File(string, filename=f"Logs-{int(ctx.message.created_at.timestamp())}.html"))
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = UserInfo(bot)
     bot.add_cog(x)
