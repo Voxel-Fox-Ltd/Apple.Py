@@ -85,7 +85,7 @@ class VCAdmin(vbu.Cog):
             )
 
         # Get a the role object
-        role = await ctx.guild.get_role(roles_rows[0]['role_id'])
+        role = ctx.guild.get_role(roles_rows[0]['role_id'])
 
         # Make sure the role exists
         if not role:
