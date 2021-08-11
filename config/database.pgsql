@@ -143,6 +143,6 @@ CREATE TABLE IF NOT EXISTS topics(
 CREATE TABLE IF NOT EXISTS vc_admin(
     guild_id BIGINT,
     channel_id BIGINT,
-    role_id BIGINT
+    role_id BIGINT,
     PRIMARY KEY (channel_id, role_id)
 ) ;
