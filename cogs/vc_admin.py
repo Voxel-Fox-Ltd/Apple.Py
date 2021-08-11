@@ -88,7 +88,7 @@ class VCAdmin(vbu.Cog):
         channel = after.channel
 
         # Make sure stream status updated
-        if before.self_stream == after.self_stream:
+        if before.self_stream == after.self_stream or after.channel is None:
             return
 
         # Get the database info
@@ -98,15 +98,12 @@ class VCAdmin(vbu.Cog):
                 guild, channel
             )
 
-        # Create a dictionary of the channels: roles
-        roles = {row['channel_id']: row['role_id'] for row in roles_rows}
-
         # Check that we're in a voice channel that we have a VC admin role for
-        if channel.id not in roles.keys():
+        if not roles_rows:
             return
         
         # Get the role object
-        role = await guild.get_role(roles[channel.id])
+        role = await guild.get_role(roles_rows[0]['role-id'])
 
         # Check that the user has either stopped streaming or begun streaming
         if not (before.self_mute or after.self_mute):
