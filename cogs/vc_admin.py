@@ -16,7 +16,7 @@ class VCAdmin(vbu.Cog):
 
     @vcadmin.command(aliases=["set"])
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(manage_roles=True)
+    @vbu.bot_has_permissions(manage_roles=True)
     async def add(self, ctx: vbu.Context, channel: discord.VoiceChannel, role: discord.Role):
         """
         Sets a voice channel's admin role.
@@ -39,7 +39,7 @@ class VCAdmin(vbu.Cog):
 
     @vcadmin.command(aliases=["delete"])
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(manage_roles=True)
+    @vbu.bot_has_permissions(manage_roles=True)
     async def remove(self, ctx: vbu.Context, channel: discord.VoiceChannel):
         """
         Removes a voice channel's admin role.
@@ -61,7 +61,7 @@ class VCAdmin(vbu.Cog):
 
     @vcadmin.command()
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(manage_roles=True)
+    @vbu.bot_has_permissions(manage_roles=True)
     async def role(self, ctx: vbu.Context, channel: discord.VoiceChannel):
         """
         Sends a voice channel's admin roles.
@@ -116,14 +116,15 @@ class VCAdmin(vbu.Cog):
         channel = after.channel
 
         # Make sure stream status updated and we're in a channel
-        if before.self_stream == after.self_stream or after.channel is None:
+        if before.self_stream == after.self_stream and before.channel == after.channel:
+            self.logger.info(f"Ignoring voice state update for user {member.id} in channel {(after.channel or before.channel).id}")
             return
 
         # Get the database info
         async with self.bot.database() as db:
             roles_rows = await db(
-                """SELECT * FROM vc_admins WHERE guild_id = $1 AND channel_id = $2""",
-                guild.id, channel.id,
+                """SELECT * FROM vc_admins WHERE guild_id=$1 AND channel_id=$2""",
+                guild.id, (channel or before.channel).id,
             )
 
         # Check that we're in a voice channel that we have a VC admin role for
@@ -135,17 +136,19 @@ class VCAdmin(vbu.Cog):
 
         # Make sure the role exists
         if not role:
+            self.logger.info(f"No role with ID {roles_rows[0]['role_id']}")
             return
 
         # Check that the user has either stopped streaming or begun streaming
-        if not (before.self_mute or after.self_mute):
+        if (before.self_stream, before.channel) == (after.self_stream, after.channel):
+            self.logger.info(f"No update in VC")
             return
 
         # Determine the method we'll use
         method = {
             True: member.add_roles,
-            False: member.remove_roles
-        }[after.self_stream]
+            False: member.remove_roles,
+        }[after.channel and after.self_stream]
 
         # Apply the method
         await method(role, reason="Streaming status changed.")
