@@ -87,7 +87,7 @@ class VCAdmin(vbu.Cog):
         guild = member.guild
         channel = after.channel
 
-        # Make sure stream status updated
+        # Make sure stream status updated and we're in a channel
         if before.self_stream == after.self_stream or after.channel is None:
             return
 
