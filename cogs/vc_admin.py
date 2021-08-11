@@ -99,7 +99,7 @@ class VCAdmin(vbu.Cog):
         async with self.bot.database() as db:
             roles_rows = await db(
                 """SELECT * FROM vc_admin_pair WHERE guild_id = $1 AND channel_id = $2""",
-                guild, channel
+                guild.id, channel.id
             )
 
         # Check that we're in a voice channel that we have a VC admin role for
