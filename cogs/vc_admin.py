@@ -131,6 +131,6 @@ class VCAdmin(vbu.Cog):
 
 
 
-def setup(bot:vbu.Bot):
+def setup(bot: vbu.Bot):
     x = VCAdmin(bot)
     bot.add_cog(x)
