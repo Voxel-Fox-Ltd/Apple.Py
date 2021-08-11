@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS topics(
 );
 
 
-CREATE TABLE IF NOT EXISTS vc_admin(
+CREATE TABLE IF NOT EXISTS vc_admins(
     guild_id BIGINT,
     channel_id BIGINT,
     role_id BIGINT,

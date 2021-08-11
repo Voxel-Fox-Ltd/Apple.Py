@@ -25,7 +25,7 @@ class VCAdmin(vbu.Cog):
         # Set the channel's admin role
         async with self.bot.database() as db:
             await db(
-                """INSERT INTO vc_admin_pair (guild_id, channel_id, role_id)
+                """INSERT INTO vc_admins (guild_id, channel_id, role_id)
                 VALUES ($1, $2, $3) ON CONFLICT (channel_id, role_id) DO UPDATE SET role_id = $3""",
                 ctx.guild.id, channel.id, role.id
             )
@@ -44,7 +44,7 @@ class VCAdmin(vbu.Cog):
         # Remove the channel's admin role
         async with self.bot.database() as db:
             await db(
-                """DELETE FROM vc_admin_pair WHERE guild_id = $1 AND channel_id = $2""",
+                """DELETE FROM vc_admins WHERE guild_id = $1 AND channel_id = $2""",
                 ctx.guild.id, channel.id
             )
 
@@ -62,7 +62,7 @@ class VCAdmin(vbu.Cog):
         # Get the channel's admin roles
         async with self.bot.database() as db:
             roles_rows = await db(
-                """SELECT role_id FROM vc_admin_pair WHERE guild_id = $1 AND channel_id = $2""",
+                """SELECT role_id FROM vc_admins WHERE guild_id = $1 AND channel_id = $2""",
                 ctx.guild.id, channel.id
             )
 
@@ -98,7 +98,7 @@ class VCAdmin(vbu.Cog):
         # Get the database info
         async with self.bot.database() as db:
             roles_rows = await db(
-                """SELECT * FROM vc_admin_pair WHERE guild_id = $1 AND channel_id = $2""",
+                """SELECT * FROM vc_admins WHERE guild_id = $1 AND channel_id = $2""",
                 guild, channel
             )
 
