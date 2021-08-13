@@ -324,7 +324,7 @@ class GithubCommands(vbu.Cog):
 
     @issue.command(name='create', aliases=['make'])
     @vbu.bot_has_permissions(send_messages=True, embed_links=True)
-    async def issue_create(self, ctx: vbu.Context, repo: GitRepo, *, title: str, body: str = ""):
+    async def issue_create(self, ctx: vbu.Context, repo: GitRepo, *, title: str, body: str = "Issue body"):
         """
         Create a Github issue on a given repo.
         """
