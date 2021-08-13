@@ -4,16 +4,16 @@ import io
 
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 from PIL import Image
 
 
 class ImageUrl(commands.Converter):
 
-    SLASH_COMMAND_ARG_TYPE = utils.interactions.ApplicationCommandOptionType.STRING
+    SLASH_COMMAND_ARG_TYPE = vbu.interactions.ApplicationCommandOptionType.STRING
     regex = re.compile(r"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)")
 
-    async def convert(self, ctx:utils.Context, argument:str):
+    async def convert(self, ctx: vbu.Context, argument: str):
         """
         Make sure a given string argument is an image URL.
         """
@@ -24,13 +24,13 @@ class ImageUrl(commands.Converter):
         return argument
 
 
-class EmojiCommands(utils.Cog):
+class EmojiCommands(vbu.Cog):
 
-    @utils.command(aliases=['removeemoji', 'delemoji'], add_slash_command=False)
+    @vbu.command(aliases=['removeemoji', 'delemoji'], add_slash_command=False)
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.guild_only()
-    async def deleteemoji(self, ctx:utils.Context, emoji:discord.Emoji):
+    async def deleteemoji(self, ctx: vbu.Context, emoji: discord.Emoji):
         """
         Deletes an emoji from a server
         """
@@ -43,7 +43,7 @@ class EmojiCommands(utils.Cog):
         await ctx.send(f"Deleted emoji `{emoji_name}`.")
 
     @staticmethod
-    def calculate_new_size(image:Image, intended_size:int=256_000) -> tuple:
+    def calculate_new_size(image: Image, intended_size: int = 256_000) -> tuple:
         """
         Use the equation f(n) = n * h * w * c to calculate an image's size given a size modifier, the width, the height,
         and a calculated constant. This method is inaccurate because image compression isn't constant, but it's as close
@@ -58,13 +58,13 @@ class EmojiCommands(utils.Cog):
 
         return (int(width * size_mod), int(height * size_mod))
 
-    @utils.command(aliases=['addemoji'])
+    @vbu.command(aliases=['stealemoji'])
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.guild_only()
-    async def stealemoji(
-            self, ctx:utils.Context, emoji:typing.Optional[typing.Union[discord.PartialEmoji, int, ImageUrl]]=None,
-            name:str=None, animated:bool=False):
+    async def addemoji(
+            self, ctx: vbu.Context, emoji: typing.Optional[typing.Union[discord.PartialEmoji, int, ImageUrl]] = None,
+            name: str = None, animated: bool = False):
         """
         Copies an emoji and uploads it to your server.
         """
@@ -75,12 +75,12 @@ class EmojiCommands(utils.Cog):
                 emoji = ctx.message.attachments[0].url
                 await ImageUrl().convert(ctx, emoji)  # Make sure the url is an image
             else:
-                raise utils.errors.MissingRequiredArgumentString("emoji")
+                raise vbu.errors.MissingRequiredArgumentString("emoji")
 
         # See if we gave an emoji ID
         if isinstance(emoji, int):
             if name is None:
-                raise utils.errors.MissingRequiredArgumentString("name")
+                raise vbu.errors.MissingRequiredArgumentString("name")
             emoji = discord.PartialEmoji(name=name, animated=animated, id=emoji)
 
         # See if we gave an image URL or an emoji
@@ -114,6 +114,6 @@ class EmojiCommands(utils.Cog):
         await ctx.send(f"Emoji added - {e!s}")
 
 
-def setup(bot:utils.Bot):
+def setup(bot:vbu.Bot):
     x = EmojiCommands(bot)
     bot.add_cog(x)
