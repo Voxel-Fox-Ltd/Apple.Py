@@ -7,12 +7,21 @@ import io
 import asyncpg
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
+
+
+VBU_ERROR_WEBHOOK_PATTERN = re.compile((
+    r"^Error `(?P<error>.+?)` encountered\.\n"
+    r"Guild `(?P<guild_id>\d+)`, channel `(?P<channel_id>\d+)`, user `(?P<user_id>\d+)`\n"
+    r"```\n"
+    r"(?P<command_invoke>.+?)\n"
+    r"```$"
+), re.MULTILINE | re.DOTALL)
 
 
 class GitRepo(object):
 
-    SLASH_COMMAND_ARG_TYPE = utils.interactions.ApplicationCommandOptionType.STRING
+    SLASH_COMMAND_ARG_TYPE = vbu.interactions.ApplicationCommandOptionType.STRING
     __slots__ = ('host', 'owner', 'repo')
 
     def __init__(self, host, owner, repo):
@@ -40,7 +49,7 @@ class GitRepo(object):
         if self.host == "Github":
             return f"https://api.github.com/repos/{self.owner}/{self.repo}/issues/{{issue}}/comments"
         return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/issues/{{issue}}/notes"
-    
+
     @property
     def pull_requests_api_url(self):
         if self.host == "Github":
@@ -48,7 +57,7 @@ class GitRepo(object):
         return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo,safe='')}/merge_requests"
 
     @classmethod
-    async def convert(cls, ctx:utils.Context, value:str):
+    async def convert(cls, ctx: vbu.Context, value: str):
         """
         Convert a string into an (host, owner, repo) string tuple.
         """
@@ -80,7 +89,7 @@ class GitRepo(object):
 class GitIssueNumber(int):
 
     @classmethod
-    async def convert(cls, ctx:utils.Context, value:str):
+    async def convert(cls, ctx: vbu.Context, value: str):
         value = value.lstrip('#')
         try:
             return cls(value)
@@ -88,7 +97,7 @@ class GitIssueNumber(int):
             raise commands.BadArgument(f"I couldn't convert `{value}` into an integer.")
 
 
-class GithubCommands(utils.Cog):
+class GithubCommands(vbu.Cog):
 
     GIT_ISSUE_OPEN_EMOJI = "<:github_issue_open:817984658456707092>"
     GIT_ISSUE_CLOSED_EMOJI = "<:github_issue_closed:817984658372689960>"
@@ -96,7 +105,7 @@ class GithubCommands(utils.Cog):
     GIT_PR_CLOSED_EMOJI = "<:github_pr_closed:817986200962072617>"
     GIT_PR_CHANGES_EMOJI = "<:github_changes_requested:819115452948938772>"
 
-    @utils.Cog.listener()
+    @vbu.Cog.listener()
     async def on_message(self, message):
         """
         Sends GitHub/Lab links if a message sent in the server matches the format `gh/user/repo`.
@@ -148,8 +157,8 @@ class GithubCommands(utils.Cog):
         if sendable:
             await message.channel.send(sendable, allowed_mentions=discord.AllowedMentions.none())
 
-    @utils.group()
-    async def repoalias(self, ctx:utils.Context):
+    @vbu.group()
+    async def repoalias(self, ctx: vbu.Context):
         """
         The parent command for handling git repo aliases.
         """
@@ -158,8 +167,8 @@ class GithubCommands(utils.Cog):
             return await ctx.send_help(ctx.command)
 
     @repoalias.command(name="add")
-    @commands.bot_has_permissions(send_messages=True)
-    async def repoalias_add(self, ctx:utils.Context, alias:str, repo:GitRepo):
+    @vbu.bot_has_permissions(send_messages=True)
+    async def repoalias_add(self, ctx: vbu.Context, alias: str, repo: GitRepo):
         """
         Add a Github repo alias to the database.
         """
@@ -180,8 +189,8 @@ class GithubCommands(utils.Cog):
         await ctx.send("Done.")
 
     @repoalias.command(name="remove", aliases=['delete', 'del', 'rem'])
-    @commands.bot_has_permissions(send_messages=True)
-    async def repoalias_remove(self, ctx:utils.Context, alias:str):
+    @vbu.bot_has_permissions(send_messages=True)
+    async def repoalias_remove(self, ctx: vbu.Context, alias: str):
         """
         Removes a Github repo alias from the database.
         """
@@ -193,18 +202,18 @@ class GithubCommands(utils.Cog):
             await db("DELETE FROM github_repo_aliases WHERE alias=LOWER($1)", alias)
         await ctx.send("Done.")
 
-    @utils.command(aliases=['ci'], hidden=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def createissue(self, ctx:utils.Context, repo:GitRepo, *, title:str):
+    @vbu.command(aliases=['ci'], hidden=True)
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    async def createissue(self, ctx: vbu.Context, repo: GitRepo, *, title: str):
         """
         Create a Github issue on a given repo.
         """
 
         return await ctx.invoke(self.bot.get_command("issue create"), repo, title=title)
 
-    @utils.group(aliases=['issues'])
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def issue(self, ctx:utils.Context):
+    @vbu.group(aliases=['issues'])
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    async def issue(self, ctx: vbu.Context):
         """
         The parent group for the git issue commands.
         """
@@ -212,9 +221,33 @@ class GithubCommands(utils.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
+    @issue.command(name='frommessage')
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    async def issue_frommessage(self, ctx: vbu.Context, message: discord.Message):
+        """
+        Create a Github issue from a VBU error webhook.
+        """
+
+        # Run some checks
+        if message.author.discriminator != "0000":
+            return await ctx.send("That message wasn't sent by a webhook.", wait=False)
+        author_split = str(message.author.name).split("-")
+        if author_split[-1].split() != "Error":
+            return await ctx.send("That message wasn't sent by a VBU error webhook.", wait=False)
+
+        # Build up our content
+        repo_str = "-".join(author_split[:-1]).strip()
+        repo = await GitRepo.convert(ctx, repo_str)
+        body_match = VBU_ERROR_WEBHOOK_PATTERN.search(message.content)
+        title = f"Issue encountered running `{body_match.group('command_invoke')}` command"
+        async with self.bot.session.get(message.attachments[0].url) as r:
+            error_file = await r.read()
+        body = f"The bot hit a `{body_match.group('error')}` error while running the `{body_match.group('command_invoke')}` command.\n\n```python\n{error_file.strip()}\n```"
+        return await ctx.invoke(self.bot.get_command("issue create"), repo, title=title, body=body)
+
     @issue.command(name='create', aliases=['make'])
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def issue_create(self, ctx:utils.Context, repo:GitRepo, *, title:str):
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    async def issue_create(self, ctx: vbu.Context, repo: GitRepo, *, title: str, body: str = ""):
         """
         Create a Github issue on a given repo.
         """
@@ -229,16 +262,16 @@ class GithubCommands(utils.Cog):
                 ))
 
         # Ask if we want to do this
-        embed = utils.Embed(title=title, use_random_colour=True).set_footer(text=str(repo))
-        components = utils.MessageComponents.boolean_buttons()
-        components.components[0].components.insert(1, utils.Button("Set body", "BODY"))
+        embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
+        components = vbu.MessageComponents.boolean_buttons()
+        components.components[0].components.insert(1, vbu.Button("Set title", "TITLE"))
+        components.components[0].components.insert(2, vbu.Button("Set body", "BODY"))
         m = await ctx.send("Are you sure you want to create this issue?", embed=embed, components=components)
-        body = ""
         while True:
 
             # See if we want to update the body
             if body:
-                embed = utils.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
+                embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
             try:
                 payload = await m.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                 await payload.ack()
@@ -283,7 +316,32 @@ class GithubCommands(utils.Cog):
                     body += f"![{name}]({url})\n"
 
                 # Edit the message
-                embed = utils.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
+                embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
+                await m.edit(embed=embed)
+
+            # Get the title
+            if payload.component.custom_id == "TITLE":
+
+                # Wait for their body message
+                await payload.message.edit(components=components.disable_components())
+                n = await payload.send("What do you want to set the issue title to?")
+                try:
+                    check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
+                    title_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
+                except asyncio.TimeoutError:
+                    return await payload.send("Timed out asking for issue title text.")
+
+                # Delete their body message and our asking message
+                try:
+                    await n.delete()
+                    await title_message.delete()
+                except discord.HTTPException:
+                    pass
+                await payload.message.edit(components=components.enable_components())
+
+                # Edit the message
+                title = title_message.content
+                embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
                 await m.edit(embed=embed)
 
             # Check the reaction
@@ -314,7 +372,7 @@ class GithubCommands(utils.Cog):
         await ctx.send(f"Your issue has been created - <{data.get('html_url') or data.get('web_url')}>.")
 
     @issue.command(name="list")
-    async def issue_list(self, ctx:utils.Context, repo:GitRepo, list_closed:bool=False):
+    async def issue_list(self, ctx:vbu.Context, repo:GitRepo, list_closed:bool=False):
         """
         List all of the issues on a git repo.
         """
@@ -393,10 +451,10 @@ class GithubCommands(utils.Cog):
             output.append(f"* {emoji_to_use} (#{issue_id}) [{title}]({url})")
 
         # Output as paginator
-        return await utils.Paginator(output, per_page=PER_PAGE).start(ctx)
+        return await vbu.Paginator(output, per_page=PER_PAGE).start(ctx)
 
     @issue.command(name="comment")
-    async def issue_comment(self, ctx:utils.Context, repo:GitRepo, issue:GitIssueNumber, *, comment:str):
+    async def issue_comment(self, ctx:vbu.Context, repo:GitRepo, issue:GitIssueNumber, *, comment:str):
         """
         Comment on a git issue.
         """
@@ -445,7 +503,7 @@ class GithubCommands(utils.Cog):
         return await ctx.send(f"Comment added! <https://gitlab.com/{repo.owner}/{repo.repo}/-/issues/{issue}#note_{data['id']}>")
 
     @issue.command(name="close", enabled=False)
-    async def issue_close(self, ctx:utils.Context, repo:GitRepo, issue:GitIssueNumber):
+    async def issue_close(self, ctx:vbu.Context, repo:GitRepo, issue:GitIssueNumber):
         """
         Close a git issue.
         """
@@ -488,6 +546,6 @@ class GithubCommands(utils.Cog):
         return await ctx.send("Issue closed.")
 
 
-def setup(bot:utils.Bot):
+def setup(bot:vbu.Bot):
     x = GithubCommands(bot)
     bot.add_cog(x)
