@@ -324,7 +324,7 @@ class GithubCommands(vbu.Cog):
 
     @issue.command(name='create', aliases=['make'])
     @vbu.bot_has_permissions(send_messages=True, embed_links=True)
-    async def issue_create(self, ctx: vbu.Context, repo: GitRepo, *, title: str, body: str = "Issue body"):
+    async def issue_create(self, ctx: vbu.Context, repo: GitRepo, *, title: str, body: str = ""):
         """
         Create a Github issue on a given repo.
         """
@@ -368,13 +368,13 @@ class GithubCommands(vbu.Cog):
             # See if we want to update the body
             embed = vbu.Embed(
                 title=title,
-                description=body,
+                description=body or "...",
                 use_random_colour=True,
             ).set_footer(
                 text=str(repo),
             ).add_field(
                 "Labels",
-                ", ".join([f"`{i}`" for i in labels]) or "None :<",
+                ", ".join([f"`{i}`" for i in labels]) or "...",
             )
             if m is None:
                 m = await ctx.send("Are you sure you want to create this issue?", embed=embed, components=components)
