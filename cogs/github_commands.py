@@ -183,10 +183,10 @@ class GithubCommands(vbu.Cog):
             except asyncpg.UniqueViolationError:
                 data = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2", alias, ctx.author.id)
                 if not data:
-                    return await ctx.send(f"The alias `{alias.lower()}` is already in use.", allowed_mentions=discord.AllowedMentions.none())
+                    return await ctx.send(f"The alias `{alias.lower()}` is already in use.", allowed_mentions=discord.AllowedMentions.none(), wait=False)
                 await db("DELETE FROM github_repo_aliases WHERE alias=$1", alias)
                 return await ctx.invoke(ctx.command, alias, repo)
-        await ctx.send("Done.")
+        await ctx.send("Done.", wait=False)
 
     @repoalias.command(name="remove", aliases=['delete', 'del', 'rem'])
     @vbu.bot_has_permissions(send_messages=True)
@@ -198,9 +198,9 @@ class GithubCommands(vbu.Cog):
         async with self.bot.database() as db:
             data = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2", alias, ctx.author.id)
             if not data:
-                return await ctx.send("You don't own that repo alias.", allowed_mentions=discord.AllowedMentions.none())
+                return await ctx.send("You don't own that repo alias.", allowed_mentions=discord.AllowedMentions.none(), wait=False)
             await db("DELETE FROM github_repo_aliases WHERE alias=LOWER($1)", alias)
-        await ctx.send("Done.")
+        await ctx.send("Done.", wait=False)
 
     @vbu.command(aliases=['ci'], hidden=True)
     @vbu.bot_has_permissions(send_messages=True, embed_links=True)
@@ -239,12 +239,12 @@ class GithubCommands(vbu.Cog):
         repo_str = "-".join(author_split[:-1]).strip()
         repo = await GitRepo.convert(ctx, repo_str)
         body_match = VBU_ERROR_WEBHOOK_PATTERN.search(message.content)
-        title = f"Issue encountered running `{body_match.group('command_invoke')}` command"
+        title = f"Issue encountered running `{body_match.group('command_invoke').strip()}` command"
         async with self.bot.session.get(message.attachments[0].url) as r:
             error_file = await r.text()
         body = (
-            f"The bot hit a `{body_match.group('error')}` error while running the `{body_match.group('command_invoke')}` "
-            f"command.\n\n```python\n{error_file.strip()}\n```"
+            f"The bot hit a `{body_match.group('error').strip()}` error while running the `{body_match.group('command_invoke')}` "
+            f"command.\n```python\n{error_file.strip()}\n```"
         )
         return await ctx.invoke(self.bot.get_command("issue create"), repo, title=title, body=body)
 
@@ -259,10 +259,13 @@ class GithubCommands(vbu.Cog):
         async with self.bot.database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
-                return await ctx.send((
-                    f"You need to link your {repo.host} account to Discord to run this "
-                    f"command - see the website at `{ctx.clean_prefix}info`."
-                ))
+                return await ctx.send(
+                    (
+                        f"You need to link your {repo.host} account to Discord to run this "
+                        f"command - see the website at `{ctx.clean_prefix}info`."
+                    ),
+                    wait=False,
+                )
 
         # Ask if we want to do this
         embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
@@ -277,15 +280,16 @@ class GithubCommands(vbu.Cog):
                 embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
             try:
                 payload = await m.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-                await payload.ack()
             except asyncio.TimeoutError:
                 return await ctx.send("Timed out asking for issue create confirmation.")
+
+            # Disable components
+            await payload.update_message(components=components.disable_components())
 
             # Get the body
             if payload.component.custom_id == "BODY":
 
                 # Wait for their body message
-                await payload.message.edit(components=components.disable_components())
                 n = await payload.send("What body content do you want to be added to your issue?")
                 try:
                     check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
@@ -311,7 +315,6 @@ class GithubCommands(vbu.Cog):
                     await body_message.delete()
                 except discord.HTTPException:
                     pass
-                await payload.message.edit(components=components.enable_components())
 
                 # Fix up the body
                 body = body.strip() + "\n\n" + body_message.content + "\n\n"
@@ -320,13 +323,12 @@ class GithubCommands(vbu.Cog):
 
                 # Edit the message
                 embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
-                await m.edit(embed=embed)
+                await payload.message.edit(embed=embed, components=components.enable_components())
 
             # Get the title
             if payload.component.custom_id == "TITLE":
 
                 # Wait for their body message
-                await payload.message.edit(components=components.disable_components())
                 n = await payload.send("What do you want to set the issue title to?")
                 try:
                     check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
@@ -340,19 +342,16 @@ class GithubCommands(vbu.Cog):
                     await title_message.delete()
                 except discord.HTTPException:
                     pass
-                await payload.message.edit(components=components.enable_components())
 
                 # Edit the message
                 title = title_message.content
                 embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
-                await m.edit(embed=embed)
+                await payload.message.edit(embed=embed, components=components.enable_components())
 
             # Check the reaction
             if payload.component.custom_id == "NO":
-                await payload.message.edit(components=components.disable_components())
-                return await ctx.send("Alright, cancelling issue add.")
+                return await payload.send("Alright, cancelling issue add.", wait=False)
             if payload.component.custom_id == "YES":
-                await payload.message.edit(components=components.disable_components())
                 break
 
         # Work out our args
@@ -371,8 +370,8 @@ class GithubCommands(vbu.Cog):
             if 200 <= r.status < 300:
                 pass
             else:
-                return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.")
-        await ctx.send(f"Your issue has been created - <{data.get('html_url') or data.get('web_url')}>.")
+                return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.", wait=False)
+        await ctx.send(f"Your issue has been created - <{data.get('html_url') or data.get('web_url')}>.", wait=False)
 
     @issue.command(name="list")
     async def issue_list(self, ctx:vbu.Context, repo:GitRepo, list_closed:bool=False):
