@@ -3,6 +3,7 @@ import re
 from urllib.parse import quote
 import math
 import io
+import typing
 
 import asyncpg
 import discord
@@ -19,9 +20,28 @@ VBU_ERROR_WEBHOOK_PATTERN = re.compile((
 ), re.MULTILINE | re.DOTALL)
 
 
+class GitIssueNumber(int):
+
+    @classmethod
+    async def convert(cls, ctx: vbu.Context, value: str):
+        value = value.lstrip('#')
+        try:
+            return cls(value)
+        except Exception:
+            raise commands.BadArgument(f"I couldn't convert `{value}` into an integer.")
+
+
+class GitIssueLabel(object):
+
+    def __init__(self, name: str, description: str):
+        self.name: str = name
+        self.description: str = description
+
+
 class GitRepo(object):
 
     SLASH_COMMAND_ARG_TYPE = vbu.interactions.ApplicationCommandOptionType.STRING
+    bot = None
     __slots__ = ('host', 'owner', 'repo')
 
     def __init__(self, host, owner, repo):
@@ -31,6 +51,22 @@ class GitRepo(object):
 
     def __str__(self):
         return f"{'gh' if self.host == 'Github' else 'gl'}/{self.owner}/{self.repo}"
+
+    def get_token_from_row(self, row) -> str:
+        if self.host == "Github":
+            return row['github_access_token']
+        return row['gitlab_bearer_token']
+
+    def get_headers_from_row(self, row) -> dict:
+        headers = {"User-Agent": self.bot.user_agent}
+        if self.host == "Github":
+            headers.update({
+                "Accept": "application/vnd.github.v3+json",
+                'Authorization': f"token {self.get_token_from_row(row)}",
+            })
+        else:
+            headers.update({'Authorization': f"Bearer {self.get_token_from_row(row)}"})
+        return headers
 
     @property
     def html_url(self):
@@ -54,7 +90,31 @@ class GitRepo(object):
     def pull_requests_api_url(self):
         if self.host == "Github":
             return f"https://api.github.com/repos/{self.owner}/{self.repo}/pulls"
-        return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo,safe='')}/merge_requests"
+        return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/merge_requests"
+
+    @property
+    def labels_api_url(self):
+        if self.host == "Github":
+            return f"https://api.github.com/repos/{self.owner}/{self.repo}/labels"
+        return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/labels"
+
+    async def get_labels(self, row) -> typing.List[GitIssueLabel]:
+        """
+        Get a list of label names.
+        """
+
+        # See what headers we want to use
+        headers = self.get_headers_from_row(row)
+        params = {}
+        if self.host == "Gitlab":
+            params.update({"per_page": 25})
+
+        # Send a sexy lil http request
+        async with self.bot.session.get(self.labels_api_url, params=params, headers=headers) as r:
+            data = await r.json()
+
+        # Let's return the labels
+        return [GitIssueLabel(i['name'], i['description']) for i in data]
 
     @classmethod
     async def convert(cls, ctx: vbu.Context, value: str):
@@ -86,17 +146,6 @@ class GitRepo(object):
         return cls(host, owner, repo)
 
 
-class GitIssueNumber(int):
-
-    @classmethod
-    async def convert(cls, ctx: vbu.Context, value: str):
-        value = value.lstrip('#')
-        try:
-            return cls(value)
-        except Exception:
-            raise commands.BadArgument(f"I couldn't convert `{value}` into an integer.")
-
-
 class GithubCommands(vbu.Cog):
 
     GIT_ISSUE_OPEN_EMOJI = "<:github_issue_open:817984658456707092>"
@@ -104,6 +153,10 @@ class GithubCommands(vbu.Cog):
     GIT_PR_OPEN_EMOJI = "<:github_pr_open:817986200618139709>"
     GIT_PR_CLOSED_EMOJI = "<:github_pr_closed:817986200962072617>"
     GIT_PR_CHANGES_EMOJI = "<:github_changes_requested:819115452948938772>"
+
+    def __init__(self, bot: vbu.Bot):
+        super().__init__(bot)
+        GitRepo.bot = bot
 
     @vbu.Cog.listener()
     async def on_message(self, message):
@@ -288,18 +341,42 @@ class GithubCommands(vbu.Cog):
                     wait=False,
                 )
 
-        # Ask if we want to do this
+        # Work out what components we want to use
         embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
         components = vbu.MessageComponents.boolean_buttons()
         components.components[0].components.append(vbu.Button("Set title", "TITLE"))
         components.components[0].components.append(vbu.Button("Set body", "BODY"))
         components.components[0].components.append(vbu.Button("Set repo", "REPO"))
-        m = await ctx.send("Are you sure you want to create this issue?", embed=embed, components=components)
+        components.add_component(vbu.ActionRow(
+            vbu.SelectMenu(
+                custom_id="LABELS",
+                options=[
+                    vbu.SelectOption(label=i.name, value=i.name, description=i.description)
+                    for i in await repo.get_labels(user_rows[0])
+                ],
+            )
+        ))
+        labels = []
+
+        # Ask if we want to do this
+        m = None
         while True:
 
             # See if we want to update the body
-            if body:
-                embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
+            embed = vbu.Embed(
+                title=title,
+                description=body,
+                use_random_colour=True,
+            ).set_footer(
+                text=str(repo),
+            ).add_field(
+                "Labels",
+                ", ".join([f"`{i}`" for i in labels]) or "None :<",
+            )
+            if m is None:
+                m = await ctx.send("Are you sure you want to create this issue?", embed=embed, components=components)
+            else:
+                m.edit(embed=embed, components=components.enable_components())
             try:
                 payload = await m.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
             except asyncio.TimeoutError:
@@ -343,10 +420,6 @@ class GithubCommands(vbu.Cog):
                 for name, url in attachment_urls:
                     body += f"![{name}]({url})\n"
 
-                # Edit the message
-                embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
-                await payload.message.edit(embed=embed, components=components.enable_components())
-
             # Get the title
             if payload.component.custom_id == "TITLE":
 
@@ -364,14 +437,10 @@ class GithubCommands(vbu.Cog):
                     await title_message.delete()
                 except discord.HTTPException:
                     pass
-
-                # Edit the message
                 title = title_message.content
-                embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
-                await payload.message.edit(embed=embed, components=components.enable_components())
 
             # Get the repo
-            if payload.component.custom_id == "REPO":
+            elif payload.component.custom_id == "REPO":
 
                 # Wait for their body message
                 n = await payload.send("What do you want to set the repo to?")
@@ -393,12 +462,16 @@ class GithubCommands(vbu.Cog):
                     repo = await GitRepo.convert(ctx, repo_message.content)
                 except Exception:
                     await ctx.send(f"That repo isn't valid, {ctx.author.mention}", delete_after=3)
-                await payload.message.edit(embed=embed, components=components.enable_components())
 
-            # Check the reaction
-            if payload.component.custom_id == "NO":
+            # Get the labels
+            elif payload.component.custom_id == "LABELS":
+                await payload.defer_update()
+                labels = payload.values
+
+            # Check for exiting
+            elif payload.component.custom_id == "NO":
                 return await payload.send("Alright, cancelling issue add.", wait=False)
-            if payload.component.custom_id == "YES":
+            elif payload.component.custom_id == "YES":
                 break
 
         # Work out our args
