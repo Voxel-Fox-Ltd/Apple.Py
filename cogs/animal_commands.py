@@ -1,13 +1,13 @@
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class AnimalCommands(utils.Cog):
+class AnimalCommands(vbu.Cog):
 
-    @utils.command(aliases=['kitty'])
-    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    @utils.checks.is_config_set('api_keys', 'cat_api')
-    async def cat(self, ctx:utils.Context, *, breed:str=None):
+    @vbu.command(aliases=['kitty'])
+    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    @vbu.checks.is_config_set('api_keys', 'cat_api')
+    async def cat(self, ctx: vbu.Context, *, breed: str = None):
         """
         Gives you some kitty pictures.
         """
@@ -26,13 +26,13 @@ class AnimalCommands(utils.Cog):
             data = await r.json()
         if not data:
             return await ctx.send("Couldn't find that breed mate.")
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_image(url=data[0]['url'])
         await ctx.send(embed=embed)
 
-    @utils.command(aliases=['doggo', 'puppy', 'pupper'])
-    @utils.cooldown.cooldown(1, 2, commands.BucketType.channel)
-    async def dog(self, ctx:utils.Context, *, breed:str=None):
+    @vbu.command(aliases=['doggo', 'puppy', 'pupper'])
+    @vbu.cooldown.cooldown(1, 2, commands.BucketType.channel)
+    async def dog(self, ctx: vbu.Context, *, breed: str = None):
         """
         Gives you some dog pictures.
         """
@@ -47,13 +47,13 @@ class AnimalCommands(utils.Cog):
             data = await r.json()
         if data['status'] == "error":
             return await ctx.send("No dogs were found :(")
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_image(url=data['message'])
         await ctx.send(embed=embed)
 
-    @utils.command(aliases=['foxo', 'foxxo'])
-    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    async def fox(self, ctx:utils.Context):
+    @vbu.command(aliases=['foxo', 'foxxo'])
+    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    async def fox(self, ctx: vbu.Context):
         """
         Gives you some fox pictures.
         """
@@ -62,26 +62,28 @@ class AnimalCommands(utils.Cog):
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://randomfox.ca/floof/", headers=headers) as r:
             data = await r.json()
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_image(url=data['image'])
         await ctx.send(embed=embed)
 
-    @utils.command(aliases=['birb'])
-    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    async def bird(self, ctx:utils.Context):
-        """Gives you some bird pictures"""
+    @vbu.command(aliases=['birb'])
+    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    async def bird(self, ctx: vbu.Context):
+        """
+        Gives you some bird pictures.
+        """
 
         await ctx.trigger_typing()
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://some-random-api.ml/img/birb", headers=headers) as r:
             data = await r.json()
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
-    @utils.command()
-    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    async def panda(self, ctx:utils.Context):
+    @vbu.command()
+    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    async def panda(self, ctx: vbu.Context):
         """
         Gives you some panda pictures.
         """
@@ -90,13 +92,13 @@ class AnimalCommands(utils.Cog):
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://some-random-api.ml/img/panda", headers=headers) as r:
             data = await r.json()
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
-    @utils.command()
-    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    async def redpanda(self, ctx:utils.Context):
+    @vbu.command()
+    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    async def redpanda(self, ctx: vbu.Context):
         """
         Gives you some red panda pictures.
         """
@@ -105,13 +107,13 @@ class AnimalCommands(utils.Cog):
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://some-random-api.ml/img/red_panda", headers=headers) as r:
             data = await r.json()
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
-    @utils.command()
-    @utils.cooldown.cooldown(1, 5, commands.BucketType.channel)
-    async def koala(self, ctx:utils.Context):
+    @vbu.command()
+    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    async def koala(self, ctx: vbu.Context):
         """
         Gives you some koala pictures.
         """
@@ -120,11 +122,11 @@ class AnimalCommands(utils.Cog):
         headers = {"User-Agent": self.bot.user_agent}
         async with self.bot.session.get("https://some-random-api.ml/img/koala", headers=headers) as r:
             data = await r.json()
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = AnimalCommands(bot)
     bot.add_cog(x)

@@ -114,6 +114,6 @@ class EmojiCommands(vbu.Cog):
         await ctx.send(f"Emoji added - {e!s}")
 
 
-def setup(bot:vbu.Bot):
+def setup(bot: vbu.Bot):
     x = EmojiCommands(bot)
     bot.add_cog(x)

@@ -552,6 +552,6 @@ class LibraryDocs(vbu.Cog):
         return await ctx.send(timestamps[0] - timestamps[1])
 
 
-def setup(bot:vbu.Bot):
+def setup(bot: vbu.Bot):
     x = LibraryDocs(bot)
     bot.add_cog(x)

@@ -218,6 +218,6 @@ class MiscCommands(vbu.Cog):
             await payload.message.edit(components=components)
 
 
-def setup(bot:vbu.Bot):
+def setup(bot: vbu.Bot):
     x = MiscCommands(bot)
     bot.add_cog(x)

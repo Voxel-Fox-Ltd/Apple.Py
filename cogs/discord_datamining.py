@@ -2,10 +2,10 @@ import re
 import collections
 
 from discord.ext import tasks
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class DiscordDatamining(utils.Cog):
+class DiscordDatamining(vbu.Cog):
 
     DISCORD_DOCS_API_REPO_URL = "https://api.github.com/repos/discord/discord-api-docs/commits"
     DISCORD_DOCS_REPO_URL = "https://github.com/discord/discord-api-docs/"
@@ -15,7 +15,7 @@ class DiscordDatamining(utils.Cog):
 
     VFL_CODING_CHANNEL_ID = 760664929593851925
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.last_posted_commit = collections.defaultdict(lambda: None)
         self.docs_commit_poster_loop.start("New Discord Docs Info", self.DISCORD_DOCS_API_REPO_URL, self.DISCORD_DOCS_REPO_URL)
@@ -26,7 +26,7 @@ class DiscordDatamining(utils.Cog):
         self.docs_commit_poster_loop.stop()
 
     @tasks.loop(minutes=15)
-    async def datamining_commit_poster_loop(self, embed_title:str, api_url:str, repo_url:str):
+    async def datamining_commit_poster_loop(self, embed_title: str, api_url: str, repo_url: str):
         await self.commit_poster_loop(embed_title, api_url, repo_url)
 
     @datamining_commit_poster_loop.before_loop
@@ -34,14 +34,14 @@ class DiscordDatamining(utils.Cog):
         await self.bot.wait_until_ready()
 
     @tasks.loop(minutes=15)
-    async def docs_commit_poster_loop(self, embed_title:str, api_url:str, repo_url:str):
+    async def docs_commit_poster_loop(self, embed_title: str, api_url: str, repo_url: str):
         await self.commit_poster_loop(embed_title, api_url, repo_url)
 
     @docs_commit_poster_loop.before_loop
     async def before_docs_commit_poster_loop(self):
         await self.bot.wait_until_ready()
 
-    async def commit_poster_loop(self, embed_title:str, api_url:str, repo_url:str):
+    async def commit_poster_loop(self, embed_title: str, api_url: str, repo_url: str):
         """
         Grab the data from the Discord datamining repo and post it to the coding channel of VFL.
         """
@@ -88,7 +88,7 @@ class DiscordDatamining(utils.Cog):
         description_array = [description_unsplit[i:i + 2048] for i in range(0, len(description_unsplit), 2048)]
 
         # Format one into an embed
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.title = embed_title
             embed.description = description_array.pop(0)
             for sha, body in comment_text:
@@ -101,7 +101,7 @@ class DiscordDatamining(utils.Cog):
 
         # If there are more than 2048 characters send the other parts
         for description in description_array:
-            with utils.Embed(use_random_colour=True) as embed:
+            with vbu.Embed(use_random_colour=True) as embed:
                 embed.title = "Continuation of " + embed_title
                 embed.description = description
             m = await channel.send(embed=embed)
@@ -112,6 +112,6 @@ class DiscordDatamining(utils.Cog):
         self.last_posted_commit[repo_url] = new_commits[0]['sha']
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = DiscordDatamining(bot)
     bot.add_cog(x)

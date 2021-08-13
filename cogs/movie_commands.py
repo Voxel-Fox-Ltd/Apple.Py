@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class MovieCommand(utils.Cog):
+class MovieCommand(vbu.Cog):
 
-    async def send_omdb_query(self, name:str, media_type:str, search:bool, year=None) -> dict:
+    async def send_omdb_query(self, name: str, media_type: str, search: bool, year = None) -> dict:
         """
         Send a query to the OMDB API, returning the results dict.
         """
@@ -26,7 +26,7 @@ class MovieCommand(utils.Cog):
             data = await r.json()
         return data
 
-    def generate_embed(self, data) -> utils.Embed:
+    def generate_embed(self, data) -> vbu.Embed:
         """
         Make an embed based on some OMDB data.
         """
@@ -35,7 +35,7 @@ class MovieCommand(utils.Cog):
         if search and data.get('Search') is None:
             return None
 
-        embed = utils.Embed(use_random_colour=True)
+        embed = vbu.Embed(use_random_colour=True)
         if not search:
             embed.title = f"{data['Title']} ({data['Year']})"
 
@@ -77,10 +77,10 @@ class MovieCommand(utils.Cog):
             embed.set_thumbnail(data['Poster'])
         return embed
 
-    @utils.group(invoke_without_command=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('api_keys', 'omdb')
-    async def movie(self, ctx:utils.Context):
+    @vbu.group(invoke_without_command=True)
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @vbu.checks.is_config_set('api_keys', 'omdb')
+    async def movie(self, ctx: vbu.Context):
         """
         The parent command for movie commands.
         """
@@ -89,9 +89,9 @@ class MovieCommand(utils.Cog):
             return await ctx.send_help(ctx.command)
 
     @movie.group(name="get")
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('api_keys', 'omdb')
-    async def movie_get(self, ctx:utils.Context, *, name:str):
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @vbu.checks.is_config_set('api_keys', 'omdb')
+    async def movie_get(self, ctx: vbu.Context, *, name: str):
         """
         Gets a movie from the OMDB API.
         """
@@ -105,6 +105,7 @@ class MovieCommand(utils.Cog):
             year = None
 
         # Try and return the found data
+        await ctx.defer()
         data = await self.send_omdb_query(name,'movie',False,year)
         embed = self.generate_embed(data)
         if embed is None:
@@ -112,9 +113,9 @@ class MovieCommand(utils.Cog):
         return await ctx.send(embed=embed)
 
     @movie.group(name="search")
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('api_keys', 'omdb')
-    async def movie_search(self, ctx:utils.Context, *, name:str):
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @vbu.checks.is_config_set('api_keys', 'omdb')
+    async def movie_search(self, ctx: vbu.Context, *, name: str):
         """
         Searches for a movie on the OMDB API.
         """
@@ -128,16 +129,17 @@ class MovieCommand(utils.Cog):
             year = None
 
         # Try and return the found data
+        await ctx.defer()
         data = await self.send_omdb_query(name,'movie',True,year)
         embed = self.generate_embed(data)
         if not embed:
             return await ctx.send(f"No movie results for `{original_name}` could be found.", allowed_mentions=discord.AllowedMentions.none())
         return await ctx.send(embed=embed)
 
-    @utils.group(invoke_without_command=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('api_keys', 'omdb')
-    async def tv(self, ctx:utils.Context):
+    @vbu.group(invoke_without_command=True)
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @vbu.checks.is_config_set('api_keys', 'omdb')
+    async def tv(self, ctx: vbu.Context):
         """
         The parent group for the TV commands.
         """
@@ -146,9 +148,9 @@ class MovieCommand(utils.Cog):
             return await ctx.send_help(ctx.command)
 
     @tv.command(name="get")
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('api_keys', 'omdb')
-    async def tv_get(self, ctx:utils.Context, *, name:str):
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @vbu.checks.is_config_set('api_keys', 'omdb')
+    async def tv_get(self, ctx: vbu.Context, *, name: str):
         """
         Gets a TV show from the OMDB API.
         """
@@ -162,6 +164,7 @@ class MovieCommand(utils.Cog):
             year = None
 
         # Try and return the found data
+        await ctx.defer()
         data = await self.send_omdb_query(name, 'series', False, year)
         embed = self.generate_embed(data)
         if embed is None:
@@ -169,9 +172,9 @@ class MovieCommand(utils.Cog):
         return await ctx.send(embed=embed)
 
     @tv.command(name="search")
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('api_keys', 'omdb')
-    async def tv_search(self, ctx:utils.Context, *, name:str):
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @vbu.checks.is_config_set('api_keys', 'omdb')
+    async def tv_search(self, ctx: vbu.Context, *, name: str):
         """
         Searches for a TV series on the OMDB API.
         """
@@ -185,6 +188,7 @@ class MovieCommand(utils.Cog):
             year = None
 
         # Try and return the found data
+        await ctx.defer()
         data = await self.send_omdb_query(name, 'series', True, year)
         embed = self.generate_embed(data)
         if not embed:
@@ -192,6 +196,6 @@ class MovieCommand(utils.Cog):
         return await ctx.send(embed=embed)
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = MovieCommand(bot)
     bot.add_cog(x)

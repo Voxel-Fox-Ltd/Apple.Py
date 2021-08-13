@@ -374,7 +374,7 @@ class GithubCommands(vbu.Cog):
         await ctx.send(f"Your issue has been created - <{data.get('html_url') or data.get('web_url')}>.", wait=False)
 
     @issue.command(name="list")
-    async def issue_list(self, ctx:vbu.Context, repo:GitRepo, list_closed:bool=False):
+    async def issue_list(self, ctx: vbu.Context, repo: GitRepo, list_closed: bool = False):
         """
         List all of the issues on a git repo.
         """
@@ -456,7 +456,7 @@ class GithubCommands(vbu.Cog):
         return await vbu.Paginator(output, per_page=PER_PAGE).start(ctx)
 
     @issue.command(name="comment")
-    async def issue_comment(self, ctx:vbu.Context, repo:GitRepo, issue:GitIssueNumber, *, comment:str):
+    async def issue_comment(self, ctx: vbu.Context, repo: GitRepo, issue: GitIssueNumber, *, comment: str):
         """
         Comment on a git issue.
         """
@@ -505,7 +505,7 @@ class GithubCommands(vbu.Cog):
         return await ctx.send(f"Comment added! <https://gitlab.com/{repo.owner}/{repo.repo}/-/issues/{issue}#note_{data['id']}>")
 
     @issue.command(name="close", enabled=False)
-    async def issue_close(self, ctx:vbu.Context, repo:GitRepo, issue:GitIssueNumber):
+    async def issue_close(self, ctx: vbu.Context, repo: GitRepo, issue: GitIssueNumber):
         """
         Close a git issue.
         """
@@ -548,6 +548,6 @@ class GithubCommands(vbu.Cog):
         return await ctx.send("Issue closed.")
 
 
-def setup(bot:vbu.Bot):
+def setup(bot: vbu.Bot):
     x = GithubCommands(bot)
     bot.add_cog(x)

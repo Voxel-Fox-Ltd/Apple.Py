@@ -45,7 +45,7 @@ class GoogleCommands(vbu.Cog):
     @vbu.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
-    async def google(self, ctx:vbu.Context):
+    async def google(self, ctx: vbu.Context):
         """
         The parent group for the google commands.
         """
@@ -57,7 +57,7 @@ class GoogleCommands(vbu.Cog):
     @vbu.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
-    async def google_search(self, ctx:vbu.Context, *, query:str):
+    async def google_search(self, ctx: vbu.Context, *, query: str):
         """
         Search a query on Google.
         """
@@ -78,7 +78,7 @@ class GoogleCommands(vbu.Cog):
     @vbu.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
-    async def google_image(self, ctx:vbu.Context, *, query:str):
+    async def google_image(self, ctx: vbu.Context, *, query: str):
         """
         Search a query on Google Images.
         """
@@ -98,6 +98,6 @@ class GoogleCommands(vbu.Cog):
         await vbu.Paginator(self.get_search_page(query, 1, True), formatter=formatter).start(ctx)
 
 
-def setup(bot:vbu.Bot):
+def setup(bot: vbu.Bot):
     x = GoogleCommands(bot)
     bot.add_cog(x)
