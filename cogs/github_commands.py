@@ -347,13 +347,16 @@ class GithubCommands(vbu.Cog):
         components.components[0].components.append(vbu.Button("Set title", "TITLE"))
         components.components[0].components.append(vbu.Button("Set body", "BODY"))
         components.components[0].components.append(vbu.Button("Set repo", "REPO"))
+        options = [
+            vbu.SelectOption(label=i.name, value=i.name, description=i.description)
+            for i in await repo.get_labels(user_rows[0])
+        ]
         components.add_component(vbu.ActionRow(
             vbu.SelectMenu(
                 custom_id="LABELS",
-                options=[
-                    vbu.SelectOption(label=i.name, value=i.name, description=i.description)
-                    for i in await repo.get_labels(user_rows[0])
-                ],
+                min_values=0,
+                max_values=len(options),
+                options=options,
             )
         ))
         labels = []
@@ -376,7 +379,7 @@ class GithubCommands(vbu.Cog):
             if m is None:
                 m = await ctx.send("Are you sure you want to create this issue?", embed=embed, components=components)
             else:
-                m.edit(embed=embed, components=components.enable_components())
+                await m.edit(embed=embed, components=components.enable_components())
             try:
                 payload = await m.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
             except asyncio.TimeoutError:
