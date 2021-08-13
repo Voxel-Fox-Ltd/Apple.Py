@@ -231,8 +231,8 @@ class GithubCommands(vbu.Cog):
         # Run some checks
         if message.author.discriminator != "0000":
             return await ctx.send("That message wasn't sent by a webhook.", wait=False)
-        author_split = str(message.author.name).split("-")
-        if author_split[-1].split() != "Error":
+        author_split = message.author.name.split("-")
+        if author_split[-1].strip() != "Error":
             return await ctx.send("That message wasn't sent by a VBU error webhook.", wait=False)
 
         # Build up our content
