@@ -325,6 +325,6 @@ class NicknameHandler(vbu.Cog):
         return await ctx.send("Written to file successfully.")
 
 
-def setup(bot:vbu.Bot):
+def setup(bot: vbu.Bot):
     x = NicknameHandler(bot)
     bot.add_cog(x)

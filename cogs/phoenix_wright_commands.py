@@ -5,15 +5,15 @@ from base64 import b64encode
 import io
 
 import discord
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
-from cogs import utils as localutils
+from cogs import utils
 
 
-class PhoenixWrightCommands(utils.Cog):
+class PhoenixWrightCommands(vbu.Cog):
 
-    @utils.command(enabled=False)
-    async def phoenix(self, ctx:utils.Context, after:discord.Message, before:typing.Optional[discord.Message], *characters:str):
+    @vbu.command(enabled=False)
+    async def phoenix(self, ctx: vbu.Context, after: discord.Message, before: typing.Optional[discord.Message], *characters: str):
         """
         Makes you an Objection.lol file for you to use as a base.
         """
@@ -44,7 +44,7 @@ class PhoenixWrightCommands(utils.Cog):
             while True:
                 m = await self.bot.wait_for("message", check=check)
                 try:
-                    localutils.ObjectionFrame.get_character_id(m.content)
+                    utils.ObjectionFrame.get_character_id(m.content)
                 except KeyError:
                     return await ctx.send("I can't work out who that character is meant to be - please run this command later to try again.")
                 else:
@@ -52,7 +52,7 @@ class PhoenixWrightCommands(utils.Cog):
                     break
 
         # Make our data
-        frames = [localutils.ObjectionFrame(m, users_as_characters[u]) for u, m in user_messages]
+        frames = [utils.ObjectionFrame(m, users_as_characters[u]) for u, m in user_messages]
         data = [i.to_json() for i in frames]
         string = json.dumps(data)
         encoded = b64encode(string.encode())
@@ -61,6 +61,6 @@ class PhoenixWrightCommands(utils.Cog):
         await ctx.send(file=file)
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = PhoenixWrightCommands(bot)
     bot.add_cog(x)
