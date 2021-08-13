@@ -480,10 +480,10 @@ class GithubCommands(vbu.Cog):
 
         # Work out our args
         if repo.host == "Github":
-            json = {'title': title, 'body': body.strip()}
+            json = {'title': title, 'body': body.strip(), 'labels': labels}
             headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f"token {user_rows[0]['github_access_token']}"}
         elif repo.host == "Gitlab":
-            json = {'title': title, 'description': body.strip()}
+            json = {'title': title, 'description': body.strip(), 'labels': ",".join(labels)}
             headers = {'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}"}
         headers.update({'User-Agent': self.bot.user_agent})
 
