@@ -13,7 +13,7 @@ import voxelbotutils as vbu
 
 VBU_ERROR_WEBHOOK_PATTERN = re.compile((
     r"^Error `(?P<error>.+?)` encountered\.\n"
-    r"Guild `(?P<guild_id>\d+)`, channel `(?P<channel_id>\d+)`, user `(?P<user_id>\d+)`\n"
+    r"Guild `(?P<guild_id>\d+|None)`, channel `(?P<channel_id>\d+|None)`, user `(?P<user_id>\d+|None)`\n"
     r"```\n"
     r"(?P<command_invoke>.+?)\n"
     r"```$"
