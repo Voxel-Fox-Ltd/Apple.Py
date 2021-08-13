@@ -386,7 +386,8 @@ class GithubCommands(vbu.Cog):
                 return await ctx.send("Timed out asking for issue create confirmation.")
 
             # Disable components
-            await payload.update_message(components=components.disable_components())
+            if payload.component.custom_id not in ["LABELS"]:
+                await payload.update_message(components=components.disable_components())
 
             # Get the body
             if payload.component.custom_id == "BODY":
@@ -424,7 +425,7 @@ class GithubCommands(vbu.Cog):
                     body += f"![{name}]({url})\n"
 
             # Get the title
-            if payload.component.custom_id == "TITLE":
+            elif payload.component.custom_id == "TITLE":
 
                 # Wait for their body message
                 n = await payload.send("What do you want to set the issue title to?")
