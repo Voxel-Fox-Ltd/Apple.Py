@@ -221,7 +221,7 @@ class GithubCommands(vbu.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    @issue.command(name='frommessage')
+    @issue.command(name='frommessage', context_command_type=vbu.ApplicationCommandType.MESSAGE, context_command_name="Create issue from VBU webhook")
     @vbu.bot_has_permissions(send_messages=True, embed_links=True)
     async def issue_frommessage(self, ctx: vbu.Context, message: discord.Message):
         """
@@ -241,8 +241,11 @@ class GithubCommands(vbu.Cog):
         body_match = VBU_ERROR_WEBHOOK_PATTERN.search(message.content)
         title = f"Issue encountered running `{body_match.group('command_invoke')}` command"
         async with self.bot.session.get(message.attachments[0].url) as r:
-            error_file = await r.read()
-        body = f"The bot hit a `{body_match.group('error')}` error while running the `{body_match.group('command_invoke')}` command.\n\n```python\n{error_file.strip()}\n```"
+            error_file = await r.text()
+        body = (
+            f"The bot hit a `{body_match.group('error')}` error while running the `{body_match.group('command_invoke')}` "
+            f"command.\n\n```python\n{error_file.strip()}\n```"
+        )
         return await ctx.invoke(self.bot.get_command("issue create"), repo, title=title, body=body)
 
     @issue.command(name='create', aliases=['make'])
