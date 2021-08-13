@@ -117,8 +117,17 @@ class GithubCommands(vbu.Cog):
             return
 
         # Find matches in the message
-        m = re.finditer(r'(?:\s|^)(?P<ident>g[hl])/(?P<url>(?P<user>[a-zA-Z0-9_-]{1,255})/(?P<repo>[a-zA-Z0-9_-]{1,255}))(?:[#!]?(?P<issue>\d+?))?(?:\s|$)', message.content)
-        n = re.finditer(r'(?:\s|^)(?P<ident>g[hl]) (?P<alias>\S{1,255})(?: [#!]?(?P<issue>\d+?))?(?:\s|$)', message.content)
+        m = re.finditer(
+            (
+                r'(?:\s|^)(?P<ident>g[hl])/(?P<url>(?P<user>[a-zA-Z0-9_-]{1,255})/(?P<repo>[a-zA-Z0-9_-]{1,255}))'
+                r'(?:[#!]?(?P<issue>\d+?))?(?:\s|$)'
+            ),
+            message.content,
+        )
+        n = re.finditer(
+            r'(?:\s|^)(?P<ident>g[hl]) (?P<alias>\S{1,255})(?: [#!]?(?P<issue>\d+?))?(?:\s|$)',
+            message.content,
+        )
 
         # Dictionary of possible Git() links
         git_dict = {
@@ -183,7 +192,11 @@ class GithubCommands(vbu.Cog):
             except asyncpg.UniqueViolationError:
                 data = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2", alias, ctx.author.id)
                 if not data:
-                    return await ctx.send(f"The alias `{alias.lower()}` is already in use.", allowed_mentions=discord.AllowedMentions.none(), wait=False)
+                    return await ctx.send(
+                        f"The alias `{alias.lower()}` is already in use.",
+                        allowed_mentions=discord.AllowedMentions.none(),
+                        wait=False,
+                    )
                 await db("DELETE FROM github_repo_aliases WHERE alias=$1", alias)
                 return await ctx.invoke(ctx.command, alias, repo)
         await ctx.send("Done.", wait=False)
@@ -196,9 +209,17 @@ class GithubCommands(vbu.Cog):
         """
 
         async with self.bot.database() as db:
-            data = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2", alias, ctx.author.id)
+            data = await db(
+                "SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2",
+                alias,
+                ctx.author.id,
+            )
             if not data:
-                return await ctx.send("You don't own that repo alias.", allowed_mentions=discord.AllowedMentions.none(), wait=False)
+                return await ctx.send(
+                    "You don't own that repo alias.",
+                    allowed_mentions=discord.AllowedMentions.none(),
+                    wait=False,
+                )
             await db("DELETE FROM github_repo_aliases WHERE alias=LOWER($1)", alias)
         await ctx.send("Done.", wait=False)
 
@@ -409,11 +430,14 @@ class GithubCommands(vbu.Cog):
         async with self.bot.database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
-                return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see the website at `{ctx.clean_prefix}info`.")
+                return await ctx.send((
+                    f"You need to link your {repo.host} account to Discord to run this command - "
+                    f"see the website at `{ctx.clean_prefix}info`."
+                ))
 
         user_login = user_rows[0][f'{repo.host.lower()}_username']
 
-        # Get the issues
+        # Build our payload
         if repo.host == "Github":
             params = {'state': 'all' if list_closed else 'open'}
             headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f"token {user_rows[0]['github_access_token']}"}
@@ -423,6 +447,7 @@ class GithubCommands(vbu.Cog):
                 params.pop('state', None)
             headers = {'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}"}
 
+        # Get the issues
         async with self.bot.session.get(repo.issue_api_url, params=params, headers=headers) as r:
             data = await r.json()
             self.logger.info(f"Received data from git {r.url!s} - {data!s}")
@@ -468,15 +493,14 @@ class GithubCommands(vbu.Cog):
                     emoji_to_use = self.GIT_PR_CLOSED_EMOJI
                 elif pull_request_data.get('requested_reviewers'):
                     if any(reviewer['login'] == user_login for reviewer in pull_request_data['requested_reviewers']):
-                        # User has been requested for changes/review
-                        emoji_to_use = self.GIT_PR_CHANGES_EMOJI
+                        emoji_to_use = self.GIT_PR_CHANGES_EMOJI  # User has been requested for changes/review
             else:
                 emoji_to_use = self.GIT_ISSUE_OPEN_EMOJI
                 if not issue.get('state').startswith('open'):
                     emoji_to_use = self.GIT_ISSUE_CLOSED_EMOJI
 
             # Add to list
-            output.append(f"* {emoji_to_use} (#{issue_id}) [{title}]({url})")
+            output.append(f"\N{BULLET} {emoji_to_use} (#{issue_id}) [{title}]({url})")
 
         # Output as paginator
         return await vbu.Paginator(output, per_page=PER_PAGE).start(ctx)
@@ -491,7 +515,10 @@ class GithubCommands(vbu.Cog):
         async with self.bot.database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
-                return await ctx.send(f"You need to link your {repo.host} account to Discord to run this command - see the website at `{ctx.clean_prefix}info`.")
+                return await ctx.send((
+                    f"You need to link your {repo.host} account to Discord to run this command - "
+                    f"see the website at `{ctx.clean_prefix}info`."
+                ))
 
         # Add attachments
         attachment_urls = []
@@ -541,7 +568,10 @@ class GithubCommands(vbu.Cog):
         async with self.bot.database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{host.lower()}_username']:
-                return await ctx.send(f"You need to link your {host} account to Discord to run this command - see the website at `{ctx.clean_prefix}info`.")
+                return await ctx.send((
+                    f"You need to link your {repo.host} account to Discord to run this command - "
+                    f"see the website at `{ctx.clean_prefix}info`."
+                ))
 
         # Get the issues
         if host == "Github":
