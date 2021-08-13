@@ -270,8 +270,9 @@ class GithubCommands(vbu.Cog):
         # Ask if we want to do this
         embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
         components = vbu.MessageComponents.boolean_buttons()
-        components.components[0].components.insert(1, vbu.Button("Set title", "TITLE"))
-        components.components[0].components.insert(2, vbu.Button("Set body", "BODY"))
+        components.components[0].components.append(vbu.Button("Set title", "TITLE"))
+        components.components[0].components.append(vbu.Button("Set body", "BODY"))
+        components.components[0].components.append(vbu.Button("Set repo", "REPO"))
         m = await ctx.send("Are you sure you want to create this issue?", embed=embed, components=components)
         while True:
 
@@ -346,6 +347,31 @@ class GithubCommands(vbu.Cog):
                 # Edit the message
                 title = title_message.content
                 embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
+                await payload.message.edit(embed=embed, components=components.enable_components())
+
+            # Get the repo
+            if payload.component.custom_id == "REPO":
+
+                # Wait for their body message
+                n = await payload.send("What do you want to set the repo to?")
+                try:
+                    check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
+                    repo_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
+                except asyncio.TimeoutError:
+                    return await payload.send("Timed out asking for issue title text.")
+
+                # Delete their body message and our asking message
+                try:
+                    await n.delete()
+                    await repo_message.delete()
+                except discord.HTTPException:
+                    pass
+
+                # Edit the message
+                try:
+                    repo = await GitRepo.convert(ctx, repo_message.content)
+                except Exception:
+                    await ctx.send(f"That repo isn't valid, {ctx.author.mention}", delete_after=3)
                 await payload.message.edit(embed=embed, components=components.enable_components())
 
             # Check the reaction
