@@ -171,15 +171,15 @@ class MiscCommands(vbu.Cog):
         """
 
         if not channel.members:
-            return await ctx.send("There are no people in that VC for me to remove.", , wait=False)
+            return await ctx.send("There are no people in that VC for me to remove.", wait=False)
         member_count = len(channel.members)
         await ctx.defer()
         for member in channel.members:
             try:
                 await member.edit(voice_channel=None)
             except discord.Forbidden:
-                return await ctx.send("I don't have permission to remove members from that channel.", , wait=False)
-        return await ctx.send(f"Dropped {member_count} members from the VC.", , wait=False)
+                return await ctx.send("I don't have permission to remove members from that channel.", wait=False)
+        return await ctx.send(f"Dropped {member_count} members from the VC.", wait=False)
 
     @vbu.command()
     @commands.bot_has_permissions(send_messages=True)
