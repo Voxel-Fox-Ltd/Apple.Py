@@ -5,10 +5,10 @@ import string
 from urllib.parse import quote
 
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class DNDCommands(utils.Cog):
+class DNDCommands(vbu.Cog):
 
     DICE_REGEX = re.compile(r"^(?P<count>\d+)?[dD](?P<type>\d+) *(?P<modifier>(?P<modifier_parity>[+-]) *(?P<modifier_amount>\d+))?$")
     ATTRIBUTES = {
@@ -20,16 +20,16 @@ class DNDCommands(utils.Cog):
         "charisma": "CHR",
     }
 
-    @utils.command(aliases=['roll'])
+    @vbu.command(aliases=['roll'])
     @commands.bot_has_permissions(send_messages=True)
-    async def dice(self, ctx:utils.Context, *, dice:str):
+    async def dice(self, ctx: vbu.Context, *, dice: str):
         """
         Rolls a dice for you.
         """
 
         # Validate the dice
         if not dice:
-            raise utils.errors.MissingRequiredArgumentString(dice)
+            raise vbu.errors.MissingRequiredArgumentString(dice)
         match = self.DICE_REGEX.search(dice)
         if not match:
             raise commands.BadArgument("Your dice was not in the format `AdB+C`.")
@@ -48,11 +48,11 @@ class DNDCommands(utils.Cog):
         if dice_count > 1 or modifier:
             equals_string = f"{sum(rolls)} {'+' if modifier > 0 else '-'} {abs(modifier)}"
             if modifier:
-                return await ctx.send(f"Total **{total:,}** ({dice_string})\n({', '.join([str(i) for i in rolls])}) = {equals_string}")
-            return await ctx.send(f"Total **{total:,}** ({dice_string})\n({', '.join([str(i) for i in rolls])}) = {equals_string}")
-        return await ctx.send(f"Total **{total}** ({dice_string})")
+                return await ctx.send(f"Total **{total:,}** ({dice_string})\n({', '.join([str(i) for i in rolls])}) = {equals_string}", wait=False)
+            return await ctx.send(f"Total **{total:,}** ({dice_string})\n({', '.join([str(i) for i in rolls])}) = {equals_string}", wait=False)
+        return await ctx.send(f"Total **{total}** ({dice_string})", wait=False)
 
-    async def send_web_request(self, resource:str, item:str) -> typing.Optional[dict]:
+    async def send_web_request(self, resource: str, item: str) -> typing.Optional[dict]:
         """
         Send a web request to the dnd5eapi website.
         """
@@ -88,9 +88,9 @@ class DNDCommands(utils.Cog):
                 field_name, add_text, inline=False,
             )
 
-    @utils.group(aliases=["d&d"])
+    @vbu.group(aliases=["d&d"])
     @commands.bot_has_permissions(send_messages=True)
-    async def dnd(self, ctx:utils.Context):
+    async def dnd(self, ctx: vbu.Context):
         """
         The parent group for the D&D commands.
         """
@@ -100,7 +100,7 @@ class DNDCommands(utils.Cog):
 
     @dnd.command(name="spell", aliases=["spells"])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def dnd_spell(self, ctx:utils.Context, *, spell_name:str):
+    async def dnd_spell(self, ctx: vbu.Context, *, spell_name: str):
         """
         Gives you information on a D&D spell.
         """
@@ -108,8 +108,8 @@ class DNDCommands(utils.Cog):
         async with ctx.typing():
             data = await self.send_web_request("spells", spell_name)
         if not data:
-            return await ctx.send("I couldn't find any information for that spell.")
-        embed = utils.Embed(
+            return await ctx.send("I couldn't find any information for that spell.", wait=False)
+        embed = vbu.Embed(
             use_random_colour=True,
             title=data['name'],
             description=data['desc'][0],
@@ -143,11 +143,11 @@ class DNDCommands(utils.Cog):
             embed.add_field(
                 "Damage", text.strip(), inline=False,
             )
-        return await ctx.send(embed=embed)
+        return await ctx.send(embed=embed, wait=False)
 
     @dnd.command(name="monster", aliases=["monsters"])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def dnd_monster(self, ctx:utils.Context, *, monster_name:str):
+    async def dnd_monster(self, ctx: vbu.Context, *, monster_name: str):
         """
         Gives you information on a D&D monster.
         """
@@ -155,8 +155,8 @@ class DNDCommands(utils.Cog):
         async with ctx.typing():
             data = await self.send_web_request("monsters", monster_name)
         if not data:
-            return await ctx.send("I couldn't find any information for that monster.")
-        embed = utils.Embed(
+            return await ctx.send("I couldn't find any information for that monster.", wait=False)
+        embed = vbu.Embed(
             use_random_colour=True,
             title=data['name'],
             description="\n".join([
@@ -188,11 +188,11 @@ class DNDCommands(utils.Cog):
             embed.add_field(
                 "Spellcasting", spellcasting['desc'].replace('\n\n', '\n'), inline=False,
             )
-        return await ctx.send(embed=embed)
+        return await ctx.send(embed=embed, wait=False)
 
     @dnd.command(name="condition", aliases=["conditions"])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def dnd_condition(self, ctx:utils.Context, *, condition_name:str):
+    async def dnd_condition(self, ctx: vbu.Context, *, condition_name: str):
         """
         Gives you information on a D&D condition.
         """
@@ -200,17 +200,17 @@ class DNDCommands(utils.Cog):
         async with ctx.typing():
             data = await self.send_web_request("conditions", condition_name)
         if not data:
-            return await ctx.send("I couldn't find any information for that condition.")
-        embed = utils.Embed(
+            return await ctx.send("I couldn't find any information for that condition.", wait=False)
+        embed = vbu.Embed(
             use_random_colour=True,
             title=data['name'],
             description="\n".join(data['desc']),
         )
-        return await ctx.send(embed=embed)
+        return await ctx.send(embed=embed, wait=False)
 
     @dnd.command(name="class", aliases=["classes"])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def dnd_class(self, ctx:utils.Context, *, class_name:str):
+    async def dnd_class(self, ctx: vbu.Context, *, class_name: str):
         """
         Gives you information on a D&D class.
         """
@@ -218,8 +218,8 @@ class DNDCommands(utils.Cog):
         async with ctx.typing():
             data = await self.send_web_request("classes", class_name)
         if not data:
-            return await ctx.send("I couldn't find any information for that class.")
-        embed = utils.Embed(
+            return await ctx.send("I couldn't find any information for that class.", wait=False)
+        embed = vbu.Embed(
             use_random_colour=True,
             title=data['name'],
         ).add_field(
@@ -229,9 +229,9 @@ class DNDCommands(utils.Cog):
         ).add_field(
             "Starting Equipment", "\n".join([f"{i['quantity']}x {i['equipment']['name']}" for i in data['starting_equipment']]),
         )
-        return await ctx.send(embed=embed)
+        return await ctx.send(embed=embed, wait=False)
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = DNDCommands(bot)
     bot.add_cog(x)
