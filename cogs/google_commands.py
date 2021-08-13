@@ -1,15 +1,15 @@
 from discord.ext import commands
-import voxelbotutils as utils
+import voxelbotutils as vbu
 
 
-class GoogleCommands(utils.Cog):
+class GoogleCommands(vbu.Cog):
 
-    def get_search_page(self, query:str, num:int, image:bool=False):
+    def get_search_page(self, query: str, num: int, image: bool = False):
         """
         Get a number of results from Google
         """
 
-        async def wrapper(page_number:int):
+        async def wrapper(page_number: int):
             params = {
                 'key': self.bot.config['api_keys']['google']['api_key'],
                 'cx': self.bot.config['api_keys']['google']['search_engine_id'],
@@ -41,11 +41,11 @@ class GoogleCommands(utils.Cog):
 
         return wrapper
 
-    @utils.group(invoke_without_command=True, aliases=['search'])
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('api_keys', 'google', 'search_engine_id')
-    @utils.checks.is_config_set('api_keys', 'google', 'api_key')
-    async def google(self, ctx:utils.Context):
+    @vbu.group(invoke_without_command=True, aliases=['search'])
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
+    @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
+    async def google(self, ctx:vbu.Context):
         """
         The parent group for the google commands.
         """
@@ -54,40 +54,40 @@ class GoogleCommands(utils.Cog):
             return await ctx.send_help(ctx.command)
 
     @google.command(name="search")
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('api_keys', 'google', 'search_engine_id')
-    @utils.checks.is_config_set('api_keys', 'google', 'api_key')
-    async def google_search(self, ctx:utils.Context, *, query:str):
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
+    @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
+    async def google_search(self, ctx:vbu.Context, *, query:str):
         """
         Search a query on Google.
         """
 
         if query.startswith("-"):
-            raise utils.errors.MissingRequiredArgumentString("query")
+            raise vbu.errors.MissingRequiredArgumentString("query")
 
         def formatter(menu, data):
-            embed = utils.Embed(use_random_colour=True)
+            embed = vbu.Embed(use_random_colour=True)
             for d in data:
                 embed.add_field(*d, inline=False)
             embed.set_footer(f"Page {menu.current_page + 1}/{menu.max_pages}")
             return embed
-        await utils.Paginator(self.get_search_page(query, 3), formatter=formatter).start(ctx)
+        await vbu.Paginator(self.get_search_page(query, 3), formatter=formatter).start(ctx)
 
     @google.command(name='images', aliases=['image', 'i'])
     @commands.has_permissions(embed_links=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @utils.checks.is_config_set('api_keys', 'google', 'search_engine_id')
-    @utils.checks.is_config_set('api_keys', 'google', 'api_key')
-    async def google_image(self, ctx:utils.Context, *, query:str):
+    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
+    @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
+    async def google_image(self, ctx:vbu.Context, *, query:str):
         """
         Search a query on Google Images.
         """
 
         if query.startswith("-"):
-            raise utils.errors.MissingRequiredArgumentString("query")
+            raise vbu.errors.MissingRequiredArgumentString("query")
 
         def formatter(menu, data):
-            return utils.Embed(
+            return vbu.Embed(
                 use_random_colour=True,
                 title=data[0][0]
             ).set_image(
@@ -95,9 +95,9 @@ class GoogleCommands(utils.Cog):
             ).set_footer(
                 f"Page {menu.current_page + 1}/{menu.max_pages}"
             )
-        await utils.Paginator(self.get_search_page(query, 1, True), formatter=formatter).start(ctx)
+        await vbu.Paginator(self.get_search_page(query, 1, True), formatter=formatter).start(ctx)
 
 
-def setup(bot:utils.Bot):
+def setup(bot:vbu.Bot):
     x = GoogleCommands(bot)
     bot.add_cog(x)
