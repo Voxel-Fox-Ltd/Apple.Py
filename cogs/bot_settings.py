@@ -31,7 +31,7 @@ settings_menu = vbu.menus.Menu(
     ),
     vbu.menus.Option(
         display=lambda ctx: f"Set automatic nickname fixer (currently {ctx.bot.guild_settings[ctx.guild.id]['automatic_nickname_update']})",
-        component_display="Reactions needed",
+        component_display="Automatic nickname fixer",
         converters=[
             vbu.menus.Converter(
                 prompt="Do you want to enable automatic nickname fixing?",
