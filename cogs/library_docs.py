@@ -433,7 +433,7 @@ class LibraryDocs(vbu.Cog):
     @rtfm.command(name="dotnet", aliases=['.net'])
     async def rtdm_dotnet(self, ctx, *, obj: str):
         """
-        Gives you a documentation link for a Javascript entity.
+        Gives you a documentation link for a .NET entity.
         """
 
         url = "https://docs.microsoft.com/api/apibrowser/dotnet/search"
