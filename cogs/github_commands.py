@@ -72,31 +72,41 @@ class GitRepo(object):
     def html_url(self):
         if self.host == "Github":
             return f"https://github.com/{self.owner}/{self.repo}"
-        return f"https://gitlab.com/{self.owner}/{self.repo}"
+        elif self.host == "Gitlab":
+            return f"https://gitlab.com/{self.owner}/{self.repo}"
+        raise NotImplementedError()
 
     @property
     def issue_api_url(self):
         if self.host == "Github":
             return f"https://api.github.com/repos/{self.owner}/{self.repo}/issues"
-        return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/issues"
+        elif self.host == "Gitlab":
+            return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/issues"
+        raise NotImplementedError()
 
     @property
     def issue_comments_api_url(self):
         if self.host == "Github":
             return f"https://api.github.com/repos/{self.owner}/{self.repo}/issues/{{issue}}/comments"
-        return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/issues/{{issue}}/notes"
+        elif self.host == "Gitlab":
+            return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/issues/{{issue}}/notes"
+        raise NotImplementedError()
 
     @property
     def pull_requests_api_url(self):
         if self.host == "Github":
             return f"https://api.github.com/repos/{self.owner}/{self.repo}/pulls"
-        return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/merge_requests"
+        elif self.host == "Gitlab":
+            return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/merge_requests"
+        raise NotImplementedError()
 
     @property
     def labels_api_url(self):
         if self.host == "Github":
             return f"https://api.github.com/repos/{self.owner}/{self.repo}/labels"
-        return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/labels"
+        elif self.host == "Gitlab":
+            return f"https://gitlab.com/api/v4/projects/{quote(self.owner + '/' + self.repo, safe='')}/labels"
+        raise NotImplementedError()
 
     async def get_labels(self, row) -> typing.List[GitIssueLabel]:
         """
@@ -122,27 +132,40 @@ class GitRepo(object):
         Convert a string into an (host, owner, repo) string tuple.
         """
 
+        # Let's strip the thing
         value = value.rstrip('/')
+
+        # See if it's in the form `gh/owner/repo`
         if value.startswith("gh/"):
             _, owner, repo = value.split('/')
             host = "Github"
+
+        # See if it's a Github url
         elif "github.com" in value.lower():
             match = re.search(r"(?:https?://)?github\.com/(?P<user>[a-zA-Z0-9_\-.]+)/(?P<repo>[a-zA-Z0-9_\-.]+)", value)
             owner, repo = match.group("user"), match.group("repo")
             host = "Github"
+
+        # See if it's in the form `gl/owner/repo`
         elif value.startswith("gl/"):
             _, owner, repo = value.split('/')
             host = "Gitlab"
+
+        # See if it's a Gitlab url
         elif "gitlab.com" in value.lower():
             match = re.search(r"(?:https?://)?gitlab\.com/(?P<user>[a-zA-Z0-9_\-.]+)/(?P<repo>[a-zA-Z0-9_\-.]+)", value)
             owner, repo = match.group("user"), match.group("repo")
             host = "Gitlab"
+
+        # See if it's a repo alias
         else:
             async with ctx.bot.database() as db:
                 repo_rows = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1)", value)
             if not repo_rows:
                 raise commands.BadArgument("I couldn't find that git repo.")
             owner, repo, host = repo_rows[0]['owner'], repo_rows[0]['repo'], repo_rows[0]['host']
+
+        # Sick we're done
         return cls(host, owner, repo)
 
 
