@@ -31,7 +31,7 @@ class StaffPinger(vbu.Cog):
             report_channel_id = match.group(1)
             embed.description += (
                 f"\n**Timestamp:** {vbu.TimeFormatter(message.created_at)!s}"
-                f"\n**Jump URL:** [Click here](https://discord.com/channels/{report_channel_id}/messages/{message.id})"
+                f"\n**Jump URL:** [Click here](https://discord.com/channels/{message.guild.id}/{report_channel_id}/{message.id})"
             )
 
         # Make components
@@ -59,6 +59,7 @@ class StaffPinger(vbu.Cog):
         # See if we care about this button
         if payload.component.custom_id != "HANDLE_REPORT":
             return
+        self.logger.info("Received report interaction")
 
         # Sick
         components = payload.message.components
@@ -71,6 +72,7 @@ class StaffPinger(vbu.Cog):
 
         # Update message
         await payload.update_message(components=components)
+        self.logger.info("Updated report message components")
 
 
 def setup(bot: vbu.Bot):
