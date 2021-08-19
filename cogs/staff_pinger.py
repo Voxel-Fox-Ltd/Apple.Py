@@ -1,4 +1,9 @@
+import re
+
 import voxelbotutils as vbu
+
+
+CHANNEL_REGEX = re.compile(r"\*\*Channel:\*\* <#(\d+)>", re.MULTILINE | re.DOTALL)
 
 
 class StaffPinger(vbu.Cog):
@@ -18,9 +23,16 @@ class StaffPinger(vbu.Cog):
             return
 
         # Get embeds
-        embeds = None
+        embed = None
         if message.embeds:
-            embeds = message.embeds
+            embed = message.embeds[0]
+            original_description = embed.description
+            match = CHANNEL_REGEX.search(original_description)
+            report_channel_id = match.group(1)
+            embed.description += (
+                f"\n**Timestamp:** {vbu.TimeFormatter(message.created_at)!s}"
+                f"\n**Jump URL:** [Click here](https://discord.com/channels/{report_channel_id}/messages/{message.id})"
+            )
 
         # Make components
         components = vbu.MessageComponents(
@@ -32,8 +44,9 @@ class StaffPinger(vbu.Cog):
         # Repost message
         await message.delete()
         await message.channel.send(
-            f"{message.content} <@&480519382699868181> <@&713026585569263637>",
-            embeds=embeds,
+            # f"{message.content} <@&480519382699868181> <@&713026585569263637>",
+            f"{message.content}",
+            embeds=[embed],
             components=components,
         )
 
