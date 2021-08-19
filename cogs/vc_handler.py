@@ -31,6 +31,8 @@ class VCHandler(utils.Cog):
 
             # See how many are muted
             current_muted_member_count = len([i for i in channel.members if user_counts_as_muted(i.voice)])
+            if current_muted_member_count > 90:
+                return
 
             new_limit = allowed_members_for_channel + current_muted_member_count
             try:
