@@ -66,7 +66,7 @@ class StaffPinger(vbu.Cog):
         report_button = components.get_component("HANDLE_REPORT")
         report_button.label = "Report handled"
         report_button.disabled = True
-        components.components[0].components[0].add_component(
+        components.components[0].add_component(
             vbu.Button(str(payload.user), "REPORT_HANDLED_BY", disabled=True),
         )
 
