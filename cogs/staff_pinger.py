@@ -44,8 +44,8 @@ class StaffPinger(vbu.Cog):
         # Repost message
         await message.delete()
         await message.channel.send(
-            # f"{message.content} <@&480519382699868181> <@&713026585569263637>",
-            f"{message.content}",
+            f"{message.content} <@&480519382699868181> <@&713026585569263637>",
+            # f"{message.content}",
             embeds=[embed],
             components=components,
         )
