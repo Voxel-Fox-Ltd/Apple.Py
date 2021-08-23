@@ -77,24 +77,23 @@ class ReminderCommands(vbu.Cog):
             guild_id = 0
 
         # Get untaken id
-        db = await self.bot.database.get_connection()
-        while True:
-            reminder_id = create_id()
-            data = await db("SELECT * FROM reminders WHERE reminder_id=$1", reminder_id)
-            if not data:
-                break
+        async with self.bot.database() as db:
+            while True:
+                reminder_id = create_id()
+                data = await db("SELECT * FROM reminders WHERE reminder_id=$1", reminder_id)
+                if not data:
+                    break
 
-        # Let them know its been set
-        m = await ctx.send(f"Reminder set for {time.clean_spaced}.")
+            # Let them know its been set
+            m = await ctx.send(f"Reminder set for {time.clean_spaced}.")
 
-        # Chuck the info in the database
-        await db(
-            """INSERT INTO reminders (reminder_id, guild_id, channel_id, message_id, timestamp, user_id, message)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)""",
-            reminder_id, guild_id, ctx.channel.id, m.id, dt.utcnow() + time.delta,
-            ctx.author.id, message,
-        )
-        await db.disconnect()
+            # Chuck the info in the database
+            await db(
+                """INSERT INTO reminders (reminder_id, guild_id, channel_id, message_id, timestamp, user_id, message)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)""",
+                reminder_id, guild_id, ctx.channel.id, m.id, dt.utcnow() + time.delta,
+                ctx.author.id, message,
+            )
     
     @reminder.command(name="delete", aliases=['remove'])
     @commands.bot_has_permissions(send_messages=True)
