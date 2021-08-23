@@ -117,7 +117,7 @@ class ReminderCommands(vbu.Cog):
                 return await ctx.send("That reminder doesn't exist.")
 
             # Delete it
-            await db("DELETE FROM reminders WHERE reminder_id=$1 and guild_id=$2", reminder_id, guild_id)
+            await db("DELETE FROM reminders WHERE reminder_id=$1 and user_id=$2", reminder_id, ctx.author.id)
 
         # Send feedback saying it was deleted
         await ctx.send("Reminder deleted.")
