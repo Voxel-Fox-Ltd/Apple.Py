@@ -78,7 +78,9 @@ class LibraryDocs(vbu.Cog):
         """
 
         item_casefold = obj.casefold()
+        item_underscore_casefold = item_casefold.replace(" ", "_")
         split = item_casefold.split('.')
+        split_underscore = [i.replace(" ", "_") for i in split]
         outputs = []
 
         for key, link in cache.items():
@@ -87,8 +89,8 @@ class LibraryDocs(vbu.Cog):
             key_casefold = key.casefold()
 
             # See if we got an exact match
-            if item_casefold in key_casefold:
-                if item_casefold == key_casefold:
+            if item_casefold in key_casefold or item_underscore_casefold in key_casefold:
+                if item_casefold == key_casefold or item_underscore_casefold == key_casefold:
                     outputs.append((key, link, 20,))
                 else:
                     outputs.append((key, link, 15,))
@@ -98,15 +100,15 @@ class LibraryDocs(vbu.Cog):
                 continue
 
             # Search by method
-            if split[1] and split[1] in key_casefold:
-                if split[1] == key_casefold:
+            if split[1] and split[1] in key_casefold or split_underscore[1] in key_casefold:
+                if split[1] == key_casefold or split_underscore[1] == key_casefold:
                     outputs.append((key, link, 12,))
                 else:
                     outputs.append((key, link, 10,))
 
             # Search by class
-            if split[0] and split[0] in key_casefold:
-                if split[0] == key_casefold:
+            if split[0] and split[0] in key_casefold or split_underscore[0] in key_casefold:
+                if split[0] == key_casefold or split_underscore[0] == key_casefold:
                     outputs.append((key, link, 7,))
                 else:
                     outputs.append((key, link, 5,))
