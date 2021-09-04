@@ -4,8 +4,7 @@ import string
 import re
 
 import discord
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 ZALGO_CHARACTERS = [
@@ -42,7 +41,7 @@ ZALGO_CHARACTERS = [
     '\u25ce', '\u20d2',
     '\u06e3', '\u06dc',
     '\u02de',
-    '\U0000fdfd', '\u0488', '\u20df',
+    '\ufdfd', '\u0488', '\u20df',
     '\u0674', '\u06e2',
     '\u1ddf',
     '\u0e31', '\u0e49', '\u0e43',
@@ -101,7 +100,7 @@ class NicknameHandler(vbu.Cog):
             return
 
         # See if they have a permanent nickname set
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             data = await db(
                 """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2""",
                 member.guild.id, member.id
@@ -138,7 +137,7 @@ class NicknameHandler(vbu.Cog):
             return
 
         # See if they have a permanent nickname
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             data = await db(
                 """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2""",
                 member.guild.id, member.id
@@ -244,6 +243,7 @@ class NicknameHandler(vbu.Cog):
     @vbu.group(aliases=['fun'], invoke_without_command=True)
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
+    @commands.guild_only()
     async def fixunzalgoname(self, ctx: vbu.Context, user: discord.Member, force_to_animal: bool = False):
         """
         Fixes a user's nickname to remove dumbass characters.
@@ -251,12 +251,13 @@ class NicknameHandler(vbu.Cog):
 
         if ctx.invoked_subcommand is not None:
             return
+        assert ctx.guild
         user = await ctx.guild.fetch_member(user.id)
         current_name = user.nick or user.name
         new_name = await self.fix_user_nickname(user, force_to_animal=force_to_animal)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
 
-    @fixunzalgoname.command(aliases=['fun'], context_command_type=vbu.ApplicationCommandType.USER, context_command_name="Fix user's name")
+    @fixunzalgoname.command(aliases=['fun'])
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     async def fixunzalgoname_user(self, ctx: vbu.Context, user: discord.Member, force_to_animal: bool = False):
@@ -293,20 +294,24 @@ class NicknameHandler(vbu.Cog):
 
         return await ctx.send(f"I would change that from `{text}` to `{new_name}`.")
 
-    @vbu.command(add_slash_comamnd=False)
+    @commands.command(add_slash_comamnd=False)
     @vbu.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
     async def addfixablename(self, ctx: vbu.Context, user: discord.Member, *, fixed_name: str):
-        """Adds a given user's name to the fixable letters"""
+        """
+        Adds a given user's name to the fixable letters.
+        """
 
         await ctx.invoke(self.bot.get_command("addfixableletters"), user.display_name, fixed_name)
         await ctx.invoke(self.bot.get_command("fixunzalgoname"), user)
 
-    @vbu.command(ignore_extra=False, add_slash_comamnd=False)
+    @commands.command(ignore_extra=False, add_slash_comamnd=False)
     @vbu.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
     async def addfixableletters(self, ctx: vbu.Context, phrase1: str, phrase2: str):
-        """Adds fixable letters to the replacement list"""
+        """
+        Adds fixable letters to the replacement list.
+        """
 
         if len(phrase1) != len(phrase2):
             return await ctx.send("The lengths of the two provided phrases don't match.")

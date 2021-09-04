@@ -1,5 +1,4 @@
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 class GoogleCommands(vbu.Cog):
@@ -41,8 +40,8 @@ class GoogleCommands(vbu.Cog):
 
         return wrapper
 
-    @vbu.group(invoke_without_command=True, aliases=['search'])
-    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.group(invoke_without_command=True, aliases=['search'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
     async def google(self, ctx: vbu.Context):
@@ -54,7 +53,7 @@ class GoogleCommands(vbu.Cog):
             return await ctx.send_help(ctx.command)
 
     @google.command(name="search")
-    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
     async def google_search(self, ctx: vbu.Context, *, query: str):
@@ -75,7 +74,7 @@ class GoogleCommands(vbu.Cog):
 
     @google.command(name='images', aliases=['image', 'i'])
     @commands.has_permissions(embed_links=True)
-    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
     async def google_image(self, ctx: vbu.Context, *, query: str):

@@ -1,11 +1,10 @@
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 class AnimalCommands(vbu.Cog):
 
-    @vbu.command(aliases=['kitty'])
-    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    @commands.command(aliases=['kitty'])
+    @commands.cooldown(1, 5, commands.BucketType.channel)
     @vbu.checks.is_config_set('api_keys', 'cat_api')
     async def cat(self, ctx: vbu.Context, *, breed: str = None):
         """
@@ -30,8 +29,8 @@ class AnimalCommands(vbu.Cog):
             embed.set_image(url=data[0]['url'])
         await ctx.send(embed=embed)
 
-    @vbu.command(aliases=['doggo', 'puppy', 'pupper'])
-    @vbu.cooldown.cooldown(1, 2, commands.BucketType.channel)
+    @commands.command(aliases=['doggo', 'puppy', 'pupper'])
+    @commands.cooldown(1, 2, commands.BucketType.channel)
     async def dog(self, ctx: vbu.Context, *, breed: str = None):
         """
         Gives you some dog pictures.
@@ -51,8 +50,8 @@ class AnimalCommands(vbu.Cog):
             embed.set_image(url=data['message'])
         await ctx.send(embed=embed)
 
-    @vbu.command(aliases=['foxo', 'foxxo'])
-    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    @commands.command(aliases=['foxo', 'foxxo'])
+    @commands.cooldown(1, 5, commands.BucketType.channel)
     async def fox(self, ctx: vbu.Context):
         """
         Gives you some fox pictures.
@@ -66,8 +65,8 @@ class AnimalCommands(vbu.Cog):
             embed.set_image(url=data['image'])
         await ctx.send(embed=embed)
 
-    @vbu.command(aliases=['birb'])
-    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    @commands.command(aliases=['birb'])
+    @commands.cooldown(1, 5, commands.BucketType.channel)
     async def bird(self, ctx: vbu.Context):
         """
         Gives you some bird pictures.
@@ -81,8 +80,8 @@ class AnimalCommands(vbu.Cog):
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
-    @vbu.command()
-    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.channel)
     async def panda(self, ctx: vbu.Context):
         """
         Gives you some panda pictures.
@@ -96,8 +95,8 @@ class AnimalCommands(vbu.Cog):
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
-    @vbu.command()
-    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.channel)
     async def redpanda(self, ctx: vbu.Context):
         """
         Gives you some red panda pictures.
@@ -111,8 +110,8 @@ class AnimalCommands(vbu.Cog):
             embed.set_image(url=data['link'])
         await ctx.send(embed=embed)
 
-    @vbu.command()
-    @vbu.cooldown.cooldown(1, 5, commands.BucketType.channel)
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.channel)
     async def koala(self, ctx: vbu.Context):
         """
         Gives you some koala pictures.

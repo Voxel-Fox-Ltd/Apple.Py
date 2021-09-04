@@ -1,16 +1,16 @@
 import re
 
 import discord
-import voxelbotutils as utils
+from discord.ext import commands, vbu
 
 
-class SteamCommand(utils.Cog):
+class SteamCommand(vbu.Cog):
 
     ALL_GAMES_URL = "https://api.steampowered.com/ISteamApps/GetAppList/v2/"
     GAME_DATA_URL = "https://store.steampowered.com/api/appdetails"
     GAME_URL_REGEX = re.compile(r"https:\/\/store\.steampowered\.com\/app\/(\d+)")
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.game_cache: dict = None
         self.sent_message_cache = {}  # MessageID: {embed: Embed, index: ScreenshotIndex, screenshots: List[str]}
@@ -34,9 +34,9 @@ class SteamCommand(utils.Cog):
     def get_valid_name(self, name):
         return ''.join(i for i in name if i.isdigit() or i.isalpha() or i.isspace())
 
-    @utils.command(aliases=['steam'])
-    @utils.checks.is_config_set('api_keys', 'steam')
-    async def steamsearch(self, ctx:utils.Context, *, app_name:str):
+    @commands.command(aliases=['steam'])
+    @vbu.checks.is_config_set('api_keys', 'steam')
+    async def steamsearch(self, ctx: vbu.Context, *, app_name: str):
         """
         Search Steam for an item.
         """
@@ -97,7 +97,7 @@ class SteamCommand(utils.Cog):
             return await ctx.send("That game is marked as an 18+, so can't be sent in a non-NSFW channel.")
 
         # Embed it babey
-        with utils.Embed(use_random_colour=True) as embed:
+        with vbu.Embed(use_random_colour=True) as embed:
             embed.title = game_object['name']
             embed.set_footer(text=f"AppID: {appid}")
             embed.description = game_object['short_description']
@@ -123,9 +123,11 @@ class SteamCommand(utils.Cog):
         await m.add_reaction("⬅️")
         await m.add_reaction("➡️")
 
-    @utils.Cog.listener()
-    async def on_reaction_add(self, reaction:discord.Reaction, user:discord.User):
-        """Changes the screenshot on an embed"""
+    @vbu.Cog.listener()
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
+        """
+        Changes the screenshot on an embed.
+        """
 
         # Filter babey
         message = reaction.message
@@ -165,6 +167,6 @@ class SteamCommand(utils.Cog):
             pass
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = SteamCommand(bot)
     bot.add_cog(x)

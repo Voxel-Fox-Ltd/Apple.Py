@@ -2,8 +2,7 @@ from datetime import datetime as dt
 import collections
 
 import discord
-from discord.ext import tasks
-import voxelbotutils as vbu
+from discord.ext import tasks, vbu
 
 
 class TwitchFollowerUpdater(vbu.Cog):
@@ -35,7 +34,7 @@ class TwitchFollowerUpdater(vbu.Cog):
 
         new_last_timestamp = dt.utcnow()
         new_followers = collections.defaultdict(list)  # channel user id: list of new follower usernames
-        db = await self.bot.database.get_connection()
+        db = await vbu.Database.get_connection()
         data = await db("SELECT * FROM user_settings WHERE twitch_bearer_token IS NOT NULL")
 
         # Wew let's do it
@@ -59,7 +58,11 @@ class TwitchFollowerUpdater(vbu.Cog):
                 if len(new_follower_string) >= 1800:
                     new_follower_string = ""
                 try:
-                    await discord_user.send(f"You have **{len(filtered_new_follower_list)}** new Twitch follower{'s' if len(filtered_new_follower_list) > 1 else ''}! {new_follower_string}")
+                    await discord_user.send((
+                        f"You have **{len(filtered_new_follower_list)}** new Twitch "
+                        f"follower{'s' if len(filtered_new_follower_list) > 1 else ''}! "
+                        f"{new_follower_string}"
+                    ))
                 except discord.HTTPException:
                     pass
 
@@ -67,7 +70,7 @@ class TwitchFollowerUpdater(vbu.Cog):
         self.last_twitch_checked = new_last_timestamp
         await db.disconnect()
 
-    async def get_new_followers(self, bearer_token: str, user_id: str, after: str) -> list:
+    async def get_new_followers(self, bearer_token: str, user_id: str, after: str) -> tuple:
         """
         Gives you a list of new followers from after a given datetime.
         """

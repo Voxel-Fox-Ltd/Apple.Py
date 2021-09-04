@@ -3,46 +3,55 @@ from datetime import datetime as dt
 import typing
 
 import discord
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 class UserInfo(vbu.Cog):
 
-    @vbu.command(aliases=["avatar", "av"], context_command_type=vbu.ApplicationCommandType.USER, context_command_name="Enlarge avatar")
-    async def enlarge(self, ctx: vbu.Context, target: typing.Union[discord.User, discord.PartialEmoji] = None):
+    @commands.command(aliases=["avatar", "av"])  # Added as context commands
+    async def enlarge(self, ctx: vbu.Context, target: typing.Union[discord.Member, discord.User, discord.Emoji, discord.PartialEmoji] = None):
         """
         Enlarges the avatar or given emoji.
         """
 
         target = target or ctx.author
         if isinstance(target, (discord.User, discord.Member, discord.ClientUser)):
-            url = target.avatar_url
+            url = target.display_avatar.url
         elif isinstance(target, (discord.Emoji, discord.PartialEmoji)):
             url = target.url
         with vbu.Embed(color=0x1) as embed:
             embed.set_image(url=str(url))
         await ctx.send(embed=embed)
 
-    @vbu.command(aliases=["whoami"], context_command_type=vbu.ApplicationCommandType.USER, context_command_name="Whois")
+    @commands.command(aliases=["whoami"])  # Added as context commands
     async def whois(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Give you some information about a user.
         """
 
+        # Set up our intial vars
         user = user or ctx.author
-        with vbu.Embed(use_random_colour=True) as embed:
-            embed.set_author_to_user(user)
-            account_creation_time_humanized = vbu.TimeValue((dt.utcnow() - user.created_at).total_seconds()).clean_full
-            create_value = f"{user.created_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{account_creation_time_humanized} ago"
-            embed.add_field("Account Creation Time", create_value, inline=False)
+        embed = vbu.Embed(use_random_colour=True)
+        embed.set_author_to_user(user)
+
+        # Get the user account creation time
+        account_creation_time_humanized = vbu.TimeValue((dt.utcnow() - user.created_at).total_seconds()).clean_full
+        create_value = f"{user.created_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{account_creation_time_humanized} ago"
+        embed.add_field("Account Creation Time", create_value, inline=False)
+
+        # Get the user guild join time
+        if ctx.guild:
             guild_join_time_humanized = vbu.TimeValue((dt.utcnow() - user.joined_at).total_seconds()).clean_full
             join_value = f"{user.joined_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{guild_join_time_humanized} ago"
             embed.add_field("Guild Join Time", join_value, inline=False)
-            embed.set_thumbnail(user.avatar_url_as(size=1024))
+
+        # Set the embed thumbnail
+        embed.set_thumbnail(user.display_avatar.with_size(1024).url)
+
+        # Sick
         return await ctx.send(embed=embed)
 
-    @vbu.command()
+    @commands.command()
     @commands.guild_only()
     async def createlog(self, ctx: vbu.Context, amount: int = 100):
         """

@@ -1,11 +1,10 @@
 import discord
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 class VCAdmin(vbu.Cog):
 
-    @vbu.group()
+    @commands.group()
     async def vcadmin(self, ctx: vbu.Context):
         """
         The parent group for VC admin commands.
@@ -16,14 +15,16 @@ class VCAdmin(vbu.Cog):
 
     @vcadmin.command(aliases=["set"])
     @commands.has_permissions(manage_roles=True)
-    @vbu.bot_has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    @commands.guild_only()
     async def add(self, ctx: vbu.Context, channel: discord.VoiceChannel, role: discord.Role):
         """
         Sets a voice channel's admin role.
         """
 
         # Set the channel's admin role
-        async with self.bot.database() as db:
+        assert ctx.guild
+        async with vbu.Database() as db:
             await db(
                 """INSERT INTO vc_admins (guild_id, channel_id, role_id)
                 VALUES ($1, $2, $3) ON CONFLICT (channel_id, role_id) DO UPDATE SET role_id = $3""",
@@ -34,19 +35,20 @@ class VCAdmin(vbu.Cog):
         await ctx.send(
             f"Set {channel.mention}'s admin role to {role.mention}",
             allowed_mentions=discord.AllowedMentions.none(),
-            wait=False,
         )
 
     @vcadmin.command(aliases=["delete"])
     @commands.has_permissions(manage_roles=True)
-    @vbu.bot_has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    @commands.guild_only()
     async def remove(self, ctx: vbu.Context, channel: discord.VoiceChannel):
         """
         Removes a voice channel's admin role.
         """
 
         # Remove the channel's admin role
-        async with self.bot.database() as db:
+        assert ctx.guild
+        async with vbu.Database() as db:
             await db(
                 """DELETE FROM vc_admins WHERE guild_id = $1 AND channel_id = $2""",
                 ctx.guild.id, channel.id
@@ -56,19 +58,19 @@ class VCAdmin(vbu.Cog):
         await ctx.send(
             f"Removed {channel.mention}'s admin role",
             allowed_mentions=discord.AllowedMentions.none(),
-            wait=False,
         )
 
     @vcadmin.command()
     @commands.has_permissions(manage_roles=True)
-    @vbu.bot_has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
     async def role(self, ctx: vbu.Context, channel: discord.VoiceChannel):
         """
         Sends a voice channel's admin roles.
         """
 
         # Get the channel's admin roles
-        async with self.bot.database() as db:
+        assert ctx.guild
+        async with vbu.Database() as db:
             roles_rows = await db(
                 """SELECT role_id FROM vc_admins WHERE guild_id = $1 AND channel_id = $2""",
                 ctx.guild.id, channel.id
@@ -81,7 +83,6 @@ class VCAdmin(vbu.Cog):
                     f"{channel.mention} does not have a VC administrator role set-up. Set one up by running the "
                     f"`{ctx.prefix}vcadmin add <channel_id> <role>` command."
                 ),
-                wait=False,
             )
 
         # Get a the role object
@@ -95,14 +96,12 @@ class VCAdmin(vbu.Cog):
                     f"that role does not exist. Please run the `{ctx.prefix}vcadmin add <role_id>` "
                     "command to reset the VC administrator role."
                 ),
-                wait=False,
             )
 
         # Send the message
         await ctx.send(
             f"{channel.mention}'s VC administrator role is {role.mention}",
             allowed_mentions=discord.AllowedMentions.none(),
-            wait=False,
         )
 
     @vbu.Cog.listener()
@@ -121,7 +120,7 @@ class VCAdmin(vbu.Cog):
             return
 
         # Get the database info
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             roles_rows = await db(
                 """SELECT * FROM vc_admins WHERE guild_id=$1 AND channel_id=$2""",
                 guild.id, (channel or before.channel).id,

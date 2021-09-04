@@ -1,17 +1,17 @@
 import discord
-import voxelbotutils as utils
+from discord.ext import vbu
 
 
-class YagsYoutubeMessage(utils.Cog):
+class YagsYoutubeMessage(vbu.Cog):
 
     GUILD_ID = 208895639164026880
     YAGS_USER_ID = 204255221017214977
     YOUTUBE_UPDATE_ROLE = 731597271690510346
 
-    @utils.Cog.listener()
-    async def on_message(self, message:discord.Message):
+    @vbu.Cog.listener()
+    async def on_message(self, message: discord.Message):
         """
-        Send a message to people who subscribe via Upgrade.chat.
+        Ping the updates role when Kae goes live on Twitch etc.
         """
 
         if message.guild is None or message.guild.id != self.GUILD_ID:
@@ -21,6 +21,8 @@ class YagsYoutubeMessage(utils.Cog):
         if "**Kae** uploaded a new youtube video" not in message.content and "Woah! **Kae** is currently streaming" not in message.content:
             return
         role = message.guild.get_role(self.YOUTUBE_UPDATE_ROLE)
+        if role is None:
+            return
         mentionable = role.mentionable
         await role.edit(mentionable=True)
         m = await message.channel.send(f'{role.mention} ' + message.content)
@@ -29,6 +31,6 @@ class YagsYoutubeMessage(utils.Cog):
         await role.edit(mentionable=mentionable)
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = YagsYoutubeMessage(bot)
     bot.add_cog(x)

@@ -1,8 +1,7 @@
 import re
 import collections
 
-from discord.ext import tasks
-import voxelbotutils as vbu
+from discord.ext import tasks, vbu
 
 
 class DiscordDatamining(vbu.Cog):

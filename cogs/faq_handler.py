@@ -1,5 +1,5 @@
 import discord
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 CSUPPORT_MESSAGE = ("\u200b\n" * 28) + """
@@ -10,17 +10,17 @@ Please give a detailed report of:
 
 Ping `@Support Team` for a faster response
 """
-CSUPPORT_COMPONENTS = vbu.MessageComponents(
-    vbu.ActionRow(
-        vbu.Button("See the FAQs", "FAQ")
+CSUPPORT_COMPONENTS = discord.ui.MessageComponents(
+    discord.ui.ActionRow(
+        discord.ui.Button(label="See the FAQs", custom_id="FAQ")
     )
 )
-FAQ_COMPONENTS = vbu.MessageComponents(
-    vbu.ActionRow(
-        vbu.Button("MarriageBot FAQs ->", "_", disabled=True),
-        vbu.Button("I can't disown my child", "FAQ CANT_DISOWN", style=vbu.ButtonStyle.SECONDARY),
-        vbu.Button("None of the commands work", "FAQ NO_COMMANDS_WORK", style=vbu.ButtonStyle.SECONDARY),
-        vbu.Button("Gold doesn't have my family tree", "FAQ COPY_FAMILY_TO_GOLD", style=vbu.ButtonStyle.SECONDARY),
+FAQ_COMPONENTS = discord.ui.MessageComponents(
+    discord.ui.ActionRow(
+        discord.ui.Button(label="MarriageBot FAQs ->", custom_id="_", disabled=True),
+        discord.ui.Button(label="I can't disown my child", custom_id="FAQ CANT_DISOWN", style=discord.ui.ButtonStyle.secondary),
+        discord.ui.Button(label="None of the commands work", custom_id="FAQ NO_COMMANDS_WORK", style=discord.ui.ButtonStyle.secondary),
+        discord.ui.Button(label="Gold doesn't have my family tree", custom_id="FAQ COPY_FAMILY_TO_GOLD", style=discord.ui.ButtonStyle.secondary),
     ),
 )
 
@@ -55,7 +55,7 @@ class FAQHandler(vbu.Cog):
         self.cached_messages[key] = data
         return data
 
-    @vbu.command(hidden=True)
+    @commands.command(hidden=True)
     async def csupport(self, ctx: vbu.Context):
         """
         Post the csupport message wew.
@@ -65,7 +65,7 @@ class FAQHandler(vbu.Cog):
             return
         await ctx.send(CSUPPORT_MESSAGE, components=CSUPPORT_COMPONENTS)
 
-    @vbu.command(hidden=True)
+    @commands.command(hidden=True)
     async def faq(self, ctx: vbu.Context):
         """
         Post the FAQ message for people who don't want to look in the support channel.

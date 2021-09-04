@@ -3,14 +3,13 @@ import re
 import io
 
 import discord
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 from PIL import Image
 
 
 class ImageUrl(commands.Converter):
 
-    SLASH_COMMAND_ARG_TYPE = vbu.interactions.ApplicationCommandOptionType.STRING
+    __application_option_type__ = discord.ApplicationCommandOptionType.string
     regex = re.compile(r"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)")
 
     async def convert(self, ctx: vbu.Context, argument: str):
@@ -26,7 +25,7 @@ class ImageUrl(commands.Converter):
 
 class EmojiCommands(vbu.Cog):
 
-    @vbu.command(aliases=['removeemoji', 'delemoji'], add_slash_command=False)
+    @commands.command(aliases=['removeemoji', 'delemoji'], add_slash_command=False)
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.guild_only()
@@ -58,7 +57,7 @@ class EmojiCommands(vbu.Cog):
 
         return (int(width * size_mod), int(height * size_mod))
 
-    @vbu.command(aliases=['stealemoji'])
+    @commands.command(aliases=['stealemoji'])
     @commands.bot_has_permissions(manage_emojis=True)
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.guild_only()

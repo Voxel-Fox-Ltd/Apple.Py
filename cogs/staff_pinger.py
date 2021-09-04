@@ -1,6 +1,7 @@
 import re
 
-import voxelbotutils as vbu
+import discord
+from discord.ext import vbu
 
 
 CHANNEL_REGEX = re.compile(r"\*\*Channel:\*\* <#(\d+)>", re.MULTILINE | re.DOTALL)
@@ -30,14 +31,14 @@ class StaffPinger(vbu.Cog):
             match = CHANNEL_REGEX.search(original_description)
             report_channel_id = match.group(1)
             embed.description += (
-                f"\n**Timestamp:** {vbu.TimeFormatter(message.created_at)!s}"
+                f"\n**Timestamp:** {discord.utils.format_dt(message.created_at)}"
                 f"\n**Jump URL:** [Click here](https://discord.com/channels/{message.guild.id}/{report_channel_id}/{message.id})"
             )
 
         # Make components
-        components = vbu.MessageComponents(
-            vbu.ActionRow(
-                vbu.Button("Handle report", "HANDLE_REPORT"),
+        components = discord.ui.MessageComponents(
+            discord.ui.ActionRow(
+                discord.ui.Button(label="Handle report", custom_id="HANDLE_REPORT"),
             ),
         )
 
@@ -51,7 +52,7 @@ class StaffPinger(vbu.Cog):
         )
 
     @vbu.Cog.listener()
-    async def on_component_interaction(self, payload: vbu.ComponentInteractionPayload):
+    async def on_component_interaction(self, payload: discord.Interaction):
         """
         Handle the "handle report" button being clicked.
         """
@@ -67,11 +68,11 @@ class StaffPinger(vbu.Cog):
         report_button.label = "Report handled"
         report_button.disabled = True
         components.components[0].add_component(
-            vbu.Button(str(payload.user), "REPORT_HANDLED_BY", disabled=True),
+            discord.ui.Button(label=str(payload.user), custom_id="REPORT_HANDLED_BY", disabled=True),
         )
 
         # Update message
-        await payload.update_message(components=components)
+        await payload.response.edit_message(components=components)
         self.logger.info("Updated report message components")
 
 

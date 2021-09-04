@@ -2,10 +2,10 @@ import string
 import random
 import re
 import asyncio
+import typing
 
 import discord
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 def create_id(n: int = 5):
@@ -21,7 +21,9 @@ class QuoteCommands(vbu.Cog):
     IMAGE_URL_REGEX = re.compile(r"(http(?:s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)")
     QUOTE_SEARCH_CHARACTER_CUTOFF = 100
 
-    async def get_quote_messages(self, ctx, messages, *, allow_self_quote: bool = False) -> dict:
+    async def get_quote_messages(
+            self, ctx: vbu.Context, messages: typing.List[discord.Message], *,
+            allow_self_quote: bool = False) -> dict:
         """
         Gets the messages that the user has quoted, returning a dict with keys `success` (bool) and `message` (str or voxelbotutils.Embed).
         If `success` is `False`, then the resulting `message` can be directly output to the user, and if it's `True` then we can go ahead
@@ -29,6 +31,7 @@ class QuoteCommands(vbu.Cog):
         """
 
         # Make sure they have a quote channel
+        assert ctx.guild
         if self.bot.guild_settings[ctx.guild.id].get('quote_channel_id') is None:
             func = "You don't have a quote channel set!"
             return {'success': False, 'message': func}
@@ -103,7 +106,7 @@ class QuoteCommands(vbu.Cog):
             embed.timestamp = timestamp
         return {'success': True, 'message': embed, 'user': user, 'timestamp': timestamp}
 
-    @vbu.group(invoke_without_command=True)
+    @commands.group(invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
     async def quote(self, ctx: vbu.Context, messages: commands.Greedy[discord.Message]):
@@ -163,7 +166,7 @@ class QuoteCommands(vbu.Cog):
             return await ctx.send("I couldn't send your quote into the quote channel.")
 
         # And save it to the database
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             await db(
                 """INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp, quoter_id)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)""",
@@ -173,7 +176,13 @@ class QuoteCommands(vbu.Cog):
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote request saved with ID `{quote_id.upper()}`", embed=embed)
 
-    @quote.command(name="create", context_command_type=vbu.ApplicationCommandType.MESSAGE, context_command_name="Quote message")
+    @commands.context_command(name="Quote message")
+    async def _context_command_quote_create(self, ctx: vbu.Context, message: discord.Message):
+        command = self.quote_create
+        await command.can_run(ctx)
+        await ctx.invoke(command, message)
+
+    @quote.command(name="create")
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
     async def quote_create(self, ctx: vbu.Context, message: discord.Message):
@@ -218,7 +227,7 @@ class QuoteCommands(vbu.Cog):
             return await ctx.send("I couldn't send your quote into the quote channel.")
 
         # And save it to the database
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             await db(
                 """INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp, quoter_id)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)""",
@@ -236,7 +245,7 @@ class QuoteCommands(vbu.Cog):
         """
 
         # Get quote from database
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             quote_rows = await db(
                 """SELECT user_quotes.quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes LEFT JOIN
                 quote_aliases ON user_quotes.quote_id=quote_aliases.quote_id
@@ -268,16 +277,16 @@ class QuoteCommands(vbu.Cog):
         # Output to user
         return await ctx.send(embed=quote_embed)
 
-    @quote.command(name="random", add_slash_command=False)
+    @quote.command(name="random")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def quote_random(self, ctx: vbu.Context, user: discord.User = None):
+    async def quote_random(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Gets a random quote for a given user.
         """
 
         # Get quote from database
         user = user or ctx.author
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             quote_rows = await db(
                 """SELECT quote_id as quote_id, user_id, channel_id, message_id
                 FROM user_quotes WHERE user_id=$1 AND guild_id=$2 ORDER BY RANDOM() LIMIT 1""",
@@ -290,13 +299,13 @@ class QuoteCommands(vbu.Cog):
         data = quote_rows[0]
         if data['channel_id'] is None:
             self.logger.info(f"Deleting legacy quote - {data['quote_id']}")
-            async with self.bot.database() as db:
+            async with vbu.Database() as db:
                 await db("DELETE FROM user_quotes WHERE quote_id=$1", data['quote_id'])
             return await ctx.reinvoke()
         channel = self.bot.get_channel(data['channel_id'])
         if channel is None:
             self.logger.info(f"Deleting quote from deleted channel - {data['quote_id']}")
-            async with self.bot.database() as db:
+            async with vbu.Database() as db:
                 await db("DELETE FROM user_quotes WHERE quote_id=$1", data['quote_id'])
             return await ctx.reinvoke()
         try:
@@ -304,7 +313,7 @@ class QuoteCommands(vbu.Cog):
             assert message is not None
         except (AssertionError, discord.HTTPException):
             self.logger.info(f"Deleting quote from deleted message - {data['quote_id']}")
-            async with self.bot.database() as db:
+            async with vbu.Database() as db:
                 await db("DELETE FROM user_quotes WHERE quote_id=$1", data['quote_id'])
             return await ctx.reinvoke()
 
@@ -325,13 +334,13 @@ class QuoteCommands(vbu.Cog):
         """
 
         # Grab data from db
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1 AND guild_id=$2", quote_id.lower(), ctx.guild.id)
         if not rows:
             return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
 
         # Insert alias into db
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             rows = await db("SELECT * FROM quote_aliases WHERE alias=$1", alias)
             if rows:
                 return await ctx.send(f"The alias `{alias}` is already being used.")
@@ -349,7 +358,7 @@ class QuoteCommands(vbu.Cog):
 
         # Grab data from db
         user = user or ctx.author
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             rows = await db("SELECT quote_id FROM user_quotes WHERE user_id=$1 AND guild_id=$2", user, ctx.guild.id)
         if not rows:
             embed = vbu.Embed(
@@ -371,7 +380,7 @@ class QuoteCommands(vbu.Cog):
         """
 
         # Grab data from db
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             quote_rows = await db(
                 """SELECT user_quotes.quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes LEFT JOIN
                 quote_aliases ON user_quotes.quote_id=quote_aliases.quote_id
@@ -419,7 +428,7 @@ class QuoteCommands(vbu.Cog):
             except (discord.HTTPException, AttributeError) as e:
                 await ctx.send(e)
 
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             await db("DELETE FROM user_quotes WHERE quote_id=ANY($1) AND guild_id=$2", quote_ids, ctx.guild.id)
         return await ctx.send("Deleted quote(s).")
 

@@ -3,13 +3,13 @@ import typing
 from datetime import datetime as dt, timedelta
 
 import discord
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 import pytz
 
 
 class TimezoneInfo(vbu.Cog):
 
-    @vbu.group(aliases=['tz'])
+    @commands.group(aliases=['tz'])
     async def timezone(self, ctx: vbu.Context):
         """
         The parent group for timezone commands.
@@ -64,7 +64,7 @@ class TimezoneInfo(vbu.Cog):
             return await ctx.send(f"I can't work out what timezone you're referring to - please run this command again to try later, or go to the website (`{ctx.clean_prefix}info`) and I can work it out automatically.")
 
         # Store it in the database
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             await db(
                 """INSERT INTO user_settings (user_id, timezone_name) VALUES ($1, $2) ON CONFLICT (user_id)
                 DO UPDATE SET timezone_name=excluded.timezone_name""",
@@ -72,7 +72,13 @@ class TimezoneInfo(vbu.Cog):
             )
         await ctx.send(f"I think your current time is **{dt.utcnow().replace(tzinfo=pytz.utc).astimezone(zone).strftime('%-I:%M %p')}** - I've stored this in the database.")
 
-    @timezone.command(name="get", context_command_type=vbu.ApplicationCommandType.USER, context_command_name="Get user's timezone")
+    @commands.context_command(name="Get user's timezone")
+    async def _context_command_timezone_get(self, ctx: vbu.SlashContext, user: discord.Member):
+        command = self.timezone_get
+        await command.can_run(ctx)
+        await ctx.invoke(command, user)
+
+    @timezone.command(name="get")
     async def timezone_get(self, ctx: vbu.Context, target: typing.Union[discord.Member, str] = None):
         """
         Get the current time for a given user.
@@ -89,7 +95,7 @@ class TimezoneInfo(vbu.Cog):
 
         # See if they've set a timezone
         if not target_is_timezone:
-            async with self.bot.database() as db:
+            async with vbu.Database() as db:
                 rows = await db("SELECT timezone_name, timezone_offset FROM user_settings WHERE user_id=$1", target.id)
             if not rows or (rows[0]['timezone_name'] is None and rows[0]['timezone_offset'] is None):
                 return await ctx.send(f"{target.mention} hasn't set up their timezone information! They can set it by running `{ctx.clean_prefix}timezone set`.")

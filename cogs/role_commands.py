@@ -2,22 +2,23 @@ import typing
 import json
 
 import discord
-from discord.ext import commands
-import voxelbotutils as utils
+from discord.ext import commands, vbu
 
 
-class RoleCommands(utils.Cog):
+class RoleCommands(vbu.Cog):
 
-    @utils.command(add_slash_command=False)
+    @commands.command(add_slash_command=False)
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def permissions(self, ctx:utils.Context, user:typing.Union[discord.Member, discord.Role], channel:typing.Optional[discord.TextChannel]):
+    @commands.guild_only()
+    async def permissions(self, ctx: vbu.Context, user: typing.Union[discord.Member, discord.Role], channel: typing.Optional[discord.TextChannel] = None):
         """
         See all the permissions for a given user.
         """
 
         if channel is None:
             channel = ctx.channel
+        assert isinstance(channel, discord.TextChannel)
         channel_permissions = channel.overwrites_for(user)
         if isinstance(user, discord.Role):
             guild_permissions = user.permissions
@@ -46,6 +47,6 @@ class RoleCommands(utils.Cog):
         await ctx.send('\n'.join(output), allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = RoleCommands(bot)
     bot.add_cog(x)

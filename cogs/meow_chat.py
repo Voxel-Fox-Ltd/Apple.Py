@@ -3,8 +3,7 @@ import re
 from datetime import datetime as dt
 
 import discord
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 class MeowChat(vbu.Cog):
@@ -55,19 +54,19 @@ class MeowChat(vbu.Cog):
         try:
             await message.delete()
             expiry_time, _ = self.meow_disable_tasks.get(message.channel.id, (None, None))
-            if message.author.permissions_in(message.channel).manage_messages:
+            if message.channel.permissions_for(message.author).manage_messages:
                 text = f"{message.author.mention}, your message needs to have a 'meow' in it (to disable, run the `meow off` command)."
             else:
                 text = f"{message.author.mention}, your message needs to have a 'meow' in it :<"
             if expiry_time:
-                text = text.replace("in it", f"in it until meow chat expires {vbu.TimeFormatter(expiry_time).relative_time}")
+                text = text.replace("in it", f"in it until meow chat expires {discord.utils.format_dt(expiry_time, 'R')}")
             await message.channel.send(text, delete_after=3)
         except discord.HTTPException:
             pass
 
-    @vbu.group()
+    @commands.group()
     @commands.has_permissions(manage_messages=True)
-    @vbu.bot_has_permissions(send_messages=True, manage_messages=True)
+    @commands.bot_has_permissions(send_messages=True, manage_messages=True)
     async def meow(self, ctx: vbu.Context):
         """
         The parent group for the meow chat commands.
@@ -78,7 +77,7 @@ class MeowChat(vbu.Cog):
 
     @meow.command(name="enable", aliases=["start", "on"])
     @commands.has_permissions(manage_messages=True)
-    @vbu.bot_has_permissions(send_messages=True, manage_messages=True)
+    @commands.bot_has_permissions(send_messages=True, manage_messages=True)
     async def meow_enable(self, ctx: vbu.Context, duration: vbu.TimeValue = None):
         """
         Turn on meow chat for this channel.
@@ -119,7 +118,7 @@ class MeowChat(vbu.Cog):
         await ctx.send(f"Meow chat has been disabled in {ctx.channel.mention} :<")
 
         # See if there's a running task to keep it alive
-        expiry_time, current_task = self.meow_disable_tasks.pop(ctx.channel.id, (None, None))
+        _, current_task = self.meow_disable_tasks.pop(ctx.channel.id, (None, None))
         if current_task:
             current_task.cancel()
 

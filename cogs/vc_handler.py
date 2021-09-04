@@ -1,23 +1,32 @@
 import discord
-import voxelbotutils as utils
+from discord.ext import vbu
 
 
-class VCHandler(utils.Cog):
+class VCHandler(vbu.Cog):
 
-    async def cache_setup(self, db):
+    async def cache_setup(self, db: vbu.Database):
+        """
+        Set up the database caching for ma VC members.
+        """
+
         data = await self.bot._get_list_table_data(db, "channel_list", "MaxVCMembers")
         for row in data:
-            self.bot.guild_settings[row['guild_id']].setdefault('max_vc_members', dict())[row['channel_id']] = int(row['value'])
+            d = self.bot.guild_settings[row['guild_id']].setdefault('max_vc_members', dict())
+            d[row['channel_id']] = int(row['value'])
 
-    @utils.Cog.listener()
-    async def on_voice_state_update(self, member:discord.Member, before:discord.VoiceState, after:discord.VoiceState):
+    @vbu.Cog.listener()
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         """
-        Pinged when a user joins/leaves a voice chat.
+        Update a given VC's max members.
         """
 
         # Check how many people are in the VC
         channels = list(set([i for i in [after.channel, before.channel] if i is not None]))
         for channel in channels:
+
+            # See if it's a stage channel
+            if isinstance(channel, discord.StageChannel):
+                return
 
             # Get allowed data
             allowed_members_for_channel = self.bot.guild_settings[member.guild.id].setdefault('max_vc_members', dict()).get(channel.id)
@@ -34,6 +43,7 @@ class VCHandler(utils.Cog):
             if current_muted_member_count > 90:
                 return
 
+            # And set a new limit
             new_limit = allowed_members_for_channel + current_muted_member_count
             try:
                 await channel.edit(user_limit=new_limit)
@@ -42,6 +52,6 @@ class VCHandler(utils.Cog):
                 self.logger.error(f"Failed to update user limit for channel {channel.id} - {e}")
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = VCHandler(bot)
     bot.add_cog(x)

@@ -3,8 +3,7 @@ import random
 import string
 
 import discord
-from discord.ext import commands, tasks
-import voxelbotutils as vbu
+from discord.ext import commands, tasks, vbu
 
 
 def create_id(n: int = 5):
@@ -25,7 +24,7 @@ class ReminderCommands(vbu.Cog):
     def cog_unload(self):
         self.reminder_finish_handler.stop()
 
-    @vbu.group(aliases=["reminders"], invoke_without_command=True)
+    @commands.group(aliases=["reminders"], invoke_without_command=True)
     @commands.bot_has_permissions(send_messages=True)
     async def reminder(self, ctx: vbu.Context):
         """
@@ -50,7 +49,7 @@ class ReminderCommands(vbu.Cog):
             guild_id = 0
 
         # Grab their remidners
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             rows = await db("SELECT * FROM reminders WHERE user_id=$1 and guild_id=$2", ctx.author.id, guild_id)
 
         # Format an output string
@@ -77,7 +76,7 @@ class ReminderCommands(vbu.Cog):
             guild_id = 0
 
         # Get untaken id
-        db = await self.bot.database.get_connection()
+        db = await vbu.Database.get_connection()
         while True:
             reminder_id = create_id()
             data = await db("SELECT * FROM reminders WHERE reminder_id=$1", reminder_id)
@@ -103,7 +102,7 @@ class ReminderCommands(vbu.Cog):
         """
 
         # Grab finished stuff from the database
-        db = await self.bot.database.get_connection()
+        db = await vbu.Database.get_connection()
         rows = await db("SELECT * FROM reminders WHERE timestamp < TIMEZONE('UTC', NOW())")
         if not rows:
             await db.disconnect()
@@ -121,7 +120,7 @@ class ReminderCommands(vbu.Cog):
             try:
                 channel = self.bot.get_channel(channel_id) or await self.bot.fetch_channel(channel_id)
             except discord.HTTPException:
-                pass
+                channel = None
             sendable = {
                 "content": f"<@{user_id}> reminder `{reminder_id}` triggered - {message}",
                 "allowed_mentions": discord.AllowedMentions(users=[discord.Object(user_id)]),
@@ -132,12 +131,13 @@ class ReminderCommands(vbu.Cog):
                     "mention_author": True,
                 })
             try:
+                assert channel is not None
                 try:
                     await channel.send(**sendable)
                 except Exception:
                     sendable.pop("reference")
                     await channel.send(**sendable)
-            except discord.Forbidden:
+            except (AssertionError, discord.Forbidden):
                 try:
                     user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
                     await user.send(**sendable)
@@ -152,6 +152,6 @@ class ReminderCommands(vbu.Cog):
         await db.disconnect()
 
 
-def setup(bot:vbu.Bot):
+def setup(bot: vbu.Bot):
     x = ReminderCommands(bot)
     bot.add_cog(x)

@@ -7,8 +7,7 @@ import textwrap
 import unicodedata
 
 import discord
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 class SphinxObjectFileReader(object):
@@ -237,7 +236,7 @@ class LibraryDocs(vbu.Cog):
             key = name if dispname == '-' else dispname
             prefix = f'{subdirective}:' if domain == 'std' else ''
 
-            if projname == 'discord.py':
+            if projname in ['discord.py', 'novus']:
                 key = key.replace('discord.ext.commands.', '').replace('discord.', '')
             if projname.lower() == 'voxelbotutils':
                 display_key = f'{prefix}{key}'
@@ -278,7 +277,8 @@ class LibraryDocs(vbu.Cog):
         """
 
         page_types = {
-            'latest': 'https://discordpy.readthedocs.io/en/latest',
+            # 'dpy': 'https://discordpy.readthedocs.io/en/latest',
+            'novus': 'https://novus.readthedocs.io/en/latest',
             'python': 'https://docs.python.org/3',
             'pygame': 'https://www.pygame.org/docs',
             'voxelbotutils': 'https://voxelbotutils.readthedocs.io/en/latest',
@@ -303,7 +303,7 @@ class LibraryDocs(vbu.Cog):
         obj = re.sub(r'^(?:discord\.(?:ext\.)?)?(?:commands\.)?(.+)', r'\1', obj)
 
         # point the discord.abc.Messageable types properly
-        if key == 'latest':
+        if key in ['dpy', 'novus']:
             q = obj.lower()
             for name in dir(discord.abc.Messageable):
                 if name[0] == '_':
@@ -312,9 +312,14 @@ class LibraryDocs(vbu.Cog):
                     obj = f'abc.Messageable.{name}'
                     break
 
-        return await ctx.send(**self.get_embed_from_cache(self._rtfm_cache[key], obj))
+        sendable = self.get_embed_from_cache(self._rtfm_cache[key], obj)
+        if (embed := sendable.pop("embed", None)):
+            if ctx.invoked_with == "dpy":
+                embed.set_footer(text="Your Discord.py was converted to Novus.")
+            sendable["embed"] = embed
+        return await ctx.send(**sendable)
 
-    @vbu.command(aliases=['dedent'])
+    @commands.command(aliases=['dedent'])
     async def unindent(self, ctx: vbu.Context, message: discord.Message):
         """
         Unindents the codeblock inside of a message.
@@ -334,13 +339,11 @@ class LibraryDocs(vbu.Cog):
             return await ctx.send("I couldn't regex that message for codeblocks.")
         return await ctx.send(f"```{block_match.group(1)}\n{textwrap.dedent(block_match.group(2))}\n```")
 
-    @vbu.group()
+    @commands.group()
     async def rtfm(self, ctx):
         """
         Get some data from the docs.
         """
-
-        pass
 
     @rtfm.command(name="djs")
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
@@ -377,7 +380,17 @@ class LibraryDocs(vbu.Cog):
         a cruddy fuzzy algorithm.
         """
 
-        await self.do_rtfm(ctx, "latest", obj)
+        await self.do_rtfm(ctx, "novus", obj)
+
+    @rtfm.command(name="novus")
+    async def rtdm_novus(self, ctx, *, obj: str):
+        """
+        Gives you a documentation link for a discord.py entity.
+        Events, objects, and functions are all supported through a
+        a cruddy fuzzy algorithm.
+        """
+
+        await self.do_rtfm(ctx, "novus", obj)
 
     @rtfm.command(name="vbu")
     async def rtdm_vbu(self, ctx, *, obj: str):
@@ -457,7 +470,7 @@ class LibraryDocs(vbu.Cog):
                 break
         return await ctx.send(embed=embed)
 
-    @vbu.command(aliases=['pip'])
+    @commands.command(aliases=['pip'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def pypi(self, ctx: vbu.Context, module: commands.clean_content):
         """
@@ -479,7 +492,7 @@ class LibraryDocs(vbu.Cog):
             embed.description = data['info']['summary']
         return await ctx.send(embed=embed)
 
-    @vbu.command(aliases=['npmjs'])
+    @commands.command(aliases=['npmjs'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def npm(self, ctx: vbu.Context, package_name: str):
         """
@@ -502,7 +515,7 @@ class LibraryDocs(vbu.Cog):
             embed.description = data['description']
         await ctx.send(embed=embed)
 
-    @vbu.command()
+    @commands.command()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def nuget(self, ctx: vbu.Context, package_name: str):
         """
@@ -526,7 +539,7 @@ class LibraryDocs(vbu.Cog):
                 return
         await ctx.send(embed=embed)
 
-    @vbu.command()
+    @commands.command()
     @commands.bot_has_permissions(send_messages=True)
     async def charinfo(self, ctx, *, characters: str):
         """
@@ -542,14 +555,14 @@ class LibraryDocs(vbu.Cog):
             return await ctx.send('Output too long to display.')
         await ctx.send(msg)
 
-    @vbu.command(add_slash_command=False)
+    @commands.command(add_slash_command=False)
     async def getinterval(self, ctx: vbu.Context, message1: int, message2: int):
         """
         Get the interval between two snowflakes.
         """
 
         timestamps = sorted([discord.Object(message1).created_at, discord.Object(message2).created_at], reverse=True)
-        return await ctx.send(timestamps[0] - timestamps[1])
+        return await ctx.send(str(timestamps[0] - timestamps[1]))
 
 
 def setup(bot: vbu.Bot):

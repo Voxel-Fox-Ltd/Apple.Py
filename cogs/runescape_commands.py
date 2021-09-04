@@ -3,7 +3,7 @@ import random
 import typing
 from pathlib import Path
 
-import voxelbotutils as utils
+from discord.ext import commands, vbu
 import aiohttp
 
 
@@ -14,7 +14,7 @@ MEMBERS_MAPPING = {
 }
 
 
-class RunescapeCommands(utils.Cog):
+class RunescapeCommands(vbu.Cog):
 
     def __init__(self, bot):
         super().__init__(bot)
@@ -84,8 +84,8 @@ class RunescapeCommands(utils.Cog):
 
         return value
 
-    @utils.command(aliases=['ge'])
-    async def grandexchange(self, ctx, *, item:str):
+    @commands.command(aliases=['ge'])
+    async def grandexchange(self, ctx: vbu.Context, *, item:str):
         """
         Get the value of an item on the grand exchange (OSRS).
         """
@@ -104,7 +104,7 @@ class RunescapeCommands(utils.Cog):
                 name = item_dict['name']
                 item_page_url = API_BASE_URL + f"a=373/{name.replace(' ', '+')}/viewitem?obj={item_id}"
 
-                with utils.Embed() as embed:
+                with vbu.Embed() as embed:
                     embed.set_author(name=name, url=item_page_url, icon_url=item_dict['icon'])
                     embed.set_thumbnail(url=item_dict['icon_large'])
                     embed.add_field('Value', f'{item_value} coins', inline=False)
@@ -116,6 +116,6 @@ class RunescapeCommands(utils.Cog):
                 return await ctx.send('Item not found')
 
 
-def setup(bot:utils.Bot):
+def setup(bot: vbu.Bot):
     x = RunescapeCommands(bot)
     bot.add_cog(x)

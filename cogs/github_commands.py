@@ -7,8 +7,7 @@ import typing
 
 import asyncpg
 import discord
-from discord.ext import commands
-import voxelbotutils as vbu
+from discord.ext import commands, vbu
 
 
 VBU_ERROR_WEBHOOK_PATTERN = re.compile((
@@ -40,9 +39,9 @@ class GitIssueLabel(object):
 
 class GitRepo(object):
 
-    SLASH_COMMAND_ARG_TYPE = vbu.interactions.ApplicationCommandOptionType.STRING
-    bot = None
+    bot: vbu.Bot = None
     __slots__ = ('host', 'owner', 'repo')
+    __application_option_type__ = discord.ApplicationCommandOptionType.string
 
     def __init__(self, host, owner, repo):
         self.host = host
@@ -159,7 +158,7 @@ class GitRepo(object):
 
         # See if it's a repo alias
         else:
-            async with ctx.bot.database() as db:
+            async with vbu.Database() as db:
                 repo_rows = await db("SELECT * FROM github_repo_aliases WHERE alias=LOWER($1)", value)
             if not repo_rows:
                 raise commands.BadArgument("I couldn't find that git repo.")
@@ -225,7 +224,7 @@ class GithubCommands(vbu.Cog):
                     url = f"{url}/-/issues/{issue}"
             sendable += f"<{url}>\n"
         if n:
-            async with self.bot.database() as db:
+            async with vbu.Database() as db:
                 for i in n:
                     issue = i.group("issue")
                     rows = await db("SELECT * FROM github_repo_aliases WHERE alias=$1", i.group("alias"))
@@ -242,7 +241,7 @@ class GithubCommands(vbu.Cog):
         if sendable:
             await message.channel.send(sendable, allowed_mentions=discord.AllowedMentions.none())
 
-    @vbu.group()
+    @commands.group()
     async def repoalias(self, ctx: vbu.Context):
         """
         The parent command for handling git repo aliases.
@@ -252,13 +251,13 @@ class GithubCommands(vbu.Cog):
             return await ctx.send_help(ctx.command)
 
     @repoalias.command(name="add")
-    @vbu.bot_has_permissions(send_messages=True)
+    @commands.bot_has_permissions(send_messages=True)
     async def repoalias_add(self, ctx: vbu.Context, alias: str, repo: GitRepo):
         """
         Add a Github repo alias to the database.
         """
 
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             try:
                 await db(
                     """INSERT INTO github_repo_aliases (alias, owner, repo, host, added_by)
@@ -271,20 +270,19 @@ class GithubCommands(vbu.Cog):
                     return await ctx.send(
                         f"The alias `{alias.lower()}` is already in use.",
                         allowed_mentions=discord.AllowedMentions.none(),
-                        wait=False,
                     )
                 await db("DELETE FROM github_repo_aliases WHERE alias=$1", alias)
                 return await ctx.invoke(ctx.command, alias, repo)
-        await ctx.send("Done.", wait=False)
+        await ctx.send("Done.")
 
     @repoalias.command(name="remove", aliases=['delete', 'del', 'rem'])
-    @vbu.bot_has_permissions(send_messages=True)
+    @commands.bot_has_permissions(send_messages=True)
     async def repoalias_remove(self, ctx: vbu.Context, alias: str):
         """
         Removes a Github repo alias from the database.
         """
 
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             data = await db(
                 "SELECT * FROM github_repo_aliases WHERE alias=LOWER($1) AND added_by=$2",
                 alias,
@@ -294,22 +292,21 @@ class GithubCommands(vbu.Cog):
                 return await ctx.send(
                     "You don't own that repo alias.",
                     allowed_mentions=discord.AllowedMentions.none(),
-                    wait=False,
                 )
             await db("DELETE FROM github_repo_aliases WHERE alias=LOWER($1)", alias)
-        await ctx.send("Done.", wait=False)
+        await ctx.send("Done.")
 
-    @vbu.command(aliases=['ci'], hidden=True)
-    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.command(aliases=['ci'], hidden=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def createissue(self, ctx: vbu.Context, repo: GitRepo, *, title: str):
         """
         Create a Github issue on a given repo.
         """
 
-        return await ctx.invoke(self.bot.get_command("issue create"), repo, title=title)
+        return await ctx.invoke(self.issue_create, repo, title=title)
 
-    @vbu.group(aliases=['issues'])
-    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.group(aliases=['issues'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def issue(self, ctx: vbu.Context):
         """
         The parent group for the git issue commands.
@@ -318,42 +315,42 @@ class GithubCommands(vbu.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    @issue.command(name='frommessage', context_command_type=vbu.ApplicationCommandType.MESSAGE, context_command_name="Create issue from VBU webhook")
-    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
-    async def issue_frommessage(self, ctx: vbu.Context, message: discord.Message):
-        """
-        Create a Github issue from a VBU error webhook.
-        """
+    # @issue.command(name='frommessage', context_command_type=vbu.ApplicationCommandType.MESSAGE, context_command_name="Create issue from VBU webhook")
+    # @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    # async def issue_frommessage(self, ctx: vbu.Context, message: discord.Message):
+    #     """
+    #     Create a Github issue from a VBU error webhook.
+    #     """
 
-        # Run some checks
-        if message.author.discriminator != "0000":
-            return await ctx.send("That message wasn't sent by a webhook.", wait=False)
-        author_split = message.author.name.split("-")
-        if author_split[-1].strip() != "Error":
-            return await ctx.send("That message wasn't sent by a VBU error webhook.", wait=False)
+    #     # Run some checks
+    #     if message.author.discriminator != "0000":
+    #         return await ctx.send("That message wasn't sent by a webhook.")
+    #     author_split = message.author.name.split("-")
+    #     if author_split[-1].strip() != "Error":
+    #         return await ctx.send("That message wasn't sent by a VBU error webhook.")
 
-        # Build up our content
-        repo_str = "-".join(author_split[:-1]).strip()
-        repo = await GitRepo.convert(ctx, repo_str)
-        body_match = VBU_ERROR_WEBHOOK_PATTERN.search(message.content)
-        title = f"Issue encountered running `{body_match.group('command_invoke').strip()}` command"
-        async with self.bot.session.get(message.attachments[0].url) as r:
-            error_file = await r.text()
-        body = (
-            f"The bot hit a `{body_match.group('error').strip()}` error while running the `{body_match.group('command_invoke')}` "
-            f"command.\n```python\n{error_file.strip()}\n```"
-        )
-        return await ctx.invoke(self.bot.get_command("issue create"), repo, title=title, body=body)
+    #     # Build up our content
+    #     repo_str = "-".join(author_split[:-1]).strip()
+    #     repo = await GitRepo.convert(ctx, repo_str)
+    #     body_match = VBU_ERROR_WEBHOOK_PATTERN.search(message.content)
+    #     title = f"Issue encountered running `{body_match.group('command_invoke').strip()}` command"
+    #     async with self.bot.session.get(message.attachments[0].url) as r:
+    #         error_file = await r.text()
+    #     body = (
+    #         f"The bot hit a `{body_match.group('error').strip()}` error while running the `{body_match.group('command_invoke')}` "
+    #         f"command.\n```python\n{error_file.strip()}\n```"
+    #     )
+    #     return await ctx.invoke(self.issue_create, repo, title=title, body=body)
 
     @issue.command(name='create', aliases=['make'])
-    @vbu.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def issue_create(self, ctx: vbu.Context, repo: GitRepo, *, title: str, body: str = ""):
         """
         Create a Github issue on a given repo.
         """
 
         # Get the database because whatever why not
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
                 return await ctx.send(
@@ -361,21 +358,20 @@ class GithubCommands(vbu.Cog):
                         f"You need to link your {repo.host} account to Discord to run this "
                         f"command - see the website at `{ctx.clean_prefix}info`."
                     ),
-                    wait=False,
                 )
 
         # Work out what components we want to use
         embed = vbu.Embed(title=title, description=body, use_random_colour=True).set_footer(text=str(repo))
-        components = vbu.MessageComponents.boolean_buttons()
-        components.components[0].components.append(vbu.Button("Set title", "TITLE"))
-        components.components[0].components.append(vbu.Button("Set body", "BODY"))
-        components.components[0].components.append(vbu.Button("Set repo", "REPO"))
+        components = discord.ui.MessageComponents.boolean_buttons()
+        components.components[0].components.append(discord.ui.Button(label="Set title", custom_id="TITLE"))
+        components.components[0].components.append(discord.ui.Button(label="Set body", custom_id="BODY"))
+        components.components[0].components.append(discord.ui.Button(label="Set repo", custom_id="REPO"))
         options = [
-            vbu.SelectOption(label=i.name, value=i.name, description=i.description)
+            discord.ui.SelectOption(label=i.name, value=i.name, description=i.description)
             for i in await repo.get_labels(user_rows[0])
         ]
-        components.add_component(vbu.ActionRow(
-            vbu.SelectMenu(
+        components.add_component(discord.ui.ActionRow(
+            discord.ui.SelectMenu(
                 custom_id="LABELS",
                 min_values=0,
                 max_values=len(options),
@@ -404,24 +400,24 @@ class GithubCommands(vbu.Cog):
             else:
                 await m.edit(embed=embed, components=components.enable_components())
             try:
-                payload = await m.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
+                payload = await self.bot.wait_for("component_interaction", check=vbu.component_check(ctx.author, m), timeout=120)
             except asyncio.TimeoutError:
                 return await ctx.send("Timed out asking for issue create confirmation.")
 
             # Disable components
             if payload.component.custom_id not in ["LABELS"]:
-                await payload.update_message(components=components.disable_components())
+                await payload.response.edit_message(components=components.disable_components())
 
             # Get the body
             if payload.component.custom_id == "BODY":
 
                 # Wait for their body message
-                n = await payload.send("What body content do you want to be added to your issue?")
+                n = await payload.followup.send("What body content do you want to be added to your issue?")
                 try:
                     check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
                     body_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
                 except asyncio.TimeoutError:
-                    return await payload.send("Timed out asking for issue body text.")
+                    return await payload.followup.send("Timed out asking for issue body text.")
 
                 # Grab the attachments
                 attachment_urls = []
@@ -451,12 +447,12 @@ class GithubCommands(vbu.Cog):
             elif payload.component.custom_id == "TITLE":
 
                 # Wait for their body message
-                n = await payload.send("What do you want to set the issue title to?")
+                n = await payload.followup.send("What do you want to set the issue title to?")
                 try:
                     check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
                     title_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
                 except asyncio.TimeoutError:
-                    return await payload.send("Timed out asking for issue title text.")
+                    return await payload.followup.send("Timed out asking for issue title text.")
 
                 # Delete their body message and our asking message
                 try:
@@ -470,12 +466,12 @@ class GithubCommands(vbu.Cog):
             elif payload.component.custom_id == "REPO":
 
                 # Wait for their body message
-                n = await payload.send("What do you want to set the repo to?")
+                n = await payload.followup.send("What do you want to set the repo to?")
                 try:
                     check = lambda n: n.author.id == ctx.author.id and n.channel.id == ctx.channel.id
                     repo_message = await self.bot.wait_for("message", check=check, timeout=60 * 5)
                 except asyncio.TimeoutError:
-                    return await payload.send("Timed out asking for issue title text.")
+                    return await payload.followup.send("Timed out asking for issue title text.")
 
                 # Delete their body message and our asking message
                 try:
@@ -492,16 +488,17 @@ class GithubCommands(vbu.Cog):
 
             # Get the labels
             elif payload.component.custom_id == "LABELS":
-                await payload.defer_update()
+                await payload.response.defer_update()
                 labels = payload.values
 
             # Check for exiting
             elif payload.component.custom_id == "NO":
-                return await payload.send("Alright, cancelling issue add.", wait=False)
+                return await payload.followup.send("Alright, cancelling issue add.")
             elif payload.component.custom_id == "YES":
                 break
 
         # Work out our args
+        headers = {}
         if repo.host == "Github":
             json = {'title': title, 'body': body.strip(), 'labels': labels}
             headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f"token {user_rows[0]['github_access_token']}"}
@@ -517,8 +514,8 @@ class GithubCommands(vbu.Cog):
             if 200 <= r.status < 300:
                 pass
             else:
-                return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.", wait=False)
-        await ctx.send(f"Your issue has been created - <{data.get('html_url') or data.get('web_url')}>.", wait=False)
+                return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.",)
+        await ctx.send(f"Your issue has been created - <{data.get('html_url') or data.get('web_url')}>.",)
 
     @issue.command(name="list")
     async def issue_list(self, ctx: vbu.Context, repo: GitRepo, list_closed: bool = False):
@@ -527,7 +524,7 @@ class GithubCommands(vbu.Cog):
         """
 
         # Get the database because whatever why not
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
                 return await ctx.send((
@@ -538,6 +535,8 @@ class GithubCommands(vbu.Cog):
         user_login = user_rows[0][f'{repo.host.lower()}_username']
 
         # Build our payload
+        params = {}
+        headers = {}
         if repo.host == "Github":
             params = {'state': 'all' if list_closed else 'open'}
             headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f"token {user_rows[0]['github_access_token']}"}
@@ -612,7 +611,7 @@ class GithubCommands(vbu.Cog):
         """
 
         # Get the database because whatever why not
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
             if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
                 return await ctx.send((
@@ -656,52 +655,6 @@ class GithubCommands(vbu.Cog):
         if repo.host == "Github":
             return await ctx.send(f"Comment added! <{data['html_url']}>")
         return await ctx.send(f"Comment added! <https://gitlab.com/{repo.owner}/{repo.repo}/-/issues/{issue}#note_{data['id']}>")
-
-    @issue.command(name="close", enabled=False)
-    async def issue_close(self, ctx: vbu.Context, repo: GitRepo, issue: GitIssueNumber):
-        """
-        Close a git issue.
-        """
-
-        # Get the database because whatever why not
-        host, owner, repo = repo
-        async with self.bot.database() as db:
-            user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
-            if not user_rows or not user_rows[0][f'{host.lower()}_username']:
-                return await ctx.send((
-                    f"You need to link your {repo.host} account to Discord to run this command - "
-                    f"see the website at `{ctx.clean_prefix}info`."
-                ))
-
-        # Get the issues
-        if host == "Github":
-            json = {'state': 'closed'}
-            headers = {
-                'Accept': 'application/vnd.github.v3+json',
-                'Authorization': f"token {user_rows[0]['github_access_token']}",
-                'User-Agent': self.bot.user_agent,
-            }
-            async with self.bot.session.post(f"https://api.github.com/repos/{owner}/{repo}/issues/{issue}", json=json, headers=headers) as r:
-                data = await r.json()
-                self.logger.info(f"Received data from Github {r.url!s} - {data!s}")
-                if 200 <= r.status < 300:
-                    pass
-                else:
-                    return await ctx.send(f"I was unable to get the issues on that Github repository - `{data}`.")
-        elif host == "Gitlab":
-            json = {'state_event': 'close'}
-            headers = {
-                'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}",
-                'User-Agent': self.bot.user_agent,
-            }
-            async with self.bot.session.post(f"https://gitlab.com/api/v4/projects/{quote(owner + '/' + repo, safe='')}/issues/{issue}", json=json, headers=headers) as r:
-                data = await r.json()
-                self.logger.info(f"Received data from Gitlab {r.url!s} - {data!s}")
-                if 200 <= r.status < 300:
-                    pass
-                else:
-                    return await ctx.send(f"I was unable to get the issues on that Gitlab repository - `{data}`.")
-        return await ctx.send("Issue closed.")
 
 
 def setup(bot: vbu.Bot):
