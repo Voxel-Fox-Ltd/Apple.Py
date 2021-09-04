@@ -238,7 +238,7 @@ class LibraryDocs(vbu.Cog):
             key = name if dispname == '-' else dispname
             prefix = f'{subdirective}:' if domain == 'std' else ''
 
-            if projname in ['discord.py', 'novus']:
+            if projname.lower() in ['discord.py', 'novus']:
                 key = key.replace('discord.ext.commands.', '').replace('discord.', '')
             if projname.lower() == 'voxelbotutils':
                 display_key = f'{prefix}{key}'
