@@ -119,6 +119,12 @@ class LibraryDocs(vbu.Cog):
                     fuzz.partial_ratio(key, obj),
                     fuzz.partial_ratio(key, obj.replace(" ", "_")),
                     fuzz.partial_ratio(key, obj.replace(" ", "")),
+                    fuzz.partial_ratio(key.split(".")[0], obj),
+                    fuzz.partial_ratio(key.split(".")[0], obj.replace(" ", "_")),
+                    fuzz.partial_ratio(key.split(".")[0], obj.replace(" ", "")),
+                    fuzz.partial_ratio(key.split(".")[-1], obj),
+                    fuzz.partial_ratio(key.split(".")[-1], obj.replace(" ", "_")),
+                    fuzz.partial_ratio(key.split(".")[-1], obj.replace(" ", "")),
                 )),
             ))
 
