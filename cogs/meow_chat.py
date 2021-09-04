@@ -105,7 +105,7 @@ class MeowChat(vbu.Cog):
 
     @meow.command(name="disable", aliases=["stop", "off"])
     @commands.has_permissions(manage_messages=True)
-    @vbu.bot_has_permissions(send_messages=True, manage_messages=True)
+    @commands.bot_has_permissions(send_messages=True, manage_messages=True)
     async def meow_disable(self, ctx: vbu.Context):
         """
         Turn off meow chat for this channel.
