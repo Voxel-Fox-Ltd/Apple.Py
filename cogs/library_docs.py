@@ -8,6 +8,7 @@ import unicodedata
 
 import discord
 from discord.ext import commands, vbu
+from fuzzywuzzy import fuzz
 
 
 class SphinxObjectFileReader(object):
@@ -77,41 +78,49 @@ class LibraryDocs(vbu.Cog):
         Build up some kwargs from the cache and a given input object.
         """
 
-        item_casefold = obj.casefold()
-        item_underscore_casefold = item_casefold.replace(" ", "_")
-        split = item_casefold.split('.')
-        split_underscore = [i.replace(" ", "_") for i in split]
+        # item_casefold = obj.casefold()
+        # item_underscore_casefold = item_casefold.replace(" ", "_")
+        # split = item_casefold.split('.')
+        # split_underscore = [i.replace(" ", "_") for i in split]
         outputs = []
 
         for key, link in cache.items():
 
             # Key would be something like 'TextChannel.fetch', now 'textchannel.fetch'
-            key_casefold = key.casefold()
+            # key_casefold = key.casefold()
 
-            # See if we got an exact match
-            if item_casefold in key_casefold or item_underscore_casefold in key_casefold:
-                if item_casefold == key_casefold or item_underscore_casefold == key_casefold:
-                    outputs.append((key, link, 20,))
-                else:
-                    outputs.append((key, link, 15,))
+            # # See if we got an exact match
+            # if item_casefold in key_casefold or item_underscore_casefold in key_casefold:
+            #     if item_casefold == key_casefold or item_underscore_casefold == key_casefold:
+            #         outputs.append((key, link, 20,))
+            #     else:
+            #         outputs.append((key, link, 15,))
 
-            # See if we're looking for a method
-            if len(split) == 1:
-                continue
+            # # See if we're looking for a method
+            # if len(split) == 1:
+            #     continue
 
-            # Search by method
-            if split[1] and split[1] in key_casefold or split_underscore[1] in key_casefold:
-                if split[1] == key_casefold or split_underscore[1] == key_casefold:
-                    outputs.append((key, link, 12,))
-                else:
-                    outputs.append((key, link, 10,))
+            # # Search by method
+            # if split[1] and split[1] in key_casefold or split_underscore[1] in key_casefold:
+            #     if split[1] == key_casefold or split_underscore[1] == key_casefold:
+            #         outputs.append((key, link, 12,))
+            #     else:
+            #         outputs.append((key, link, 10,))
 
-            # Search by class
-            if split[0] and split[0] in key_casefold or split_underscore[0] in key_casefold:
-                if split[0] == key_casefold or split_underscore[0] == key_casefold:
-                    outputs.append((key, link, 7,))
-                else:
-                    outputs.append((key, link, 5,))
+            # # Search by class
+            # if split[0] and split[0] in key_casefold or split_underscore[0] in key_casefold:
+            #     if split[0] == key_casefold or split_underscore[0] == key_casefold:
+            #         outputs.append((key, link, 7,))
+            #     else:
+            #         outputs.append((key, link, 5,))
+
+            outputs.append((
+                key, link, max((
+                    fuzz.partial_ratio(key, obj),
+                    fuzz.partial_ratio(key, obj.replace(" ", "_")),
+                    fuzz.partial_ratio(key, obj.replace(" ", "")),
+                )),
+            ))
 
         # Hey maybe they didn't say anything useful
         if len(outputs) == 0:

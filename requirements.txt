@@ -3,3 +3,4 @@ voxelbotutils>=0.7,<0.8
 beautifulsoup4
 pytz
 pillow
+fuzzywuzzy[speedup]
