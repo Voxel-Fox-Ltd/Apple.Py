@@ -229,9 +229,11 @@ class QuoteCommands(vbu.Cog):
         # And save it to the database
         async with vbu.Database() as db:
             await db(
-                """INSERT INTO user_quotes (quote_id, guild_id, channel_id, message_id, user_id, timestamp, quoter_id)
+                """INSERT INTO user_quotes (quote_id, guild_id, channel_id,
+                message_id, user_id, timestamp, quoter_id)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)""",
-                quote_id, ctx.guild.id, posted_message.channel.id, posted_message.id, user.id, timestamp, ctx.author.id,
+                quote_id, ctx.guild.id, posted_message.channel.id,
+                posted_message.id, user.id, timestamp.replace(tzinfo=None), ctx.author.id,
             )
 
         # Output to user
