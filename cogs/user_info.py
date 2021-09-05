@@ -35,14 +35,12 @@ class UserInfo(vbu.Cog):
         embed.set_author_to_user(user)
 
         # Get the user account creation time
-        account_creation_time_humanized = vbu.TimeValue((dt.utcnow() - user.created_at).total_seconds()).clean_full
-        create_value = f"{user.created_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{account_creation_time_humanized} ago"
+        create_value = f"{discord.utils.format_dt(user.created_at)}\n{discord.utils.format_dt(user.created_at, 'R')}"
         embed.add_field("Account Creation Time", create_value, inline=False)
 
         # Get the user guild join time
         if ctx.guild:
-            guild_join_time_humanized = vbu.TimeValue((dt.utcnow() - user.joined_at).total_seconds()).clean_full
-            join_value = f"{user.joined_at.strftime('%A %B %d %Y %I:%M:%S%p')}\n{guild_join_time_humanized} ago"
+            join_value = f"{discord.utils.format_dt(user.joined_at)}\n{discord.utils.format_dt(user.joined_at, 'R')}"
             embed.add_field("Guild Join Time", join_value, inline=False)
 
         # Set the embed thumbnail
@@ -74,7 +72,7 @@ class UserInfo(vbu.Cog):
                 data_authors[user.id] = {
                     "username": user.name,
                     "discriminator": user.discriminator,
-                    "avatar_url": str(user.avatar_url),
+                    "avatar_url": str(user.display_avatar.url),
                     "bot": user.bot,
                     "display_name": user.display_name,
                     "color": user.colour.value,

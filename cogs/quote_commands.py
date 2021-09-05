@@ -272,7 +272,7 @@ class QuoteCommands(vbu.Cog):
         quote_embed = message.embeds[0]
         quote_author = self.bot.get_user(data['user_id'])
         if quote_author:
-            quote_embed.set_author(name=quote_author.display_name, icon_url=quote_author.avatar_url)
+            quote_embed.set_author(name=quote_author.display_name, icon_url=quote_author.display_avatar.url)
 
         # Output to user
         return await ctx.send(embed=quote_embed)
@@ -321,7 +321,7 @@ class QuoteCommands(vbu.Cog):
         quote_embed = message.embeds[0]
         quote_author = self.bot.get_user(data['user_id'])
         if quote_author:
-            quote_embed.set_author(name=quote_author.display_name, icon_url=quote_author.avatar_url)
+            quote_embed.set_author(name=quote_author.display_name, icon_url=quote_author.display_avatar.url)
         return await ctx.send(embed=quote_embed)
 
     @quote.group(name="alias", invoke_without_command=True, add_slash_command=False)

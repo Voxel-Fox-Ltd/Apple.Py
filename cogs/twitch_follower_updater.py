@@ -19,7 +19,7 @@ class TwitchFollowerUpdater(vbu.Cog):
 
     def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
-        self.last_twitch_checked = dt.utcnow()
+        self.last_twitch_checked = discord.utils.utcnow()
         if bot.database.enabled:
             self.twitch_follower_checker_loop.start()
 
@@ -32,7 +32,7 @@ class TwitchFollowerUpdater(vbu.Cog):
         Loop and check for new followers for given people on Twitch.
         """
 
-        new_last_timestamp = dt.utcnow()
+        new_last_timestamp = discord.utils.utcnow()
         new_followers = collections.defaultdict(list)  # channel user id: list of new follower usernames
         db = await vbu.Database.get_connection()
         data = await db("SELECT * FROM user_settings WHERE twitch_bearer_token IS NOT NULL")

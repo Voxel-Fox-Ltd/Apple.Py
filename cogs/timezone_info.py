@@ -70,7 +70,7 @@ class TimezoneInfo(vbu.Cog):
                 DO UPDATE SET timezone_name=excluded.timezone_name""",
                 ctx.author.id, zone.zone,
             )
-        await ctx.send(f"I think your current time is **{dt.utcnow().replace(tzinfo=pytz.utc).astimezone(zone).strftime('%-I:%M %p')}** - I've stored this in the database.")
+        await ctx.send(f"I think your current time is **{discord.utils.utcnow().astimezone(zone).strftime('%-I:%M %p')}** - I've stored this in the database.")
 
     @commands.context_command(name="Get user's timezone")
     async def _context_command_timezone_get(self, ctx: vbu.SlashContext, user: discord.Member):
@@ -103,15 +103,15 @@ class TimezoneInfo(vbu.Cog):
         # Grab their current time and output
         if target_is_timezone:
             try:
-                formatted_time = (dt.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone(target))).strftime('%-I:%M %p')
+                formatted_time = (discord.utils.utcnow().astimezone(pytz.timezone(target))).strftime('%-I:%M %p')
             except pytz.UnknownTimeZoneError:
                 return await ctx.send("That isn't a valid timezone.")
             return await ctx.send(f"The current time in **{target}** is estimated to be **{formatted_time}**.")
         else:
             if rows[0]['timezone_name']:
-                formatted_time = (dt.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone(rows[0]['timezone_name']))).strftime('%-I:%M %p')
+                formatted_time = (discord.utils.utcnow().astimezone(pytz.timezone(rows[0]['timezone_name']))).strftime('%-I:%M %p')
             else:
-                formatted_time = (dt.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%-I:%M %p')
+                formatted_time = (discord.utils.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%-I:%M %p')
             await ctx.send(f"The current time for {target.mention} is estimated to be **{formatted_time}**.", allowed_mentions=discord.AllowedMentions.none())
 
 

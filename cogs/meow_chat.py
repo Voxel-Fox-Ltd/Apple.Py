@@ -101,7 +101,7 @@ class MeowChat(vbu.Cog):
             _, current_task = self.meow_disable_tasks.get(ctx.channel.id, (None, None))
             if current_task:
                 current_task.cancel()
-            self.meow_disable_tasks[ctx.channel.id] = (dt.utcnow() + duration.delta, self.bot.loop.create_task(waiter()))
+            self.meow_disable_tasks[ctx.channel.id] = (discord.utils.utcnow() + duration.delta, self.bot.loop.create_task(waiter()))
 
     @meow.command(name="disable", aliases=["stop", "off"])
     @commands.has_permissions(manage_messages=True)

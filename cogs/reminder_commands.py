@@ -55,7 +55,7 @@ class ReminderCommands(vbu.Cog):
         # Format an output string
         reminders = ""
         for reminder in rows:
-            expiry = vbu.TimeValue((reminder['timestamp'] - dt.utcnow()).total_seconds()).clean_spaced or 'now'
+            expiry = discord.utils.format_dt(reminder['timestamp'])
             reminders += f"\n`{reminder['reminder_id']}` - {reminder['message'][:70]} ({expiry})"
         message = f"Your reminders: {reminders}"
 
@@ -84,13 +84,13 @@ class ReminderCommands(vbu.Cog):
                 break
 
         # Let them know its been set
-        m = await ctx.send(f"Reminder set for {time.clean_spaced}.")
+        m = await ctx.send(f"Reminder set for {discord.utils.format_dt(discord.utils.utcnow() + time.delta)}.")
 
         # Chuck the info in the database
         await db(
             """INSERT INTO reminders (reminder_id, guild_id, channel_id, message_id, timestamp, user_id, message)
             VALUES ($1, $2, $3, $4, $5, $6, $7)""",
-            reminder_id, guild_id, ctx.channel.id, m.id, dt.utcnow() + time.delta,
+            reminder_id, guild_id, ctx.channel.id, m.id, discord.utils.utcnow() + time.delta,
             ctx.author.id, message,
         )
         await db.disconnect()
