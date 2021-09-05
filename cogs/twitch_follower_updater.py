@@ -49,7 +49,10 @@ class TwitchFollowerUpdater(vbu.Cog):
             new_followers[row['twitch_user_id']] = new_follower_list
 
             # Update the follower timestamps into real timestamps
-            filtered_new_follower_list = [i for i in new_follower_list if dt.strptime(i['followed_at'], "%Y-%m-%dT%H:%M:%SZ") > self.last_twitch_checked]
+            filtered_new_follower_list = [
+                i for i in new_follower_list
+                if dt.strptime(i['followed_at'], "%Y-%m-%dT%H:%M:%SZ").replace(new_last_timestamp.tzinfo) > self.last_twitch_checked
+            ]
 
             # Send DM to the user
             if filtered_new_follower_list:
