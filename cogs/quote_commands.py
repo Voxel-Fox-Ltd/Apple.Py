@@ -82,7 +82,7 @@ class QuoteCommands(vbu.Cog):
                 quote_is_url = True
 
         # Validate input
-        timestamp = messages[0].created_at
+        timestamp = discord.utils.naive_dt(messages[0].created_at)
         user = messages[0].author
         text = '\n'.join([m.content for m in messages])
         if len(set([i.author.id for i in messages])) != 1:
