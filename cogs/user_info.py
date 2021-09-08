@@ -148,8 +148,8 @@ class UserInfo(vbu.Cog):
         async with self.bot.session.post("https://voxelfox.co.uk/discord/chatlog", json=data) as r:
             string = await r.text()
         soup = BeautifulSoup(string, "html.parser")
-        chatlog = soup.find(class_="chatlog")
-        subset = str(chatlog)
+        soup.find(class_="preamble").decompose()
+        subset = str(soup)
 
         # Screenshot it
         options = {"quiet": "", "enable-local-file-access": "", "width": "9"}
