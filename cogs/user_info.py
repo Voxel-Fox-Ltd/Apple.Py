@@ -69,7 +69,7 @@ class UserInfo(vbu.Cog):
             "channel_name": ctx.channel.name,
             "category_name": ctx.channel.category.name if ctx.channel.category else "Uncategorized",
             "guild_name": ctx.guild.name,
-            "guild_icon_url": ctx.guild.icon.url if ctx.guild.icon else None,
+            "guild_icon_url": ctx.guild.icon.with_format("png").with_size(512) if ctx.guild.icon else None,
         }
         data_authors = {}
         data_messages = []
@@ -80,7 +80,7 @@ class UserInfo(vbu.Cog):
                 data_authors[user.id] = {
                     "username": user.name,
                     "discriminator": user.discriminator,
-                    "avatar_url": str(user.display_avatar.url),
+                    "avatar_url": str(user.display_avatar.with_size(512).with_format("png").url),
                     "bot": user.bot,
                     "display_name": user.display_name,
                     "color": user.colour.value,
@@ -125,7 +125,7 @@ class UserInfo(vbu.Cog):
             "channel_name": ctx.channel.name,
             "category_name": ctx.channel.category.name if ctx.channel.category else "Uncategorized",
             "guild_name": ctx.guild.name,
-            "guild_icon_url": ctx.guild.icon.url if ctx.guild.icon else None,
+            "guild_icon_url": ctx.guild.icon.with_format("png").with_size(512) if ctx.guild.icon else None,
         }
         data_authors = {}
         data_authors[user.id] = {
