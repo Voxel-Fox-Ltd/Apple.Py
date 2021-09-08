@@ -96,6 +96,33 @@ class ReminderCommands(vbu.Cog):
         )
         await db.disconnect()
 
+    @reminder.command(name="delete", aliases=['remove'])
+    @commands.bot_has_permissions(send_messages=True)
+    async def reminder_delete(self, ctx: vbu.Context, reminder_id: str):
+        """
+        Deletes a reminder from your account.
+        """
+
+        # Grab the guild ID
+        try:
+            guild_id = ctx.guild.id
+        except AttributeError:
+            guild_id = 0
+
+        # Grab the reminder
+        async with self.bot.database() as db:
+            data = await db("SELECT * FROM reminders WHERE reminder_id=$1 and guild_id=$2", reminder_id, guild_id)
+
+            # Check if it exists
+            if not data:
+                return await ctx.send("That reminder doesn't exist.")
+
+            # Delete it
+            await db("DELETE FROM reminders WHERE reminder_id=$1 and user_id=$2", reminder_id, ctx.author.id)
+
+        # Send feedback saying it was deleted
+        await ctx.send("Reminder deleted.")
+
     @tasks.loop(seconds=30)
     async def reminder_finish_handler(self):
         """
