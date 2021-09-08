@@ -1,9 +1,11 @@
 import io
 from datetime import datetime as dt
 import typing
+import asyncio
 
 import discord
 from discord.ext import commands, vbu
+import imgkit
 
 
 class UserInfo(vbu.Cog):
@@ -56,12 +58,16 @@ class UserInfo(vbu.Cog):
         Create a log of chat.
         """
 
+        # Make some assertions so we don't get errors elsewhere
+        assert isinstance(ctx.channel, discord.TextChannel)
+        assert ctx.guild
+
         # Create the data we're gonna send
         data = {
             "channel_name": ctx.channel.name,
-            "category_name": ctx.channel.category.name,
+            "category_name": ctx.channel.category.name if ctx.channel.category else "Uncategorized",
             "guild_name": ctx.guild.name,
-            "guild_icon_url": str(ctx.guild.icon_url),
+            "guild_icon_url": ctx.guild.icon.url if ctx.guild.icon else None,
         }
         data_authors = {}
         data_messages = []
@@ -83,11 +89,10 @@ class UserInfo(vbu.Cog):
                 "author_id": message.author.id,
                 "timestamp": int(message.created_at.timestamp()),
                 "attachments": [str(i.url) for i in message.attachments],
-                # "embeds": [i.to_dict() for i in message.embeds],
             }
             embeds = []
             for i in message.embeds:
-                embed_data = i.to_dict()
+                embed_data: dict = i.to_dict()  # type: ignore
                 if i.timestamp:
                     embed_data.update({'timestamp': i.timestamp.timestamp()})
                 embeds.append(embed_data)
@@ -101,6 +106,57 @@ class UserInfo(vbu.Cog):
 
         # Output it into the chat
         await ctx.send(file=discord.File(string, filename=f"Logs-{int(ctx.message.created_at.timestamp())}.html"))
+
+    @commands.command()
+    @commands.guild_only()
+    async def fakemessage(self, ctx: vbu.Context, user: discord.Member, *, content: str):
+        """
+        Create a log of chat.
+        """
+
+        # Make some assertions so we don't get errors elsewhere
+        assert isinstance(ctx.channel, discord.TextChannel)
+        assert ctx.guild
+
+        # Create the data we're gonna send
+        data = {
+            "channel_name": ctx.channel.name,
+            "category_name": ctx.channel.category.name if ctx.channel.category else "Uncategorized",
+            "guild_name": ctx.guild.name,
+            "guild_icon_url": ctx.guild.icon.url if ctx.guild.icon else None,
+        }
+        data_authors = {}
+        data_authors[user.id] = {
+            "username": user.name,
+            "discriminator": user.discriminator,
+            "avatar_url": str(user.display_avatar.url),
+            "bot": user.bot,
+            "display_name": user.display_name,
+            "color": user.colour.value,
+        }
+        message_data = {
+            "id": 69,
+            "content": content,
+            "author_id": user.id,
+            "timestamp": discord.utils.utcnow(),
+        }
+
+        # Send data to the API
+        data.update({"users": data_authors, "messages": [message_data]})
+        async with self.bot.session.post("https://voxelfox.co.uk/discord/chatlog", json=data) as r:
+            string = io.StringIO(await r.text())
+
+        # Screenshot it
+        options = {"quiet": "", "enable-local-file-access": ""}
+        filename = f"FakedMessage-{ctx.author.id}.png"
+        await self.bot.loop.run_in_executor(None, imgkit.from_string(string, filename, options=options))
+
+        # Output it into the chat
+        await ctx.send(file=discord.File(filename))
+
+        # And delete file
+        await asyncio.sleep(1)
+        await asyncio.create_subprocess_exec("rm", filename)
 
 
 def setup(bot: vbu.Bot):
