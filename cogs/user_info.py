@@ -151,7 +151,7 @@ class UserInfo(vbu.Cog):
         subset = str(chatlog)
 
         # Screenshot it
-        options = {"quiet": "", "enable-local-file-access": "", "page-width": "9"}
+        options = {"quiet": "", "enable-local-file-access": "", "width": "9"}
         filename = f"FakedMessage-{ctx.author.id}.png"
         await self.bot.loop.run_in_executor(None, imgkit.from_string(subset, filename, options=options))
 
