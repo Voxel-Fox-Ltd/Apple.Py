@@ -181,7 +181,13 @@ class UserInfo(vbu.Cog):
             subset = str(soup)
 
             # Screenshot it
-            options = {"quiet": "", "enable-local-file-access": "", "width": "400"}
+            options = {
+                "quiet": "",
+                "enable-local-file-access": "",
+                "width": "600",
+                "enable-javascript": "",
+                "javascript-delay": "500",
+            }
             filename = f"FakedMessage-{ctx.author.id}.png"
             from_string = functools.partial(imgkit.from_string, subset, filename, options=options)
             await self.bot.loop.run_in_executor(None, from_string)
