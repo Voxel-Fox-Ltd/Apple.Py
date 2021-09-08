@@ -101,10 +101,13 @@ class UserInfo(vbu.Cog):
             message_data.update({'embeds': embeds})
             data_messages.append(message_data)
 
-        # Send data to the API
-        data.update({"users": data_authors, "messages": data_messages[::-1]})
-        async with self.bot.session.post("https://voxelfox.co.uk/discord/chatlog", json=data) as r:
-            string = io.StringIO(await r.text())
+        # This takes a while
+        async with ctx.typing():
+
+            # Send data to the API
+            data.update({"users": data_authors, "messages": data_messages[::-1]})
+            async with self.bot.session.post("https://voxelfox.co.uk/discord/chatlog", json=data) as r:
+                string = io.StringIO(await r.text())
 
         # Output it into the chat
         await ctx.send(file=discord.File(string, filename=f"Logs-{int(ctx.message.created_at.timestamp())}.html"))
@@ -143,19 +146,24 @@ class UserInfo(vbu.Cog):
             "timestamp": int(discord.utils.utcnow().timestamp()),
         }
 
-        # Send data to the API
-        data.update({"users": data_authors, "messages": [message_data]})
-        async with self.bot.session.post("https://voxelfox.co.uk/discord/chatlog", json=data) as r:
-            string = await r.text()
-        soup = BeautifulSoup(string, "html.parser")
-        soup.find(class_="preamble").decompose()
-        subset = str(soup)
+        # This takes a while
+        async with ctx.typing():
 
-        # Screenshot it
-        options = {"quiet": "", "enable-local-file-access": "", "width": "400"}
-        filename = f"FakedMessage-{ctx.author.id}.png"
-        from_string = functools.partial(imgkit.from_string, subset, filename, options=options)
-        await self.bot.loop.run_in_executor(None, from_string)
+            # Send data to the API
+            data.update({"users": data_authors, "messages": [message_data]})
+            async with self.bot.session.post("https://voxelfox.co.uk/discord/chatlog", json=data) as r:
+                string = await r.text()
+
+            # Remove the preamble
+            soup = BeautifulSoup(string, "html.parser")
+            soup.find(class_="preamble").decompose()
+            subset = str(soup)
+
+            # Screenshot it
+            options = {"quiet": "", "enable-local-file-access": "", "width": "400"}
+            filename = f"FakedMessage-{ctx.author.id}.png"
+            from_string = functools.partial(imgkit.from_string, subset, filename, options=options)
+            await self.bot.loop.run_in_executor(None, from_string)
 
         # Output it into the chat
         await ctx.send(file=discord.File(filename))
