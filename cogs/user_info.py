@@ -151,7 +151,7 @@ class UserInfo(vbu.Cog):
             "display_name": user.display_name,
             "color": user.colour.value,
         }
-        for i in ctx.message.mentions:
+        for i in content_message.mentions:
             data_authors[i.id] = {
                 "username": i.name,
                 "discriminator": i.discriminator,
