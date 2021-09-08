@@ -112,9 +112,16 @@ class UserInfo(vbu.Cog):
         # Output it into the chat
         await ctx.send(file=discord.File(string, filename=f"Logs-{int(ctx.message.created_at.timestamp())}.html"))
 
+    @commands.context_command(name="Screenshot message")
+    @commands.guild_only()
+    async def _context_command_screenshot_message(self, ctx: vbu.Context, message: discord.Message):
+        command = self.fakemessage
+        await command.can_run(ctx)
+        await ctx.invoke(command, user=message.author, content=message.content)
+
     @commands.command()
     @commands.guild_only()
-    async def fakemessage(self, ctx: vbu.Context, user: discord.Member, *, content: str):
+    async def fakemessage(self, ctx: vbu.Context, user: typing.Union[discord.Member, discord.User], *, content: str):
         """
         Create a log of chat.
         """
