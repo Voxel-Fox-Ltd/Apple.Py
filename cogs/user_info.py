@@ -5,6 +5,7 @@ import asyncio
 
 import discord
 from discord.ext import commands, vbu
+from bs4 import BeautifulSoup
 import imgkit
 
 
@@ -138,18 +139,21 @@ class UserInfo(vbu.Cog):
             "id": 69,
             "content": content,
             "author_id": user.id,
-            "timestamp": discord.utils.utcnow(),
+            "timestamp": int(discord.utils.utcnow().timestamp()),
         }
 
         # Send data to the API
         data.update({"users": data_authors, "messages": [message_data]})
         async with self.bot.session.post("https://voxelfox.co.uk/discord/chatlog", json=data) as r:
-            string = io.StringIO(await r.text())
+            string = await r.text()
+        soup = BeautifulSoup(string, "html.parser")
+        chatlog = soup.find(class_="chatlog")
+        subset = str(chatlog)
 
         # Screenshot it
-        options = {"quiet": "", "enable-local-file-access": ""}
+        options = {"quiet": "", "enable-local-file-access": "", "page-width": "9"}
         filename = f"FakedMessage-{ctx.author.id}.png"
-        await self.bot.loop.run_in_executor(None, imgkit.from_string(string, filename, options=options))
+        await self.bot.loop.run_in_executor(None, imgkit.from_string(subset, filename, options=options))
 
         # Output it into the chat
         await ctx.send(file=discord.File(filename))
