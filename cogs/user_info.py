@@ -186,7 +186,7 @@ class UserInfo(vbu.Cog):
                 "enable-local-file-access": "",
                 "width": "600",
                 "enable-javascript": "",
-                "javascript-delay": "500",
+                "javascript-delay": "1000",
             }
             filename = f"FakedMessage-{ctx.author.id}.png"
             from_string = functools.partial(imgkit.from_string, subset, filename, options=options)
