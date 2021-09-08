@@ -131,7 +131,7 @@ class UserInfo(vbu.Cog):
         data_authors[user.id] = {
             "username": user.name,
             "discriminator": user.discriminator,
-            "avatar_url": str(user.display_avatar.url),
+            "avatar_url": str(user.display_avatar.with_size(512).url),
             "bot": user.bot,
             "display_name": user.display_name,
             "color": user.colour.value,
@@ -152,7 +152,7 @@ class UserInfo(vbu.Cog):
         subset = str(soup)
 
         # Screenshot it
-        options = {"quiet": "", "enable-local-file-access": "", "width": "9"}
+        options = {"quiet": "", "enable-local-file-access": "", "width": "0"}
         filename = f"FakedMessage-{ctx.author.id}.png"
         from_string = functools.partial(imgkit.from_string, subset, filename, options=options)
         await self.bot.loop.run_in_executor(None, from_string)
