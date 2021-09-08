@@ -117,7 +117,7 @@ class UserInfo(vbu.Cog):
     async def _context_command_screenshot_message(self, ctx: vbu.Context, message: discord.Message):
         command = self.screenshotmessage
         await command.can_run(ctx)
-        await ctx.invoke(command, user=message.author, content=message.content)
+        await ctx.invoke(command, user=message.author, content=message)
 
     @commands.command(aliases=["fakemessage"])
     @commands.guild_only()
