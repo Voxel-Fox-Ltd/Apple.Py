@@ -119,23 +119,28 @@ class UserInfo(vbu.Cog):
         await command.can_run(ctx)
         await ctx.invoke(command, user=message.author, content=message.content)
 
-    @commands.command()
+    @commands.command(aliases=["fakemessage"])
     @commands.guild_only()
-    async def fakemessage(self, ctx: vbu.Context, user: typing.Union[discord.Member, discord.User], *, content: str):
+    async def screenshotmessage(self, ctx: vbu.Context, user: typing.Union[discord.Member, discord.User], *, content: typing.Union[str, discord.Message]):
         """
         Create a log of chat.
         """
 
-        # Make some assertions so we don't get errors elsewhere
-        assert isinstance(ctx.channel, discord.TextChannel)
-        assert ctx.guild
+        # See if we're getting a real message or a fake one
+        content_message = ctx.message
+        if isinstance(content, discord.Message):
+            content_message = content
+            user = content.author
+            content = content.content
+        assert isinstance(content_message.channel, discord.TextChannel)
+        assert content_message.guild
 
         # Create the data we're gonna send
         data = {
-            "channel_name": ctx.channel.name,
-            "category_name": ctx.channel.category.name if ctx.channel.category else "Uncategorized",
-            "guild_name": ctx.guild.name,
-            "guild_icon_url": str(ctx.guild.icon.with_format("png").with_size(512)) if ctx.guild.icon else None,
+            "channel_name": content_message.channel.name,
+            "category_name": content_message.channel.category.name if content_message.channel.category else "Uncategorized",
+            "guild_name": content_message.guild.name,
+            "guild_icon_url": str(content_message.guild.icon.with_format("png").with_size(512)) if content_message.guild.icon else None,
         }
         data_authors = {}
         data_authors[user.id] = {
@@ -146,6 +151,15 @@ class UserInfo(vbu.Cog):
             "display_name": user.display_name,
             "color": user.colour.value,
         }
+        for i in ctx.message.mentions:
+            data_authors[i.id] = {
+                "username": i.name,
+                "discriminator": i.discriminator,
+                "avatar_url": str(i.display_avatar.with_size(512).with_format("png").url),
+                "bot": i.bot,
+                "display_name": i.display_name,
+                "color": i.colour.value,
+            }
         message_data = {
             "id": 69,
             "content": content,
