@@ -2,6 +2,7 @@ import io
 from datetime import datetime as dt
 import typing
 import asyncio
+import functools
 
 import discord
 from discord.ext import commands, vbu
@@ -153,7 +154,8 @@ class UserInfo(vbu.Cog):
         # Screenshot it
         options = {"quiet": "", "enable-local-file-access": "", "width": "9"}
         filename = f"FakedMessage-{ctx.author.id}.png"
-        await self.bot.loop.run_in_executor(None, imgkit.from_string(subset, filename, options=options))
+        from_string = functools.partial(imgkit.from_string, subset, filename, options=options)
+        await self.bot.loop.run_in_executor(None, from_string)
 
         # Output it into the chat
         await ctx.send(file=discord.File(filename))
