@@ -145,4 +145,14 @@ CREATE TABLE IF NOT EXISTS vc_admins(
     channel_id BIGINT,
     role_id BIGINT,
     PRIMARY KEY (channel_id, role_id)
-) ;
+);
+
+
+CREATE TABLE IF NOT EXISTS github_repo_uses(
+    user_id BIGINT,
+    owner VARCHAR(300),
+    repo VARCHAR(300),
+    host git_host DEFAULT 'Github',
+    uses INTEGER DEFAULT 0,
+    PRIMARY KEY (user_id, owner, repo, host)
+);

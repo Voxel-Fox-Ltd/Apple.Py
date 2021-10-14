@@ -142,6 +142,7 @@ class GitRepo(object):
         # See if it's a Github url
         elif "github.com" in value.lower():
             match = re.search(r"(?:https?://)?github\.com/(?P<user>[a-zA-Z0-9_\-.]+)/(?P<repo>[a-zA-Z0-9_\-.]+)", value)
+            assert match
             owner, repo = match.group("user"), match.group("repo")
             host = "Github"
 
@@ -153,6 +154,7 @@ class GitRepo(object):
         # See if it's a Gitlab url
         elif "gitlab.com" in value.lower():
             match = re.search(r"(?:https?://)?gitlab\.com/(?P<user>[a-zA-Z0-9_\-.]+)/(?P<repo>[a-zA-Z0-9_\-.]+)", value)
+            assert match
             owner, repo = match.group("user"), match.group("repo")
             host = "Gitlab"
 
@@ -179,6 +181,15 @@ class GithubCommands(vbu.Cog):
     def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         GitRepo.bot = bot
+
+    async def increase_repo_usage_counter(self, user: typing.Union[discord.User, discord.Member], repo: GitRepo):
+        async with vbu.Database() as db:
+            await db(
+                """INSERT INTO github_repo_uses (user_id, owner, repo, host, uses)
+                VALUES ($1, $2, $3, $4, 1) ON CONFLICT (user_id, owner, repo, host)
+                DO UPDATE SET uses=github_repo_uses.uses+excluded.uses""",
+                user.id, repo.owner, repo.repo, repo.host,
+            )
 
     @vbu.Cog.listener()
     async def on_message(self, message):
@@ -342,7 +353,7 @@ class GithubCommands(vbu.Cog):
     #     )
     #     return await ctx.invoke(self.issue_create, repo, title=title, body=body)
 
-    @issue.command(name='create', aliases=['make'])
+    @issue.command(name='create', aliases=['make'], autocomplete_params=("repo",))
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def issue_create(self, ctx: vbu.Context, repo: GitRepo, *, title: str, body: str = ""):
         """
@@ -516,6 +527,27 @@ class GithubCommands(vbu.Cog):
             else:
                 return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.",)
         await ctx.send(f"Your issue has been created - <{data.get('html_url') or data.get('web_url')}>.",)
+        await self.increase_repo_usage_counter(ctx.author, repo)
+
+    @issue_create.autocomplete
+    async def issue_create_autocomplete(self, ctx: commands.SlashContext, interaction: discord.Interaction):
+        """
+        Send the user's most frequently used repos.
+        """
+
+        if not interaction.user:
+            return await interaction.response.send_autocomplete(None)
+        async with vbu.Database() as db:
+            rows = await db(
+                """SELECT * FROM github_repo_uses WHERE user_id=$1 ORDER BY uses DESC""",
+                interaction.user.id,
+            )
+        responses = [
+            discord.ApplicationCommandOptionChoice(name=(repo := str(GitRepo(r['host'], r['owner'], r['repo']))), value=repo)
+            for r in rows
+        ]
+        return await interaction.response.send_autocomplete(responses)
+
 
     @issue.command(name="list")
     async def issue_list(self, ctx: vbu.Context, repo: GitRepo, list_closed: bool = False):
