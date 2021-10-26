@@ -28,12 +28,17 @@ class ScamBanner(vbu.Cog):
             return
 
         # Leave the legit links alone
-        if match.group(3).lower() == "discord.gift":
+        valid_links = [
+            "discord.gift",
+            "discordapp.com",
+            "discord.com",
+        ]
+        if match.group(3).lower() in valid_links:
             return
 
         # Ban the user
         try:
-            await message.author.ban(reason="Suspected scam link")
+            await message.author.ban(reason=f"Suspected scam link ({match.group(3)})")
         except discord.HTTPException:
             pass
 
