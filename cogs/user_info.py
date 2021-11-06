@@ -121,7 +121,7 @@ class UserInfo(vbu.Cog):
 
     @commands.command(aliases=["fakemessage"])
     @commands.guild_only()
-    async def screenshotmessage(self, ctx: vbu.Context, user: typing.Union[discord.Member, discord.User], *, content: typing.Union[str, discord.Message]):
+    async def screenshotmessage(self, ctx: vbu.Context, user: discord.Member, *, content: typing.Union[str, discord.Message]):
         """
         Create a log of chat.
         """
