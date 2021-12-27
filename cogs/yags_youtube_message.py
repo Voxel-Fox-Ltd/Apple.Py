@@ -4,7 +4,7 @@ from discord.ext import vbu
 
 class YagsYoutubeMessage(vbu.Cog):
 
-    GUILD_ID = 208895639164026880
+    STREAM_UPDATES_CHANNEL = 738061851014856774
     YAGS_USER_ID = 204255221017214977
     YOUTUBE_UPDATE_ROLE = 731597271690510346
 
@@ -14,7 +14,7 @@ class YagsYoutubeMessage(vbu.Cog):
         Ping the updates role when Kae goes live on Twitch etc.
         """
 
-        if message.guild is None or message.guild.id != self.GUILD_ID:
+        if message.channel.id != self.STREAM_UPDATES_CHANNEL or message.guild is None:
             return
         if message.author.id != self.YAGS_USER_ID:
             self.logger.info("Message in stream updates channel - not posted by Yags.")
