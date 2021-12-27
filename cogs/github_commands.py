@@ -516,15 +516,15 @@ class GithubCommands(vbu.Cog):
         elif repo.host == "Gitlab":
             json = {'title': title, 'description': body.strip(), 'labels': ",".join(labels)}
             headers = {'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}"}
+        else:
+            raise Exception("Invalid host")
         headers.update({'User-Agent': self.bot.user_agent})
 
         # Make the post request
         async with self.bot.session.post(repo.issue_api_url, json=json, headers=headers) as r:
             data = await r.json()
             self.logger.info(f"Received data from git {r.url!s} - {data!s}")
-            if 200 <= r.status < 300:
-                pass
-            else:
+            if not r.ok:
                 return await ctx.send(f"I was unable to create an issue on that repository - `{data}`.",)
         await ctx.send(f"Your issue has been created - <{data.get('html_url') or data.get('web_url')}>.",)
         await self.increase_repo_usage_counter(ctx.author, repo)
