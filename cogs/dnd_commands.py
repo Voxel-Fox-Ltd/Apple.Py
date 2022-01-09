@@ -159,8 +159,7 @@ class DNDCommands(vbu.Cog[Bot]):
         """
 
         # Get our data
-        async with ctx.typing():
-            data = await self.send_web_request("spells", spell_name)
+        data = await self.send_web_request("spells", spell_name)
         if not data:
             return await ctx.send("I couldn't find any information for that spell.")
 
@@ -236,7 +235,7 @@ class DNDCommands(vbu.Cog[Bot]):
         # And give them the top results
         await interaction.response.send_autocomplete([
             discord.ApplicationCommandOptionChoice(name=i, value=i)
-            for i in fuzzed[:25]
+            for i, _ in fuzzed[:25]
         ])
 
     @dnd.command(
@@ -260,8 +259,7 @@ class DNDCommands(vbu.Cog[Bot]):
         """
 
         # Get our data
-        async with ctx.typing():
-            data = await self.send_web_request("monsters", monster_name)
+        data = await self.send_web_request("monsters", monster_name)
         if not data:
             return await ctx.send("I couldn't find any information for that monster.")
 
