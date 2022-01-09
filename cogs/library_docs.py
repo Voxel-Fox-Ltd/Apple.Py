@@ -51,27 +51,6 @@ class LibraryDocs(vbu.Cog):
         super().__init__(bot)
         self._rtfm_cache = {}  # {library: {class_or_method: url_to_doc}}
 
-    @vbu.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        """
-        Listens for "vbu.git" and responds with a Git url or "vbu.docs" to respond with a readthedocs url.
-        """
-
-        if message.author.bot:
-            return
-
-        possible_links = {
-            "vbu.git": "https://github.com/Voxel-Fox-Ltd/VoxelBotUtils/",
-            "vbu.docs": "https://voxelbotutils.readthedocs.io/en/latest/"
-        }
-
-        if message.content.lower() not in possible_links.keys():
-            return
-        try:
-            return await message.channel.send(f"<{possible_links[message.content.lower()]}>")
-        except Exception:
-            pass
-
     def get_embed_from_cache(self, cache, obj) -> dict:
         """
         Build up some kwargs from the cache and a given input object.
@@ -341,40 +320,84 @@ class LibraryDocs(vbu.Cog):
             return await ctx.send("I couldn't regex that message for codeblocks.")
         return await ctx.send(f"```{block_match.group(1)}\n{textwrap.dedent(block_match.group(2))}\n```")
 
-    @commands.group()
+    @commands.group(application_command_meta=commands.ApplicationCommandMeta())
     async def rtfm(self, ctx):
         """
         Get some data from the docs.
         """
 
-    @rtfm.command(name="djs")
+    @rtfm.command(
+        name="djs",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def rtfm_djs(self, ctx: vbu.Context, *, item: str):
+    async def rtfm_djs(self, ctx: vbu.Context, *, obj: str):
         """
         Get an item from the Discord.js documentation.
         """
 
-        await self.do_rtfm(ctx, "djs", item)
+        await self.do_rtfm(ctx, "djs", obj)
 
-    @rtfm.command(name="jda")
+    @rtfm.command(
+        name="jda",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def rtfm_jda(self, ctx: vbu.Context, *, item: str):
+    async def rtfm_jda(self, ctx: vbu.Context, *, obj: str):
         """
         Get an item from the JDA documentation.
         """
 
-        await self.do_rtfm(ctx, "jda", item)
+        await self.do_rtfm(ctx, "jda", obj)
 
-    @rtfm.command(name="java")
+    @rtfm.command(
+        name="java",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def rtfm_java(self, ctx: vbu.Context, *, item: str):
+    async def rtfm_java(self, ctx: vbu.Context, *, obj: str):
         """
         Get an item from the Java documentation.
         """
 
-        await self.do_rtfm(ctx, "java", item)
+        await self.do_rtfm(ctx, "java", obj)
 
-    @rtfm.command(name="dpy")
+    @rtfm.command(
+        name="dpy",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     async def rtdm_dpy(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a discord.py entity.
@@ -384,7 +407,18 @@ class LibraryDocs(vbu.Cog):
 
         await self.do_rtfm(ctx, "novus", obj)
 
-    @rtfm.command(name="novus")
+    @rtfm.command(
+        name="novus",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     async def rtdm_novus(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a discord.py entity.
@@ -394,7 +428,18 @@ class LibraryDocs(vbu.Cog):
 
         await self.do_rtfm(ctx, "novus", obj)
 
-    @rtfm.command(name="vbu")
+    @rtfm.command(
+        name="vbu",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     async def rtdm_vbu(self, ctx, *, obj: str):
         """
         Gives you a item from the docs of VoxelBotUtils
@@ -402,7 +447,19 @@ class LibraryDocs(vbu.Cog):
 
         await self.do_rtfm(ctx, "voxelbotutils", obj)
 
-    @rtfm.command(name="python", aliases=["py"])
+    @rtfm.command(
+        name="python",
+        aliases=["py"],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     async def rtdm_python(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a Python entity.
@@ -410,7 +467,18 @@ class LibraryDocs(vbu.Cog):
 
         await self.do_rtfm(ctx, "python", obj)
 
-    @rtfm.command(name="pygame")
+    @rtfm.command(
+        name="pygame",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     async def rtdm_pygame(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a PyGame entity.
@@ -418,7 +486,19 @@ class LibraryDocs(vbu.Cog):
 
         await self.do_rtfm(ctx, "pygame", obj)
 
-    @rtfm.command(name="js", aliases=['javascript'])
+    @rtfm.command(
+        name="js",
+        aliases=['javascript'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     async def rtdm_js(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a Javascript entity.
@@ -445,7 +525,19 @@ class LibraryDocs(vbu.Cog):
                 break
         return await ctx.send(embed=embed)
 
-    @rtfm.command(name="dotnet", aliases=['.net'])
+    @rtfm.command(
+        name="dotnet",
+        aliases=['.net'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="obj",
+                    description="The object that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     async def rtdm_dotnet(self, ctx, *, obj: str):
         """
         Gives you a documentation link for a .NET entity.
@@ -472,29 +564,51 @@ class LibraryDocs(vbu.Cog):
                 break
         return await ctx.send(embed=embed)
 
-    @commands.command(aliases=['pip'])
+    @commands.command(
+        aliases=['pip'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="package_name",
+                    description="The package that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def pypi(self, ctx: vbu.Context, module: commands.clean_content):
+    async def pypi(self, ctx: vbu.Context, package_name: str):
         """
         Grab data from PyPi.
         """
 
         # Get data
-        async with self.bot.session.get(f"https://pypi.org/pypi/{module}/json") as r:
+        async with self.bot.session.get(f"https://pypi.org/pypi/{package_name}/json") as r:
             if r.status != 200:
                 with vbu.Embed(use_random_colour=True) as embed:
-                    embed.title = f"Module `{module}` not found"
-                    embed.description = f"[Search Results](https://pypi.org/search/?q={module})"
+                    embed.title = f"Module `{package_name}` not found"
+                    embed.description = f"[Search Results](https://pypi.org/search/?q={package_name})"
                 return await ctx.send(embed=embed)
             data = await r.json()
 
         # Format into an embed
         with vbu.Embed(use_random_colour=True) as embed:
-            embed.set_author(name=data['info']['name'], url=f"https://pypi.org/project/{module}")
+            embed.set_author(name=data['info']['name'], url=f"https://pypi.org/project/{package_name}")
             embed.description = data['info']['summary']
         return await ctx.send(embed=embed)
 
-    @commands.command(aliases=['npmjs'])
+    @commands.command(
+        aliases=['npmjs'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="package_name",
+                    description="The package that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def npm(self, ctx: vbu.Context, package_name: str):
         """
@@ -517,7 +631,17 @@ class LibraryDocs(vbu.Cog):
             embed.description = data['description']
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="package_name",
+                    description="The package that you want to look up.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def nuget(self, ctx: vbu.Context, package_name: str):
         """
@@ -541,7 +665,17 @@ class LibraryDocs(vbu.Cog):
                 return
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="characters",
+                    description="The characters that you want to get the information of.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True)
     async def charinfo(self, ctx, *, characters: str):
         """
@@ -556,15 +690,6 @@ class LibraryDocs(vbu.Cog):
         if len(msg) > 2000:
             return await ctx.send('Output too long to display.')
         await ctx.send(msg)
-
-    @commands.command(add_slash_command=False)
-    async def getinterval(self, ctx: vbu.Context, message1: int, message2: int):
-        """
-        Get the interval between two snowflakes.
-        """
-
-        timestamps = sorted([discord.Object(message1).created_at, discord.Object(message2).created_at], reverse=True)
-        return await ctx.send(str(timestamps[0] - timestamps[1]))
 
 
 def setup(bot: vbu.Bot):

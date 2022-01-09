@@ -106,7 +106,10 @@ class QuoteCommands(vbu.Cog):
             embed.timestamp = timestamp
         return {'success': True, 'message': embed, 'user': user, 'timestamp': timestamp}
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(
+        invoke_without_command=True,
+        application_command_meta=commands.ApplicationCommandMeta(),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True)
     @commands.guild_only()
     async def quote(self, ctx: vbu.Context, messages: commands.Greedy[discord.Message]):
@@ -192,7 +195,7 @@ class QuoteCommands(vbu.Cog):
 
         await self.quote(ctx, [message])
 
-    @quote.command(name="force", add_slash_command=False)
+    @quote.command(name="force")
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def quote_force(self, ctx: vbu.Context, messages: commands.Greedy[discord.Message]):
@@ -239,9 +242,20 @@ class QuoteCommands(vbu.Cog):
         # Output to user
         await ctx.send(f"{ctx.author.mention}'s quote saved with ID `{quote_id.upper()}`", embed=embed)
 
-    @quote.command(name="get", add_slash_command=False)
+    @quote.command(
+        name="get",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="identifier",
+                    description="The ID of the quote that you want to get.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def quote_get(self, ctx: vbu.Context, identifier: commands.clean_content):
+    async def quote_get(self, ctx: vbu.Context, identifier: str):
         """
         Gets a quote from the guild's quote channel.
         """
@@ -255,7 +269,10 @@ class QuoteCommands(vbu.Cog):
                 identifier.lower(),
             )
         if not quote_rows:
-            return await ctx.send(f"There's no quote with the identifier `{identifier.upper()}`.")
+            return await ctx.send(
+                f"There's no quote with the identifier `{identifier.upper()}`.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
 
         # Get the message
         data = quote_rows[0]
@@ -279,7 +296,19 @@ class QuoteCommands(vbu.Cog):
         # Output to user
         return await ctx.send(embed=quote_embed)
 
-    @quote.command(name="random")
+    @quote.command(
+        name="random",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="user",
+                    description="The user whose quotes you want to search.",
+                    type=discord.ApplicationCommandOptionType.user,
+                    required=False,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def quote_random(self, ctx: vbu.Context, user: discord.Member = None):
         """
@@ -326,84 +355,96 @@ class QuoteCommands(vbu.Cog):
             quote_embed.set_author(name=quote_author.display_name, icon_url=quote_author.display_avatar.url)
         return await ctx.send(embed=quote_embed)
 
-    @quote.group(name="alias", invoke_without_command=True, add_slash_command=False)
-    @commands.guild_only()
-    @commands.has_guild_permissions(manage_guild=True)
-    @commands.bot_has_permissions(send_messages=True)
-    async def quote_alias(self, ctx: vbu.Context, quote_id: commands.clean_content, alias: commands.clean_content):
-        """
-        Adds an alias to a quote.
-        """
+    # @quote.group(name="alias", invoke_without_command=True)
+    # @commands.guild_only()
+    # @commands.has_guild_permissions(manage_guild=True)
+    # @commands.bot_has_permissions(send_messages=True)
+    # async def quote_alias(self, ctx: vbu.Context, quote_id: commands.clean_content, alias: commands.clean_content):
+    #     """
+    #     Adds an alias to a quote.
+    #     """
 
-        # Grab data from db
-        async with vbu.Database() as db:
-            rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1 AND guild_id=$2", quote_id.lower(), ctx.guild.id)
-        if not rows:
-            return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
+    #     # Grab data from db
+    #     async with vbu.Database() as db:
+    #         rows = await db("SELECT * FROM user_quotes WHERE quote_id=$1 AND guild_id=$2", quote_id.lower(), ctx.guild.id)
+    #     if not rows:
+    #         return await ctx.send(f"There's no quote with the ID `{quote_id.upper()}`.")
 
-        # Insert alias into db
-        async with vbu.Database() as db:
-            rows = await db("SELECT * FROM quote_aliases WHERE alias=$1", alias)
-            if rows:
-                return await ctx.send(f"The alias `{alias}` is already being used.")
-            await db("INSERT INTO quote_aliases (quote_id, alias) VALUES ($1, $2)", quote_id.lower(), alias.lower())
-        await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
+    #     # Insert alias into db
+    #     async with vbu.Database() as db:
+    #         rows = await db("SELECT * FROM quote_aliases WHERE alias=$1", alias)
+    #         if rows:
+    #             return await ctx.send(f"The alias `{alias}` is already being used.")
+    #         await db("INSERT INTO quote_aliases (quote_id, alias) VALUES ($1, $2)", quote_id.lower(), alias.lower())
+    #     await ctx.send(f"Added the alias `{alias.upper()}` to quote ID `{quote_id.upper()}`.")
 
-    @quote.command(name="list", add_slash_command=False)
-    @commands.guild_only()
-    @commands.has_guild_permissions(manage_guild=True)
-    @commands.bot_has_permissions(send_messages=True)
-    async def quote_list(self, ctx: vbu.Context, user: discord.Member=None):
-        """
-        List the IDs of quotes for a user.
-        """
+    # @quote.command(name="list")
+    # @commands.guild_only()
+    # @commands.has_guild_permissions(manage_guild=True)
+    # @commands.bot_has_permissions(send_messages=True)
+    # async def quote_list(self, ctx: vbu.Context, user: discord.Member=None):
+    #     """
+    #     List the IDs of quotes for a user.
+    #     """
 
-        # Grab data from db
-        user = user or ctx.author
-        async with vbu.Database() as db:
-            rows = await db("SELECT quote_id FROM user_quotes WHERE user_id=$1 AND guild_id=$2", user, ctx.guild.id)
-        if not rows:
-            embed = vbu.Embed(
-                use_random_colour=True, description="This user has no quotes.",
-            ).set_author_to_user(user)
-            return await ctx.send(embed=embed)
-        embed = vbu.Embed(
-            use_random_colour=True, description="\n".join([i['quote_id'] for i in rows[:50]]),
-        ).set_author_to_user(user)
-        return await ctx.send(embed=embed)
+    #     # Grab data from db
+    #     user = user or ctx.author
+    #     async with vbu.Database() as db:
+    #         rows = await db("SELECT quote_id FROM user_quotes WHERE user_id=$1 AND guild_id=$2", user, ctx.guild.id)
+    #     if not rows:
+    #         embed = vbu.Embed(
+    #             use_random_colour=True, description="This user has no quotes.",
+    #         ).set_author_to_user(user)
+    #         return await ctx.send(embed=embed)
+    #     embed = vbu.Embed(
+    #         use_random_colour=True, description="\n".join([i['quote_id'] for i in rows[:50]]),
+    #     ).set_author_to_user(user)
+    #     return await ctx.send(embed=embed)
 
-    @quote_alias.command(name="remove", aliases=["delete"], add_slash_command=False)
-    @commands.guild_only()
-    @commands.has_guild_permissions(manage_guild=True)
-    @commands.bot_has_permissions(send_messages=True)
-    async def quote_alias_remove(self, ctx: vbu.Context, alias: commands.clean_content):
-        """
-        Deletes an alias from a quote.
-        """
+    # @quote_alias.command(name="remove", aliases=["delete"])
+    # @commands.guild_only()
+    # @commands.has_guild_permissions(manage_guild=True)
+    # @commands.bot_has_permissions(send_messages=True)
+    # async def quote_alias_remove(self, ctx: vbu.Context, alias: commands.clean_content):
+    #     """
+    #     Deletes an alias from a quote.
+    #     """
 
-        # Grab data from db
-        async with vbu.Database() as db:
-            quote_rows = await db(
-                """SELECT user_quotes.quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes LEFT JOIN
-                quote_aliases ON user_quotes.quote_id=quote_aliases.quote_id
-                WHERE quote_aliases.alias=$1 AND guild_id=$2""",
-                alias.lower(), ctx.guild.id
-            )
-            if not quote_rows:
-                return await ctx.send(f"There's no quote with the alias `{alias.upper()}`.")
-            await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
-        return await ctx.send(f"Deleted alias `{alias.upper()}`.")
+    #     # Grab data from db
+    #     async with vbu.Database() as db:
+    #         quote_rows = await db(
+    #             """SELECT user_quotes.quote_id as quote_id, user_id, channel_id, message_id FROM user_quotes LEFT JOIN
+    #             quote_aliases ON user_quotes.quote_id=quote_aliases.quote_id
+    #             WHERE quote_aliases.alias=$1 AND guild_id=$2""",
+    #             alias.lower(), ctx.guild.id
+    #         )
+    #         if not quote_rows:
+    #             return await ctx.send(f"There's no quote with the alias `{alias.upper()}`.")
+    #         await db("DELETE FROM quote_aliases WHERE alias=$1", alias.lower())
+    #     return await ctx.send(f"Deleted alias `{alias.upper()}`.")
 
-    @quote.command(name="delete", add_slash_command=False)
+    @quote.command(
+        name="delete",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="quote_id",
+                    description="The ID of the quote that you want to delete.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def quote_delete(self, ctx: vbu.Context, *quote_ids: str):
+    async def quote_delete(self, ctx: vbu.Context, quote_id: str):
         """
         Deletes a quote from your server.
         """
 
-        quote_ids = [i.lower() for i in quote_ids]
+        # quote_ids = [i.lower() for i in quote_ids]
+        quote_ids = [quote_id.lower()]
         quote_channel_id = self.bot.guild_settings[ctx.guild.id].get('quote_channel_id')
         if quote_channel_id:
             quote_channel = self.bot.get_channel(quote_channel_id)

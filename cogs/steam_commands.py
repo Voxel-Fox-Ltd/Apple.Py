@@ -12,7 +12,7 @@ class SteamCommand(vbu.Cog):
 
     def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
-        self.game_cache: dict = None
+        self.game_cache: dict = {}
         self.sent_message_cache = {}  # MessageID: {embed: Embed, index: ScreenshotIndex, screenshots: List[str]}
 
     async def load_game_cache(self):
@@ -34,15 +34,27 @@ class SteamCommand(vbu.Cog):
     def get_valid_name(self, name):
         return ''.join(i for i in name if i.isdigit() or i.isalpha() or i.isspace())
 
-    @commands.command(aliases=['steam'])
+    @commands.command(
+        aliases=['steamsearch'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="app_name",
+                    description="The name of the game that you want to search for.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
+    @commands.defer()
     @vbu.checks.is_config_set('api_keys', 'steam')
-    async def steamsearch(self, ctx: vbu.Context, *, app_name: str):
+    async def steam(self, ctx: vbu.Context, *, app_name: str):
         """
         Search Steam for an item.
         """
 
         # Load cache
-        if self.game_cache is None:
+        if not self.game_cache:
             await self.load_game_cache()
 
         # Get app
@@ -114,57 +126,57 @@ class SteamCommand(vbu.Cog):
 
         # Send
         m = await ctx.send(embed=embed)
-        self.sent_message_cache[m.id] = {
-            "embed": embed,
-            "screenshots": screenshots,
-            "index": 0,
-            "allowed_members": [ctx.author.id],
-        }
-        await m.add_reaction("⬅️")
-        await m.add_reaction("➡️")
+        # self.sent_message_cache[m.id] = {
+        #     "embed": embed,
+        #     "screenshots": screenshots,
+        #     "index": 0,
+        #     "allowed_members": [ctx.author.id],
+        # }
+        # await m.add_reaction("⬅️")
+        # await m.add_reaction("➡️")
 
-    @vbu.Cog.listener()
-    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-        """
-        Changes the screenshot on an embed.
-        """
+    # @vbu.Cog.listener()
+    # async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
+    #     """
+    #     Changes the screenshot on an embed.
+    #     """
 
-        # Filter babey
-        message = reaction.message
-        if message.id not in self.sent_message_cache:
-            return
-        if user.bot:
-            return
+    #     # Filter babey
+    #     message = reaction.message
+    #     if message.id not in self.sent_message_cache:
+    #         return
+    #     if user.bot:
+    #         return
 
-        # Get changed data
-        data = self.sent_message_cache[message.id]
-        if user.id not in data['allowed_members']:
-            return
+    #     # Get changed data
+    #     data = self.sent_message_cache[message.id]
+    #     if user.id not in data['allowed_members']:
+    #         return
 
-        # Get valid reaction
-        if str(reaction.emoji) == "➡️":
-            index = data['index'] + 1
-            if index >= len(data['screenshots']):
-                index = 0
-        elif str(reaction.emoji) == "⬅️":
-            index = data['index'] - 1
-            if index < 0:
-                index = len(data['screenshots']) - 1
-        else:
-            return
+    #     # Get valid reaction
+    #     if str(reaction.emoji) == "➡️":
+    #         index = data['index'] + 1
+    #         if index >= len(data['screenshots']):
+    #             index = 0
+    #     elif str(reaction.emoji) == "⬅️":
+    #         index = data['index'] - 1
+    #         if index < 0:
+    #             index = len(data['screenshots']) - 1
+    #     else:
+    #         return
 
-        # Change embed
-        embed = data['embed']
-        embed.set_image(url=data['screenshots'][index])
-        embed.use_random_colour()
-        data['embed'] = embed
-        data['index'] = index
-        self.sent_message_cache[message.id] = data
-        await reaction.message.edit(embed=embed)
-        try:
-            await reaction.message.remove_reaction(str(reaction.emoji), user)
-        except discord.Forbidden:
-            pass
+    #     # Change embed
+    #     embed = data['embed']
+    #     embed.set_image(url=data['screenshots'][index])
+    #     embed.use_random_colour()
+    #     data['embed'] = embed
+    #     data['index'] = index
+    #     self.sent_message_cache[message.id] = data
+    #     await reaction.message.edit(embed=embed)
+    #     try:
+    #         await reaction.message.remove_reaction(str(reaction.emoji), user)
+    #     except discord.Forbidden:
+    #         pass
 
 
 def setup(bot: vbu.Bot):

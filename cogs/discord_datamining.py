@@ -1,10 +1,13 @@
 import re
 import collections
 
+import discord
 from discord.ext import tasks, vbu
 
+from .types.bot import Bot
 
-class DiscordDatamining(vbu.Cog):
+
+class DiscordDatamining(vbu.Cog[Bot]):
 
     DISCORD_DOCS_API_REPO_URL = "https://api.github.com/repos/discord/discord-api-docs/commits"
     DISCORD_DOCS_REPO_URL = "https://github.com/discord/discord-api-docs/"
@@ -14,11 +17,19 @@ class DiscordDatamining(vbu.Cog):
 
     VFL_CODING_CHANNEL_ID = 760664929593851925
 
-    def __init__(self, bot: vbu.Bot):
+    def __init__(self, bot: Bot):
         super().__init__(bot)
         self.last_posted_commit = collections.defaultdict(lambda: None)
-        self.docs_commit_poster_loop.start("New Discord Docs Info", self.DISCORD_DOCS_API_REPO_URL, self.DISCORD_DOCS_REPO_URL)
-        self.datamining_commit_poster_loop.start("New Discord Client Data", self.DISCORD_DATAMINING_API_REPO_URL, self.DISCORD_DATAMINING_REPO_URL)
+        self.docs_commit_poster_loop.start(
+            "New Discord Docs Info",
+            self.DISCORD_DOCS_API_REPO_URL,
+            self.DISCORD_DOCS_REPO_URL,
+        )
+        self.datamining_commit_poster_loop.start(
+            "New Discord Client Data",
+            self.DISCORD_DATAMINING_API_REPO_URL,
+            self.DISCORD_DATAMINING_REPO_URL,
+        )
 
     def cog_unload(self):
         self.datamining_commit_poster_loop.stop()
@@ -81,7 +92,10 @@ class DiscordDatamining(vbu.Cog):
 
         # Inform the bot owner that the description is larger than allowed by discord
         if len(description_unsplit) > 2048:
-            self.logger.info(f"Our description is longer than 2048 characters and this isnt really poggers, we need to make it in multiple embeds. It was {len(description_unsplit)} characters.")
+            self.logger.info(
+                f"Our description is longer than 2048 characters and this isnt really poggers, "
+                f"we need to make it in multiple embeds. It was {len(description_unsplit)} characters."
+            )
 
         # Split the description into a list of descriptions each 2048 or less
         description_array = [description_unsplit[i:i + 2048] for i in range(0, len(description_unsplit), 2048)]
@@ -95,6 +109,7 @@ class DiscordDatamining(vbu.Cog):
 
         # And send the first one
         channel = self.bot.get_channel(self.VFL_CODING_CHANNEL_ID)
+        assert isinstance(channel, discord.TextChannel)
         m = await channel.send(embed=embed)
         await m.publish()
 
@@ -111,6 +126,6 @@ class DiscordDatamining(vbu.Cog):
         self.last_posted_commit[repo_url] = new_commits[0]['sha']
 
 
-def setup(bot: vbu.Bot):
+def setup(bot: Bot):
     x = DiscordDatamining(bot)
     bot.add_cog(x)

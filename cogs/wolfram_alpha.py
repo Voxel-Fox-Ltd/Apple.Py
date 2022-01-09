@@ -1,11 +1,23 @@
 import json
 
+import discord
 from discord.ext import commands, vbu
 
 
 class WolframAlpha(vbu.Cog):
 
-    @commands.command(aliases=["wf", "wolframalpha", "wfa"])
+    @commands.command(
+        aliases=["wf", "wolframalpha", "wfa"],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="search",
+                    description="Your query for WolframAlpha.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.defer()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set("api_keys", "wolfram")

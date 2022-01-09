@@ -78,7 +78,10 @@ class MovieCommand(vbu.Cog):
             embed.set_thumbnail(data['Poster'])
         return embed
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(
+        invoke_without_command=True,
+        application_command_meta=commands.ApplicationCommandMeta(),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'omdb')
     async def movie(self, ctx: vbu.Context):
@@ -89,55 +92,71 @@ class MovieCommand(vbu.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    @movie.group(name="get")
+    @movie.group(
+        name="get",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="name",
+                    description="The name of the movie that you want to get.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+                discord.ApplicationCommandOption(
+                    name="year",
+                    description="The year that the movie was released.",
+                    type=discord.ApplicationCommandOptionType.integer,
+                    min_value=1800,
+                    max_value=2100,
+                ),
+            ],
+        ),
+    )
+    @commands.defer()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'omdb')
-    async def movie_get(self, ctx: vbu.Context, *, name: str):
+    async def movie_get(self, ctx: vbu.Context, *, name: str, year: int = None):
         """
         Gets a movie from the OMDB API.
         """
 
-        # See if we gave a year
-        original_name = name
-        if name.split(' ')[-1].isdigit() and int(name.split(' ')[-1]) > 1900:
-            *name, year = name.split(' ')
-            name = ' '.join(name)
-        else:
-            year = None
-
         # Try and return the found data
-        await ctx.defer()
         data = await self.send_omdb_query(name,'movie',False,year)
         embed = self.generate_embed(data)
-        if embed is None:
-            return await ctx.invoke(self.movie_search, name=original_name)
-        return await ctx.send(embed=embed)
-
-    @movie.group(name="search")
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @vbu.checks.is_config_set('api_keys', 'omdb')
-    async def movie_search(self, ctx: vbu.Context, *, name: str):
-        """
-        Searches for a movie on the OMDB API.
-        """
-
-        # See if we gave a year
-        original_name = name
-        if name.split(' ')[-1].isdigit() and int(name.split(' ')[-1]) > 1900:
-            *name, year = name.split(' ')
-            name = ' '.join(name)
-        else:
-            year = None
-
-        # Try and return the found data
-        await ctx.defer()
-        data = await self.send_omdb_query(name,'movie',True,year)
-        embed = self.generate_embed(data)
         if not embed:
-            return await ctx.send(f"No movie results for `{original_name}` could be found.", allowed_mentions=discord.AllowedMentions.none())
+            return await ctx.send(
+                f"Couldn't find any results for **{name}**",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
         return await ctx.send(embed=embed)
 
-    @commands.group(invoke_without_command=True)
+    # @movie.group(name="search")
+    # @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    # @vbu.checks.is_config_set('api_keys', 'omdb')
+    # async def movie_search(self, ctx: vbu.Context, *, name: str):
+    #     """
+    #     Searches for a movie on the OMDB API.
+    #     """
+
+    #     # See if we gave a year
+    #     original_name = name
+    #     if name.split(' ')[-1].isdigit() and int(name.split(' ')[-1]) > 1900:
+    #         *name, year = name.split(' ')
+    #         name = ' '.join(name)
+    #     else:
+    #         year = None
+
+    #     # Try and return the found data
+    #     await ctx.defer()
+    #     data = await self.send_omdb_query(name,'movie',True,year)
+    #     embed = self.generate_embed(data)
+    #     if not embed:
+    #         return await ctx.send(f"No movie results for `{original_name}` could be found.", allowed_mentions=discord.AllowedMentions.none())
+    #     return await ctx.send(embed=embed)
+
+    @commands.group(
+        invoke_without_command=True,
+        application_command_meta=commands.ApplicationCommandMeta(),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'omdb')
     async def tv(self, ctx: vbu.Context):
@@ -148,53 +167,66 @@ class MovieCommand(vbu.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    @tv.command(name="get")
+    @tv.command(
+        name="get",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="name",
+                    description="The name of the TV show that you want to get.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+                discord.ApplicationCommandOption(
+                    name="year",
+                    description="The year that the TV show was released.",
+                    type=discord.ApplicationCommandOptionType.integer,
+                    min_value=1800,
+                    max_value=2100,
+                ),
+            ],
+        ),
+    )
+    @command.defer()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'omdb')
-    async def tv_get(self, ctx: vbu.Context, *, name: str):
+    async def tv_get(self, ctx: vbu.Context, *, name: str, year: int = None):
         """
         Gets a TV show from the OMDB API.
         """
 
-        # See if we gave a year
-        original_name = name
-        if name.split(' ')[-1].isdigit() and int(name.split(' ')[-1]) > 1900:
-            *name, year = name.split(' ')
-            name = ' '.join(name)
-        else:
-            year = None
-
         # Try and return the found data
-        await ctx.defer()
         data = await self.send_omdb_query(name, 'series', False, year)
         embed = self.generate_embed(data)
-        if embed is None:
-            return await ctx.invoke(self.tv_search, name=original_name)
-        return await ctx.send(embed=embed)
-
-    @tv.command(name="search")
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @vbu.checks.is_config_set('api_keys', 'omdb')
-    async def tv_search(self, ctx: vbu.Context, *, name: str):
-        """
-        Searches for a TV series on the OMDB API.
-        """
-
-        # See if we gave a year
-        original_name = name
-        if name.split(' ')[-1].isdigit() and int(name.split(' ')[-1]) > 1900:
-            *name, year = name.split(' ')
-            name = ' '.join(name)
-        else:
-            year = None
-
-        # Try and return the found data
-        await ctx.defer()
-        data = await self.send_omdb_query(name, 'series', True, year)
-        embed = self.generate_embed(data)
         if not embed:
-            return await ctx.send(f"No TV series results for `{original_name}` could be found.", allowed_mentions=discord.AllowedMentions.none())
+            return await ctx.send(
+                f"Couldn't find any results for **{name}**",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
         return await ctx.send(embed=embed)
+
+    # @tv.command(name="search")
+    # @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    # @vbu.checks.is_config_set('api_keys', 'omdb')
+    # async def tv_search(self, ctx: vbu.Context, *, name: str):
+    #     """
+    #     Searches for a TV series on the OMDB API.
+    #     """
+
+    #     # See if we gave a year
+    #     original_name = name
+    #     if name.split(' ')[-1].isdigit() and int(name.split(' ')[-1]) > 1900:
+    #         *name, year = name.split(' ')
+    #         name = ' '.join(name)
+    #     else:
+    #         year = None
+
+    #     # Try and return the found data
+    #     await ctx.defer()
+    #     data = await self.send_omdb_query(name, 'series', True, year)
+    #     embed = self.generate_embed(data)
+    #     if not embed:
+    #         return await ctx.send(f"No TV series results for `{original_name}` could be found.", allowed_mentions=discord.AllowedMentions.none())
+    #     return await ctx.send(embed=embed)
 
 
 def setup(bot: vbu.Bot):

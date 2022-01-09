@@ -3,6 +3,7 @@ import random
 import typing
 from pathlib import Path
 
+import discord
 from discord.ext import commands, vbu
 import aiohttp
 
@@ -23,7 +24,7 @@ class RunescapeCommands(vbu.Cog):
             self.item_ids = json.load(item_ids_file)
 
     @staticmethod
-    def rs_notation_to_int(value_str:str) -> int:
+    def rs_notation_to_int(value_str: str) -> int:
         """
         Change a value string ("1.2m") into an int (1200000)
         https://github.com/JMcB17/osrs-blast-furnace-calc
@@ -45,7 +46,7 @@ class RunescapeCommands(vbu.Cog):
             value = int(value_str)
         return value
 
-    async def get_item_details_by_id(self, item_id:int) -> dict:
+    async def get_item_details_by_id(self, item_id: int) -> dict:
         """
         Return the JSON response from the rs API given an item's Runescape ID.
         """
@@ -58,18 +59,17 @@ class RunescapeCommands(vbu.Cog):
         headers = {
             "User-Agent": self.bot.user_agent,
         }
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params, headers=headers) as response:
-                # The Runescape API doesn't set a json header, so aiohttp complains about it.
-                # We can just say to not check the content type.
-                # https://github.com/aio-libs/aiohttp/blob/8c82ba11b9e38851d75476d261a1442402cc7592/aiohttp/web_request.py#L664-L681
-                item = await response.json(content_type=None)
+        async with self.bot.session.get(url, params=params, headers=headers) as response:
+            # The Runescape API doesn't set a json header, so aiohttp complains about it.
+            # We can just say to not check the content type.
+            # https://github.com/aio-libs/aiohttp/blob/8c82ba11b9e38851d75476d261a1442402cc7592/aiohttp/web_request.py#L664-L681
+            item = await response.json(content_type=None)
 
         # revolver ocelot (revolver ocelot)
         item = item['item']
         return item
 
-    async def parse_item_value(self, item:dict, return_int:bool=True) -> typing.Union[int, str]:
+    async def parse_item_value(self, item: dict, return_int: bool = True) -> typing.Union[int, str]:
         """
         Parse the value of an item from the JSON response from the rs API.
         """
@@ -84,8 +84,19 @@ class RunescapeCommands(vbu.Cog):
 
         return value
 
-    @commands.command(aliases=['ge'])
-    async def grandexchange(self, ctx: vbu.Context, *, item:str):
+    @commands.command(
+        aliases=['ge'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="item",
+                    description="The item that you want to search.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
+    async def grandexchange(self, ctx: vbu.Context, *, item: str):
         """
         Get the value of an item on the grand exchange (OSRS).
         """

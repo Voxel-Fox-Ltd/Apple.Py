@@ -1,6 +1,7 @@
-novus<0.1.0
-voxelbotutils>=0.7,<0.8
+novus>=0.0.5,<0.1.0
+voxelbotutils>=0.8,<0.9
 beautifulsoup4
 pytz
 pillow
 imgkit
+thefuzz[speedup]

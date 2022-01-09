@@ -24,7 +24,11 @@ class ReminderCommands(vbu.Cog):
     def cog_unload(self):
         self.reminder_finish_handler.stop()
 
-    @commands.group(aliases=["reminders"], invoke_without_command=True)
+    @commands.group(
+        aliases=["reminders"],
+        invoke_without_command=True,
+        application_command_meta=commands.ApplicationCommandMeta(),
+    )
     @commands.bot_has_permissions(send_messages=True)
     async def reminder(self, ctx: vbu.Context):
         """
@@ -35,7 +39,10 @@ class ReminderCommands(vbu.Cog):
             return
         return await ctx.send_help(ctx.command)
 
-    @reminder.command(name="list")
+    @reminder.command(
+        name="list",
+        application_command_meta=commands.ApplicationCommandMeta(),
+    )
     @commands.bot_has_permissions(send_messages=True)
     async def reminder_list(self, ctx: vbu.Context):
         """
@@ -62,7 +69,24 @@ class ReminderCommands(vbu.Cog):
         # Send to the user
         await ctx.send(message or "You have no reminders.", allowed_mentions=discord.AllowedMentions.none())
 
-    @reminder.command(name="set", aliases=['create'])
+    @reminder.command(
+        name="set",
+        aliases=['create'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="time",
+                    description="How far into the future you want to set the reminder.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+                discord.ApplicationCommandOption(
+                    name="message",
+                    description="The message that you want to set.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True)
     async def reminder_set(self, ctx: vbu.Context, time: vbu.TimeValue, *, message: str):
         """
@@ -96,7 +120,19 @@ class ReminderCommands(vbu.Cog):
         )
         await db.disconnect()
 
-    @reminder.command(name="delete", aliases=['remove'])
+    @reminder.command(
+        name="delete",
+        aliases=['remove'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="reminder_id",
+                    description="The ID of the reminder that you want to delete.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True)
     async def reminder_delete(self, ctx: vbu.Context, reminder_id: str):
         """

@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands, vbu
 
 
@@ -40,7 +41,11 @@ class GoogleCommands(vbu.Cog):
 
         return wrapper
 
-    @commands.group(invoke_without_command=True, aliases=['search'])
+    @commands.group(
+        invoke_without_command=True,
+        aliases=['search'],
+        application_command_meta=commands.ApplicationCommandMeta(),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
@@ -52,7 +57,18 @@ class GoogleCommands(vbu.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    @google.command(name="search")
+    @google.command(
+        name="search",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="query",
+                    description="The text that you want to search.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')
     @vbu.checks.is_config_set('api_keys', 'google', 'api_key')
@@ -72,7 +88,19 @@ class GoogleCommands(vbu.Cog):
             return embed
         await vbu.Paginator(self.get_search_page(query, 3), formatter=formatter).start(ctx)
 
-    @google.command(name='images', aliases=['image', 'i'])
+    @google.command(
+        name='images',
+        aliases=['image', 'i'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="query",
+                    description="The text that you want to search.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.has_permissions(embed_links=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'google', 'search_engine_id')

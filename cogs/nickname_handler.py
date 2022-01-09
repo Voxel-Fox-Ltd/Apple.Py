@@ -54,7 +54,6 @@ ANIMAL_NAMES = "https://raw.githubusercontent.com/skjorrface/animals.txt/master/
 class NicknameHandler(vbu.Cog):
 
     LETTER_REPLACEMENT_FILE_PATH = "config/letter_replacements.json"
-    # ZALGO_FILE_PATH = "config/zalgo_characters.json"
     ASCII_CHARACTERS = string.ascii_letters + string.digits + string.punctuation
 
     def __init__(self, bot: vbu.Bot):
@@ -257,9 +256,21 @@ class NicknameHandler(vbu.Cog):
         new_name = await self.fix_user_nickname(user, force_to_animal=force_to_animal)
         return await ctx.send(f"Changed their name from `{current_name}` to `{new_name}`.")
 
-    @fixunzalgoname.command(aliases=['fun'])
+    @fixunzalgoname.command(
+        name="user",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="user",
+                    description="The user whose username you want to fix.",
+                    type=discord.ApplicationCommandOptionType.user,
+                ),
+            ],
+        ),
+    )
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
+    @commands.guild_only()
     async def fixunzalgoname_user(self, ctx: vbu.Context, user: discord.Member, force_to_animal: bool = False):
         """
         Fixes a user's nickname to remove dumbass characters.
@@ -267,7 +278,7 @@ class NicknameHandler(vbu.Cog):
 
         await self.fixunzalgoname(ctx, user, force_to_animal)
 
-    @fixunzalgoname.command(name='text', add_slash_command=False)
+    @fixunzalgoname.command(name='text')
     @commands.bot_has_permissions(send_messages=True)
     async def fixunzalgoname_text(self, ctx: vbu.Context, *, text: str):
         """
@@ -294,7 +305,7 @@ class NicknameHandler(vbu.Cog):
 
         return await ctx.send(f"I would change that from `{text}` to `{new_name}`.")
 
-    @commands.command(add_slash_comamnd=False)
+    @commands.command()
     @vbu.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
     async def addfixablename(self, ctx: vbu.Context, user: discord.Member, *, fixed_name: str):
@@ -305,7 +316,7 @@ class NicknameHandler(vbu.Cog):
         await ctx.invoke(self.bot.get_command("addfixableletters"), user.display_name, fixed_name)
         await ctx.invoke(self.bot.get_command("fixunzalgoname"), user)
 
-    @commands.command(ignore_extra=False, add_slash_comamnd=False)
+    @commands.command(ignore_extra=False)
     @vbu.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
     async def addfixableletters(self, ctx: vbu.Context, phrase1: str, phrase2: str):

@@ -9,7 +9,10 @@ import pytz
 
 class TimezoneInfo(vbu.Cog):
 
-    @commands.group(aliases=['tz'])
+    @commands.group(
+        aliases=['tz'],
+        application_command_meta=commands.ApplicationCommandMeta(),
+    )
     async def timezone(self, ctx: vbu.Context):
         """
         The parent group for timezone commands.
@@ -34,7 +37,19 @@ class TimezoneInfo(vbu.Cog):
             name = common_timezones[name]
         return name
 
-    @timezone.command(name="set")
+    @timezone.command(
+        name="set",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="offset",
+                    description="The timezone that you live in.",
+                    type=discord.ApplicationCommandOptionType.string,
+                    autocomplete=True,
+                ),
+            ],
+        ),
+    )
     async def timezone_set(self, ctx: vbu.Context, *, offset: str = None):
         """
         Sets and stores your UTC offset into the bot.
@@ -78,7 +93,20 @@ class TimezoneInfo(vbu.Cog):
         await command.can_run(ctx)
         await ctx.invoke(command, user)
 
-    @timezone.command(name="get")
+    @timezone.command(
+        name="get",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="target",
+                    description="The user whose timezone you want to get.",
+                    type=discord.ApplicationCommandOptionType.user,
+                    required=False,
+                ),
+            ],
+        ),
+    )
+    @commands.defer()
     async def timezone_get(self, ctx: vbu.Context, target: typing.Union[discord.Member, str] = None):
         """
         Get the current time for a given user.
@@ -107,7 +135,7 @@ class TimezoneInfo(vbu.Cog):
             except pytz.UnknownTimeZoneError:
                 return await ctx.send("That isn't a valid timezone.")
             return await ctx.send(f"The current time in **{target}** is estimated to be **{formatted_time}**.")
-        else:
+        elif rows:
             if rows[0]['timezone_name']:
                 formatted_time = (discord.utils.utcnow().astimezone(pytz.timezone(rows[0]['timezone_name']))).strftime('%-I:%M %p')
             else:

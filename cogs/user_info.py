@@ -12,8 +12,23 @@ import imgkit
 
 class UserInfo(vbu.Cog):
 
-    @commands.command(aliases=["avatar", "av"])  # Added as context commands
-    async def enlarge(self, ctx: vbu.Context, target: typing.Union[discord.Member, discord.User, discord.Emoji, discord.PartialEmoji] = None):
+    @commands.command(
+        aliases=["avatar", "av"],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="target",
+                    description="The item that you want to enlarge.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
+    async def enlarge(
+            self,
+            ctx: vbu.Context,
+            target: typing.Union[discord.Member, discord.User, discord.Emoji, discord.PartialEmoji] = None,
+            ):
         """
         Enlarges the avatar or given emoji.
         """
@@ -27,7 +42,25 @@ class UserInfo(vbu.Cog):
             embed.set_image(url=str(url))
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["whoami"])  # Added as context commands
+    @commands.context_command(name="Get user info")
+    async def _get_user_info(self, ctx: vbu.SlashContext, user: discord.Member):
+        command = self.whois
+        await command.can_run(ctx)
+        await ctx.invoke(command, user)
+
+    @commands.command(
+        aliases=["whoami"],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="user",
+                    description="The user you want to get the information of.",
+                    type=discord.ApplicationCommandOptionType.user,
+                    required=False,
+                ),
+            ],
+        ),
+    )
     async def whois(self, ctx: vbu.Context, user: discord.Member = None):
         """
         Give you some information about a user.
@@ -51,9 +84,25 @@ class UserInfo(vbu.Cog):
         embed.set_thumbnail(user.display_avatar.with_size(1024).url)
 
         # Sick
-        return await ctx.send(embed=embed)
+        if isinstance(ctx, commands.SlashContext):
+            return await ctx.interaction.response.send_message(embed=embed)
+        else:
+            return await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="amount",
+                    description="The number of messages that you want to log.",
+                    type=discord.ApplicationCommandOptionType.integer,
+                    required=False,
+                    max_value=500,
+                ),
+            ],
+        ),
+    )
+    @commands.defer()
     @commands.guild_only()
     async def createlog(self, ctx: vbu.Context, amount: int = 100):
         """
@@ -119,9 +168,26 @@ class UserInfo(vbu.Cog):
         await command.can_run(ctx)
         await ctx.invoke(command, user=message.author, content=message)
 
-    @commands.command(aliases=["fakemessage"])
+    @commands.command(
+        aliases=["screenshotmessage"],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="user",
+                    description="The user who you want to fake a message from.",
+                    type=discord.ApplicationCommandOptionType.user,
+                ),
+                discord.ApplicationCommandOption(
+                    name="content",
+                    description="The content that you want in the message.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
+    @commands.defer()
     @commands.guild_only()
-    async def screenshotmessage(self, ctx: vbu.Context, user: discord.Member, *, content: typing.Union[str, discord.Message]):
+    async def fakemessage(self, ctx: vbu.Context, user: discord.Member, *, content: typing.Union[str, discord.Message]):
         """
         Create a log of chat.
         """

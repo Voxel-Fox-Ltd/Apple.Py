@@ -1,0 +1,336 @@
+Alarm
+Animal Friendship
+Armor of Agathys
+Arms of Hadar
+Bane
+Bless
+Burning Hands
+Charm Person
+Chromatic Orb
+Color Spray
+Command
+Compelled Duel
+Comprehend Languages
+Create or Destroy Water
+Cure Wounds
+Detect Evil and Good
+Detect Magic
+Detect Poison and Disease
+Disguise Self
+Dissonant Whispers
+Divine Favor
+Ensnaring Strike
+Entangle
+Expeditious Retreat
+False Life
+Faerie Fire
+Feather Fall
+Find Familiar
+Fog Cloud
+Goodberry
+Grease
+Guiding Bolt
+Hail of Thorns
+Healing Word
+Hellish Rebuke
+Heroism
+Hex
+Hunter's Mark
+Identify
+Illusory Script
+Inflict Wounds
+Jump
+Longstrider
+Mage Armor
+Magic Missle
+Protection from Evil and Good
+Purify Food and Drink
+Ray of Sickness
+Searing Smite
+Sanctuary
+Shield
+Shield of Faith
+Silent Image
+Sleep
+Speak with Animals
+Tasha's Hideous Laughter
+Tensor's Floating Disk
+Thunderous Smite
+Thunderwave
+Unseen Servant
+Witch Bolt
+Wrathful Smite
+Aid
+Alter Self
+Animal Messenger
+Arcane Lock
+Augury
+Barkskin
+Beast Sense
+Blindness/Deafness
+Blur
+Branding Smite
+Calm Emotions
+Cloud of Daggers
+Continual Flame
+Cordon of Arrows
+Crown of Madness
+Darkness
+Darkvision
+Detect Thoughts
+Enhance Ability
+Enlarge/Reduce
+Enthrall
+Find Steed
+Find Traps
+Flame Blade
+Flaming Sphere
+Heat Metal
+Hold Person
+Gentle Repose
+Gust of Wind
+Invisibility
+Knock
+Lesser Restoration
+Levitate
+Locate Animals or Plants
+Locate Object
+Magic Mouth
+Magic Weapon
+Melf's Acid Arrow
+Mirror Image
+Misty Step
+Moonbeam
+Nystul's Magic Aura
+Pass without Trace
+Phantasmal Force
+Prayer of Healing
+Protection of Poison
+Ray of Enfeeblement
+Rope Trick
+Scorching Ray
+See Invisibility
+Shatter
+Silence
+Spider Climb
+Spike Growth
+Spiritual Weapon
+Suggestion
+Warding Bond
+Web
+Zone of Truth
+Animate Dead
+Aura of Vitality
+Beacon of Hope
+Bestow Curse
+Blinding Smite
+Blink
+Call Lightning
+Clairvoyance
+Conjure Animals
+Conjure Barrage
+Counterspell
+Create Food and Water
+Crusader's Mantle
+Daylight
+Dispel Magic
+Elemental Weapon
+Fear
+Feign Death
+Fireball
+Fly
+Gaseous Form
+Glyph of Warding
+Haste
+Hunger of Hadar
+Hypnotic Pattern
+Leomund's Tiny Hut
+Lightning Arrow
+Lightning Bolt
+Magic Circle
+Major Image
+Mass Healing Word
+Meld Into Stone
+Nondetection
+Phantom Steed
+Plant Growth
+Protection from Energy
+Remove Curse
+Revivify
+Sending
+Sleet Storm
+Slow
+Speak with Dead
+Speak with Plants
+Spirit Guardians
+Stinking Cloud
+Tongues
+Vampiric Touch
+Water Breathing
+Water Walk
+Wind Wall
+Aura of Life
+Aura of Purify
+Arcane Eye
+Banishment
+Blight
+Compulsion
+Confusion
+Conjure Minor Elementals
+Conjure Woodland Beings
+Control Water
+Control Weather
+Death Ward
+Dimension Door
+Divination
+Dominate Beast
+Evard's Black Tentacles
+Fabricate
+Fire Shield
+Freedom of Movement
+Giant Insect
+Grasping Vine
+Greater Invisibility
+Guardian of Faith
+Hallucinatory Terrain
+Ice Storm
+Leomund's Secret Chest
+Locate Creature
+Mordenkainen's Faithful Hound
+Mordenkainen's Private Sanctum
+Otiluke's Resilient Sphere
+Phantasmal Killer
+Polymorph
+Staggering Smite
+Stone Shape
+Stoneskin
+Wall of Fire
+Animate Objects
+Antilife Shell
+Awaken
+Banishing Smite
+Bigby's Hand
+Circle of Power
+Cloudkill
+Commune
+Commune with Nature
+Cone of Cold
+Conjure ELemental
+Conjure Volley
+Contact Other Plane
+Contagion
+Creation
+Destructive Smite
+Dispel Evil and Good
+Dominate Person
+Dream
+Flame Strike
+Geas
+Greater Restoration
+Hallow
+Hold Monster
+Insect Plague
+Legend Lore
+Mass Cure Wounds
+Mislead
+Modify Memory
+Passwall
+Planar Binding
+Raise Dead
+Rary's Telepathic Bond
+Reincarnate
+Scrying
+Seeming
+Swift Quiver
+Telekinesis
+Teleportation Circle
+Tree Stride
+Wall of Force
+Wall of Stone
+Arcane Gate
+Blade Barrier
+Chain Lightning
+Circle of Death
+Conjure Fey
+Contingency
+Create Undead
+Disintegrate
+Drawmij's Instant Summons
+Eyebit
+Find the Path
+Flesh to Stone
+Forbiddance
+Globe of Invulnerability
+Guards and Wards
+Harm
+Heal
+Heroes' Feast
+Magic Jar
+Mass Suggestion
+Move Earth
+Otiluke's Freezing Sphere
+Otto's Irresistible Dance
+Planar Ally
+Programmed Illusion
+Sunbeam
+Transport via Plants
+True Seeing
+Wall of Ice
+Wall of Thorns
+Wind Walk
+Word of Recall
+Conjure Celestial
+Delayed Blast Fireball
+Divine Word
+Etherealness
+Finger of Death
+Fire Storm
+Forcecage
+Mirage Arcane
+Mordenkainen's Magnificent Mansion
+Mordenkainen's Sword
+Plane Shift
+Prismatic Spray
+Project Image
+Regenerate
+Resurrection
+Reverse Gravity
+Sequester
+Simulacrum
+Symbol
+Teleport
+Animal Shapes
+Antimagic Field
+Antipathy/Sympathy
+Clone
+Control Weather
+Demiplane
+Dominate Monster
+Earthquake
+Feeblemind
+Glibness
+Holy Aura
+Incendiary Cloud
+Maze
+Mind Blank
+Power Word Stun
+Sunburst
+Telepathy
+Trap the Soul
+Tsunami
+Astral Projection
+Foresight
+Gate
+Imprisonment
+Mass Heal
+Meteor Swarm
+Power Word Heal
+Power Word Kill
+Prismatic Wall
+Shapechange
+Storm of Vengeance
+Time Stop
+True Polymorph
+True Resurrection
+Weird
+Wish

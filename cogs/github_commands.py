@@ -9,6 +9,8 @@ import asyncpg
 import discord
 from discord.ext import commands, vbu
 
+from .types.bot import Bot
+
 
 VBU_ERROR_WEBHOOK_PATTERN = re.compile((
     r"^Error `(?P<error>.+?)` encountered\.\n"
@@ -170,7 +172,7 @@ class GitRepo(object):
         return cls(host, owner, repo)
 
 
-class GithubCommands(vbu.Cog):
+class GithubCommands(vbu.Cog[Bot]):
 
     GIT_ISSUE_OPEN_EMOJI = "<:github_issue_open:817984658456707092>"
     GIT_ISSUE_CLOSED_EMOJI = "<:github_issue_closed:817984658372689960>"
@@ -178,7 +180,7 @@ class GithubCommands(vbu.Cog):
     GIT_PR_CLOSED_EMOJI = "<:github_pr_closed:817986200962072617>"
     GIT_PR_CHANGES_EMOJI = "<:github_changes_requested:819115452948938772>"
 
-    def __init__(self, bot: vbu.Bot):
+    def __init__(self, bot: Bot):
         super().__init__(bot)
         GitRepo.bot = bot
 
@@ -192,7 +194,7 @@ class GithubCommands(vbu.Cog):
             )
 
     @vbu.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         """
         Sends GitHub/Lab links if a message sent in the server matches the format `gh/user/repo`.
         """
@@ -252,7 +254,7 @@ class GithubCommands(vbu.Cog):
         if sendable:
             await message.channel.send(sendable, allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.group()
+    @commands.group(application_command_meta=commands.ApplicationCommandMeta())
     async def repoalias(self, ctx: vbu.Context):
         """
         The parent command for handling git repo aliases.
@@ -261,7 +263,23 @@ class GithubCommands(vbu.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    @repoalias.command(name="add")
+    @repoalias.command(
+        name="add",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="alias",
+                    description="The user-readable name of the repo.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+                discord.ApplicationCommandOption(
+                    name="repo",
+                    description="A link to the repo that you want to alias.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True)
     async def repoalias_add(self, ctx: vbu.Context, alias: str, repo: GitRepo):
         """
@@ -283,10 +301,22 @@ class GithubCommands(vbu.Cog):
                         allowed_mentions=discord.AllowedMentions.none(),
                     )
                 await db("DELETE FROM github_repo_aliases WHERE alias=$1", alias)
-                return await ctx.invoke(ctx.command, alias, repo)
+                return await self.repoalias_add(ctx, alias, repo)
         await ctx.send("Done.")
 
-    @repoalias.command(name="remove", aliases=['delete', 'del', 'rem'])
+    @repoalias.command(
+        name="remove",
+        aliases=['delete', 'del', 'rem'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="alias",
+                    description="The alias that you want to remove.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True)
     async def repoalias_remove(self, ctx: vbu.Context, alias: str):
         """
@@ -307,16 +337,10 @@ class GithubCommands(vbu.Cog):
             await db("DELETE FROM github_repo_aliases WHERE alias=LOWER($1)", alias)
         await ctx.send("Done.")
 
-    @commands.command(aliases=['ci'], hidden=True)
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def createissue(self, ctx: vbu.Context, repo: GitRepo, *, title: str):
-        """
-        Create a Github issue on a given repo.
-        """
-
-        return await ctx.invoke(self.issue_create, repo, title=title)
-
-    @commands.group(aliases=['issues'])
+    @commands.group(
+        aliases=['issues'],
+        application_command_meta=commands.ApplicationCommandMeta(),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def issue(self, ctx: vbu.Context):
         """
@@ -353,7 +377,31 @@ class GithubCommands(vbu.Cog):
     #     )
     #     return await ctx.invoke(self.issue_create, repo, title=title, body=body)
 
-    @issue.command(name='create', aliases=['make'], autocomplete_params=("repo",))
+    @issue.command(
+        name='create',
+        aliases=['make'],
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="repo",
+                    description="The repo that you want to create an issue on.",
+                    type=discord.ApplicationCommandOptionType.string,
+                    autocomplete=True,
+                ),
+                discord.ApplicationCommandOption(
+                    name="title",
+                    description="The title of the issue that you want to make.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+                discord.ApplicationCommandOption(
+                    name="body",
+                    description="Any body text for the issue.",
+                    type=discord.ApplicationCommandOptionType.string,
+                    required=False,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def issue_create(self, ctx: vbu.Context, repo: GitRepo, *, title: str, body: str = ""):
         """
@@ -548,8 +596,24 @@ class GithubCommands(vbu.Cog):
         ]
         return await interaction.response.send_autocomplete(responses)
 
-
-    @issue.command(name="list")
+    @issue.command(
+        name="list",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="repo",
+                    description="The repo that you want to list the issues on.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+                discord.ApplicationCommandOption(
+                    name="list_closed",
+                    description="Whether or not you want to list closed issues.",
+                    type=discord.ApplicationCommandOptionType.boolean,
+                    required=False,
+                ),
+            ],
+        ),
+    )
     async def issue_list(self, ctx: vbu.Context, repo: GitRepo, list_closed: bool = False):
         """
         List all of the issues on a git repo.
@@ -636,59 +700,59 @@ class GithubCommands(vbu.Cog):
         # Output as paginator
         return await vbu.Paginator(output, per_page=PER_PAGE).start(ctx)
 
-    @issue.command(name="comment")
-    async def issue_comment(self, ctx: vbu.Context, repo: GitRepo, issue: GitIssueNumber, *, comment: str):
-        """
-        Comment on a git issue.
-        """
+    # @issue.command(name="comment")
+    # async def issue_comment(self, ctx: vbu.Context, repo: GitRepo, issue: GitIssueNumber, *, comment: str):
+    #     """
+    #     Comment on a git issue.
+    #     """
 
-        # Get the database because whatever why not
-        async with vbu.Database() as db:
-            user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
-            if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
-                return await ctx.send((
-                    f"You need to link your {repo.host} account to Discord to run this command - "
-                    f"see the website at `{ctx.clean_prefix}info`."
-                ))
+    #     # Get the database because whatever why not
+    #     async with vbu.Database() as db:
+    #         user_rows = await db("SELECT * FROM user_settings WHERE user_id=$1", ctx.author.id)
+    #         if not user_rows or not user_rows[0][f'{repo.host.lower()}_username']:
+    #             return await ctx.send((
+    #                 f"You need to link your {repo.host} account to Discord to run this command - "
+    #                 f"see the website at `{ctx.clean_prefix}info`."
+    #             ))
 
-        # Add attachments
-        attachment_urls = []
-        for i in ctx.message.attachments:
-            async with ctx.typing():
-                try:
-                    async with self.bot.session.get(i.url) as r:
-                        data = await r.read()
-                    file = discord.File(io.BytesIO(data), filename=i.filename)
-                    cache_message = await ctx.author.send(file=file)
-                    attachment_urls.append((file.filename, cache_message.attachments[0].url))
-                except discord.HTTPException:
-                    break
+    #     # Add attachments
+    #     attachment_urls = []
+    #     for i in ctx.message.attachments:
+    #         async with ctx.typing():
+    #             try:
+    #                 async with self.bot.session.get(i.url) as r:
+    #                     data = await r.read()
+    #                 file = discord.File(io.BytesIO(data), filename=i.filename)
+    #                 cache_message = await ctx.author.send(file=file)
+    #                 attachment_urls.append((file.filename, cache_message.attachments[0].url))
+    #             except discord.HTTPException:
+    #                 break
 
-        # Get the headers
-        if repo.host == "Github":
-            headers = {'Accept': 'application/vnd.github.v3+json','Authorization': f"token {user_rows[0]['github_access_token']}",}
-        elif repo.host == "Gitlab":
-            headers = {'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}"}
-        json = {'body': (comment + "\n\n" + "\n".join([f"![{name}]({url})" for name, url in attachment_urls])).strip()}
-        headers.update({'User-Agent': self.bot.user_agent})
+    #     # Get the headers
+    #     if repo.host == "Github":
+    #         headers = {'Accept': 'application/vnd.github.v3+json','Authorization': f"token {user_rows[0]['github_access_token']}",}
+    #     elif repo.host == "Gitlab":
+    #         headers = {'Authorization': f"Bearer {user_rows[0]['gitlab_bearer_token']}"}
+    #     json = {'body': (comment + "\n\n" + "\n".join([f"![{name}]({url})" for name, url in attachment_urls])).strip()}
+    #     headers.update({'User-Agent': self.bot.user_agent})
 
-        # Create comment
-        async with self.bot.session.post(repo.issue_comments_api_url.format(issue=issue), json=json, headers=headers) as r:
-            data = await r.json()
-            self.logger.info(f"Received data from git {r.url!s} - {data!s}")
-            if r.status == 404:
-                return await ctx.send("I was unable to find that issue.")
-            if 200 <= r.status < 300:
-                pass
-            else:
-                return await ctx.send(f"I was unable to create a comment on that issue - `{data}`.")
+    #     # Create comment
+    #     async with self.bot.session.post(repo.issue_comments_api_url.format(issue=issue), json=json, headers=headers) as r:
+    #         data = await r.json()
+    #         self.logger.info(f"Received data from git {r.url!s} - {data!s}")
+    #         if r.status == 404:
+    #             return await ctx.send("I was unable to find that issue.")
+    #         if 200 <= r.status < 300:
+    #             pass
+    #         else:
+    #             return await ctx.send(f"I was unable to create a comment on that issue - `{data}`.")
 
-        # Output
-        if repo.host == "Github":
-            return await ctx.send(f"Comment added! <{data['html_url']}>")
-        return await ctx.send(f"Comment added! <https://gitlab.com/{repo.owner}/{repo.repo}/-/issues/{issue}#note_{data['id']}>")
+    #     # Output
+    #     if repo.host == "Github":
+    #         return await ctx.send(f"Comment added! <{data['html_url']}>")
+    #     return await ctx.send(f"Comment added! <https://gitlab.com/{repo.owner}/{repo.repo}/-/issues/{issue}#note_{data['id']}>")
 
 
-def setup(bot: vbu.Bot):
+def setup(bot: Bot):
     x = GithubCommands(bot)
     bot.add_cog(x)

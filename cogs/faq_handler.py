@@ -8,7 +8,7 @@ Please give a detailed report of:
 * How you cause the issue to happen
 * Any extra details (like screenshots)
 
-Ping `@Support Team` for a faster response
+Ping <@&522072743273824262> for a faster response
 """
 CSUPPORT_COMPONENTS = discord.ui.MessageComponents(
     discord.ui.ActionRow(
@@ -63,7 +63,8 @@ class FAQHandler(vbu.Cog):
 
         if ctx.channel.id != self.SUPPORT_CHANNEL_ID:
             return
-        await ctx.send(CSUPPORT_MESSAGE, components=CSUPPORT_COMPONENTS)
+        # await ctx.send(CSUPPORT_MESSAGE, components=CSUPPORT_COMPONENTS, allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(CSUPPORT_MESSAGE, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(hidden=True)
     async def faq(self, ctx: vbu.Context):
@@ -79,7 +80,7 @@ class FAQHandler(vbu.Cog):
         See if an FAQ component was clicked.
         """
 
-        if not payload.component.custom_id.startswith("FAQ"):
+        if not payload.custom_id.startswith("FAQ"):
             return
         try:
             _, asking_for = payload.component.custom_id.split(" ")
