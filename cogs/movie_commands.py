@@ -186,7 +186,7 @@ class MovieCommand(vbu.Cog):
             ],
         ),
     )
-    @command.defer()
+    @commands.defer()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @vbu.checks.is_config_set('api_keys', 'omdb')
     async def tv_get(self, ctx: vbu.Context, *, name: str, year: int = None):
