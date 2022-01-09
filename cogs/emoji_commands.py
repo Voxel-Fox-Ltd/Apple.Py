@@ -107,7 +107,7 @@ class EmojiCommands(vbu.Cog[Bot]):
         assert select_interaction.values
         match = self.EMOJI_REGEX.search(select_interaction.values[0])
         assert match
-        emoji = discord.PartialEmoji(name=match.group(2), animated=match.group(1) == "a", id=int(match.group(2)))
+        emoji = discord.PartialEmoji(name=match.group(2), animated=match.group(1) == "a", id=int(match.group(3)))
         await self.addemoji(ctx, emoji)
 
     @staticmethod
