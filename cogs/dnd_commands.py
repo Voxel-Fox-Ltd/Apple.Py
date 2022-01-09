@@ -12,7 +12,7 @@ from thefuzz import fuzz
 from .types.bot import Bot
 
 
-class _DNDMonsterAction(typing.TypedDict, final=False):
+class _DNDMonsterAction(typing.TypedDict, total=False):
     name: str
     desc: str
 
