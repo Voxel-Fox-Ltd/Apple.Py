@@ -97,7 +97,7 @@ class DNDCommands(vbu.Cog[Bot]):
     def group_field_descriptions(
             embed: discord.Embed,
             field_name: str,
-            input_list: list[_DNDMonsterAction],
+            input_list: typing.List[_DNDMonsterAction],
             ) -> None:
         """
         Add fields grouped to the embed character limit.
@@ -215,7 +215,7 @@ class DNDCommands(vbu.Cog[Bot]):
         return await ctx.send(embed=embed)
 
     @functools.cached_property
-    def all_spells(self) -> list[str]:
+    def all_spells(self) -> typing.List[str]:
         with open("cogs/data/dnd_spells.txt") as a:
             return a.read().strip().split("\n")
 
