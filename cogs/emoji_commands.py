@@ -44,7 +44,7 @@ class EmojiCommands(vbu.Cog[Bot]):
         # Check the message for emojis - stolen from partialemojiconverter
         matches = self.EMOJI_REGEX.finditer(message.content)
         emojis = [
-            discord.PartialEmoji(name=i.group(2), animated=i.group(1) == "a", id=int(i.group(2)))
+            discord.PartialEmoji(name=i.group(2), animated=i.group(1) == "a", id=int(i.group(3)))
             for i in matches
         ]
 
