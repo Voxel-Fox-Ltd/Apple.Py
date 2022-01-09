@@ -188,7 +188,7 @@ class MiscCommands(vbu.Cog):
                     name="channel",
                     description="The VC that you want to clear.",
                     type=discord.ApplicationCommandOptionType.channel,
-                    channel_types=[discord.VoiceChannel],
+                    channel_types=[discord.ChannelType.voice],
                 ),
             ],
         ),
