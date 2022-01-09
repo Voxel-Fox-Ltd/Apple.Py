@@ -226,10 +226,11 @@ class DNDCommands(vbu.Cog[Bot]):
 
         # Get what the user gave us
         assert interaction.options is not None
-        user_input = interaction.options[0].value
+        user_input = interaction.options[0].options[0].value
+        assert user_input
 
         # Determine what's closest to what they said
-        fuzzed = [(i, fuzz.ratio(i, user_input),) for i in self.all_spells]
+        fuzzed = [(i, fuzz.ratio(i, user_input),) for i in self.all_spells if user_input.casefold() in i.casefold()]
         fuzzed.sort(key=operator.itemgetter(1), reverse=True)
 
         # And give them the top results
