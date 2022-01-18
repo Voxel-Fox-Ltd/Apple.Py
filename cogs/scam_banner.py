@@ -4,9 +4,22 @@ import discord
 from discord.ext import vbu
 
 
-class ScamBanner(vbu.Cog):
+SCAM_REGEX = re.compile(
+    r"""
+        ([Gg][Ii][Ff][Tt]|[Nn][Ii][Tt][Rr][Oo]|[Aa]irdrop|@everyone)
+        .+?
+        (
+            (https?://)(\S*?)
+            ((?:d|cl)s?[li](?:sc|cs|zc|cz|s|c|sck)r?oc?r?c?(?:d|cl)?s?)
+            (\S*?)\.
+            (com|pw|org|app|info|net|gift|codes|click|club)
+        )
+    """,
+    re.MULTILINE | re.DOTALL | re.VERBOSE,
+)
 
-    SCAM_REGEX = re.compile(r"(gift|[Nn]itro).+?(https?://\S*?((?:(?:d|cl)s?[li](?:sc|cs|zc|cz|s|c)oc?rc?(?:d|cl))\S*?\.(?:com|pw|org|app|info|net|gift|codes|click)))", re.MULTILINE | re.DOTALL)
+
+class ScamBanner(vbu.Cog):
 
     @vbu.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -23,7 +36,7 @@ class ScamBanner(vbu.Cog):
             return
 
         # See if we match
-        match = self.SCAM_REGEX.search(message.content)
+        match = SCAM_REGEX.search(message.content)
         if not match:
             return
 
@@ -32,6 +45,7 @@ class ScamBanner(vbu.Cog):
             "discord.gift",
             "discordapp.com",
             "discord.com",
+            "discord.gg",
         ]
         if match.group(3).lower() in valid_links:
             return
