@@ -33,7 +33,10 @@ class ScamBanner(vbu.Cog):
             return
 
         # Ignore people with roles
-        assert isinstance(message.author, discord.Member)
+        try:
+            assert isinstance(message.author, discord.Member)
+        except AssertionError:
+            return  # They were already banned
         if len(message.author.roles) > 1:
             return
 
