@@ -6,16 +6,18 @@ from discord.ext import vbu
 
 SCAM_REGEX = re.compile(
     r"""
-        ([Gg][Ii][Ff][Tt]|[Nn][Ii][Tt][Rr][Oo]|[Aa]irdrop|@everyone)
+        (gift|nitro|airdrop|@everyone|:\))
         .+?
         (
             (https?://)(\S*?)
-            ((?:d|cl)s?[li](?:sc|cs|zc|cz|s|c|sck)r?oc?r?c?(?:d|cl)?s?)
-            (\S*?)\.
-            (com|pw|org|app|info|net|gift|codes|click|club)
+            (
+                ((?:d|cl)s?[li](?:sc|cs|zc|cz|s|c|sck)r?oc?r?c?(?:d|cl)?s?)
+                (\S*?)\.
+                (com|pw|org|app|info|net|gift|codes|click|club)
+            )
         )
     """,
-    re.MULTILINE | re.DOTALL | re.VERBOSE,
+    re.MULTILINE | re.DOTALL | re.VERBOSE | re.IGNORECASE,
 )
 
 
@@ -40,7 +42,7 @@ class ScamBanner(vbu.Cog):
         if not match:
             return
         
-        matched_domain = match.group(2).lower().replace('https://', '').replace('http://', '')
+        matched_domain = match.group(5).lower()
 
         # Leave the legit links alone
         valid_links = [
