@@ -21,6 +21,7 @@ class MeowChat(vbu.Cog):
         "purr",
         "murr",
         "nuzzle",
+        "cat",
     )
     EMOJI_REGEX = re.compile(r"<a?:.+?:\d+?>")
 
