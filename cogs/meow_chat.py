@@ -11,6 +11,7 @@ class MeowChat(vbu.Cog):
     VALID_KEYWORDS = (
         "mew",
         "meow",
+        "mrow",
         "nya",
         "uwu",
         "owo",
