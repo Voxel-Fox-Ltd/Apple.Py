@@ -87,8 +87,8 @@ settings_menu = vbu.menus.Menu(
 
 
 def setup(bot: Bot):
-    settings_menu.create_cog(bot)
+    bot.create_cog(settings_menu)
 
-
+    
 def teardown(bot: Bot):
     bot.remove_cog("Bot Settings")
