@@ -281,7 +281,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                 AND
                     role_picker_role.name = role_pickers.name
                 WHERE
-                    guild_id = $1
+                    role_picker_role.guild_id = $1
                 AND
                     (
                         role_picker_role.name = $2
