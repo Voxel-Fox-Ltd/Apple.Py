@@ -373,7 +373,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         await interaction.response.defer(ephemeral=True)
         component_id = interaction.custom_id.split(" ")[1]
         if component_id == "NULL":
-            return await interaction.response.defer()
+            return await interaction.response.defer_update()
 
         # See what they selected
         picked_role_ids = [int(i) for i in interaction.values]  # type: ignore - interaction values won't be none here
