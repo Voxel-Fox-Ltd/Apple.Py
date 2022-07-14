@@ -210,6 +210,8 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                         $2,  -- name
                         $3  -- role_id
                     )
+                ON CONFLICT (guild_id, name, role_id)
+                DO NOTHING
                 """,
                 guild.id, name, role.id,
             )
