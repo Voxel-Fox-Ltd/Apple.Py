@@ -10,7 +10,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
     @commands.group(
         application_command_meta=commands.ApplicationCommandMeta(
             guild_only=True,
-            permissions=discord.Permissions(manage_roles=True, manage_members=True),
+            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
         ),
     )
     @commands.is_slash_command()
@@ -54,7 +54,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                 ),
             ],
             guild_only=True,
-            permissions=discord.Permissions(manage_roles=True, manage_members=True),
+            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
         ),
     )
     @commands.is_slash_command()
@@ -156,7 +156,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                 ),
             ],
             guild_only=True,
-            permissions=discord.Permissions(manage_roles=True, manage_members=True),
+            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
         ),
     )
     @commands.is_slash_command()
@@ -232,7 +232,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                 ),
             ],
             guild_only=True,
-            permissions=discord.Permissions(manage_roles=True, manage_members=True),
+            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
         ),
     )
     @commands.is_slash_command()
