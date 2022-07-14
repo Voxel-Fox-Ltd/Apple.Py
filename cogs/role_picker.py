@@ -180,7 +180,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
 
         # Fetch some values from the API
         author: discord.Member
-        author = ctx.guild.fetch_member(ctx.author.id)  # type: ignore - author will definitely exist
+        author = await ctx.guild.fetch_member(ctx.author.id)  # type: ignore - author will definitely exist
         guild: discord.Guild = ctx.guild
         guild_roles = guild.roles
 
