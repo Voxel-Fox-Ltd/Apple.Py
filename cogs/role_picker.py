@@ -169,6 +169,9 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         Remove a role picker message.
         """
 
+        # Defer so we can database call
+        await ctx.interaction.response.defer(ephemeral=True)
+
         # Delete stored info
         async with vbu.Database() as db:
             role_picker_rows = await db.call(
