@@ -370,13 +370,13 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         # Make sure it's a rolepicker component
         if not interaction.custom_id.startswith("ROLEPICKER"):
             return
-        await interaction.response.defer(ephemeral=True)
         component_id = interaction.custom_id.split(" ")[1]
-        if component_id == "NULL":
-            return await interaction.response.defer_update()
 
         # See what they selected
-        picked_role_ids = [int(i) for i in interaction.values]  # type: ignore - interaction values won't be none here
+        picked_role_ids = [int(i) for i in interaction.values if i != "NULL"]  # type: ignore - interaction values won't be none here
+        if not picked_role_ids:
+            return await await interaction.response.defer_update(ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
         guild_id: int = interaction.guild_id  # type: ignore - this will be run in a guild
         guild: discord.Guild = interaction.guild or await self.bot.fetch_guild(guild_id)
         picked_roles = [i for i in guild.roles if i.id in picked_role_ids]
