@@ -90,7 +90,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
 
         # Send message
         await ctx.interaction.response.defer(ephemeral=True)
-        component_id = uuid4()
+        component_id = str(uuid4())
         message = await channel.send(
             text,
             components=discord.ui.MessageComponents(
