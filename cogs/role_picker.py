@@ -97,6 +97,12 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                 discord.ui.ActionRow(
                     discord.ui.SelectMenu(
                         custom_id=f"ROLEPICKER {component_id}",
+                        options=[
+                            discord.ui.SelectOption(
+                                label="No roles have been added :(",
+                                value="NULL",
+                            ),
+                        ],
                     ),
                 ),
             ),
@@ -321,7 +327,12 @@ class RolePicker(vbu.Cog[vbu.Bot]):
             guild_roles = guild.roles
 
         # Create the menu options
-        menu_options: List[discord.ui.SelectOption] = []
+        menu_options: List[discord.ui.SelectOption] = [
+            discord.ui.SelectOption(
+                label="No roles have been added :(",
+                value="NULL",
+            ),
+        ]
         if "role_id" in role_rows[0]:
             menu_options = [
                 discord.ui.SelectOption(
@@ -361,6 +372,8 @@ class RolePicker(vbu.Cog[vbu.Bot]):
             return
         await interaction.response.defer(ephemeral=True)
         component_id = interaction.custom_id.split(" ")[1]
+        if component_id == "NULL":
+            return await interaction.response.defer()
 
         # See what they selected
         picked_role_ids = [int(i) for i in interaction.values]  # type: ignore - interaction values won't be none here
