@@ -153,6 +153,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                     name="name",
                     type=discord.ApplicationCommandOptionType.string,
                     description="The name of your role picker.",
+                    autocomplete=True,
                 ),
             ],
             guild_only=True,
@@ -527,6 +528,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
 
     @rolepicker_add.autocomplete
     @rolepicker_remove.autocomplete
+    @rolepicker_delete.autocomplete
     async def rolepicker_name_autocomplete(
             self,
             ctx: vbu.SlashContext,
