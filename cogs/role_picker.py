@@ -315,7 +315,10 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                 )
 
         # Get a partial message we can edit
-        messageable = self.bot.get_partial_messageable(role_rows[0]['channel_id'])
+        messageable = self.bot.get_partial_messageable(
+            role_rows[0]['channel_id'],
+            type=discord.ChannelType.text,
+        )
         message = messageable.get_partial_message(role_rows[0]['message_id'])
 
         # Get the roles
