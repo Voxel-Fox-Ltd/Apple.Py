@@ -146,6 +146,62 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         )
 
     @rolepicker.command(
+        name="delete",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="name",
+                    type=discord.ApplicationCommandOptionType.string,
+                    description="The name of your role picker.",
+                ),
+            ],
+            guild_only=True,
+            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
+        ),
+    )
+    @commands.is_slash_command()
+    async def rolepicker_delete(
+            self,
+            ctx: vbu.SlashContext,
+            name: str):
+        """
+        Remove a role picker message.
+        """
+
+        # Delete stored info
+        async with vbu.Database() as db:
+            role_picker_rows = await db.call(
+                """
+                DELETE FROM
+                    role_pickers
+                WHERE
+                    guild_id = $1
+                AND
+                    name = $2
+                RETURNING *
+                """,
+                ctx.guild.id, name,
+            )
+
+        # See if we can delete the message as well
+        row = role_picker_rows[0]
+        messageable = self.bot.get_partial_messageable(
+            row['channel_id'],
+            type=discord.ChannelType.text,
+        )
+        message = messageable.get_partial_message(row['message_id'])
+        try:
+            await message.delete()
+        except:
+            pass
+
+        # And tell them about it
+        await ctx.interaction.followup.send(
+            "Deleted role picker.",
+            ephemeral=True,
+        )
+
+    @rolepicker.command(
         name="add",
         application_command_meta=commands.ApplicationCommandMeta(
             options=[
@@ -247,12 +303,45 @@ class RolePicker(vbu.Cog[vbu.Bot]):
     async def rolepicker_remove(
             self,
             ctx: vbu.SlashContext,
+            name: str,
             role: discord.Role):
         """
         Remove a role from one of your role pickers.
         """
 
-        ...
+        # Defer so we can fetch
+        await ctx.interaction.response.defer(ephemeral=True)
+
+        # Remove that role from the database
+        async with vbu.Database() as db:
+            removed_role = await db.call(
+                """
+                DELETE FROM
+                    role_picker_role
+                WHERE
+                    guild_id = $1
+                AND
+                    name = $2
+                AND
+                    role_id = $3
+                RETURNING *
+                """,
+                ctx.guild.id, name, role.id,
+            )
+
+        # See if anything was removed
+        if removed_role:
+            await ctx.interaction.followup.send(
+                "Removed role from role picker.",
+                ephemeral=True,
+            )
+        else:
+            await ctx.interaction.followup.send(
+                "That role wasn't in the picker.",
+                ephemeral=True,
+            )
+            return
+        self.bot.dispatch("role_picker_update", ctx.guild, name)
 
     @vbu.Cog.listener()
     async def on_role_picker_update(
