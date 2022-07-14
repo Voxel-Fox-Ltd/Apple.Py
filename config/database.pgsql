@@ -156,3 +156,27 @@ CREATE TABLE IF NOT EXISTS github_repo_uses(
     uses INTEGER DEFAULT 0,
     PRIMARY KEY (user_id, owner, repo, host)
 );
+
+
+CREATE TABLE IF NOT EXISTS role_pickers(
+    guild_id BIGINT,
+    name TEXT,
+    message_id BIGINT,
+    channel_id BIGINT,
+    component_id NOT NULL TEXT,
+    min_roles INTEGER,
+    max_roles INTEGER,
+    PRIMARY KEY (guild_id, name)
+);
+
+
+CREATE TABLE IF NOT EXISTS role_picker_role(
+    guild_id BIGINT,
+    name TEXT,
+    role_id BIGINT,
+    PRIMARY KEY (guild_id, name, role_id),
+    FOREIGN KEY (guild_id, name)
+        REFERENCES role_pickers(guild_id, name)
+        ON DELETE
+            CASCADE
+);
