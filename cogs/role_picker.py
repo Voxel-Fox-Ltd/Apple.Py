@@ -375,7 +375,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         # See what they selected
         picked_role_ids = [int(i) for i in interaction.values if i != "NULL"]  # type: ignore - interaction values won't be none here
         if not picked_role_ids:
-            return await await interaction.response.defer_update(ephemeral=True)
+            return await interaction.response.defer_update()
         await interaction.response.defer(ephemeral=True)
         guild_id: int = interaction.guild_id  # type: ignore - this will be run in a guild
         guild: discord.Guild = interaction.guild or await self.bot.fetch_guild(guild_id)
