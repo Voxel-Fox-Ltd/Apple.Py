@@ -436,6 +436,36 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         )
         return
 
+    @rolepicker_add.autocomplete
+    @rolepicker_remove.autocomplete
+    async def rolepicker_name_autocomplete(
+            self,
+            ctx: vbu.SlashContext,
+            interaction: discord.Interaction):
+        """
+        Handle autocompletes for rolepicker names.
+        """
+
+        async with vbu.Database() as db:
+            role_picker_rows = await db.call(
+                """
+                SELECT
+                    name
+                FROM
+                    role_pickers
+                WHERE
+                    guild_id = $1
+                AND
+                    name LIKE '%' || $2 || '%'
+                """,
+                interaction.guild_id,
+                interaction.options[0].options[0].value,
+            )
+        return await interaction.response.send_autocomplete([
+            discord.ApplicationCommandOptionChoice(name=i['name'], value=i['name'])
+            for i in role_picker_rows
+        ])
+
 
 def setup(bot: vbu.Bot):
     x = RolePicker(bot)
