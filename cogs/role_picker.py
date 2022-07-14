@@ -131,7 +131,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                         $4,  -- channel_id
                         $5,  -- component_id
                         $6,  -- min_roles
-                        $7,  -- max_role
+                        $7  -- max_role
                     )
                 """,
                 ctx.guild.id, name, message.id,
