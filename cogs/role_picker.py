@@ -387,7 +387,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         # See if they have any of those roles currently
         user: discord.Member = interaction.user  # type: ignore - user is definitely a member object
         user_roles: List[discord.Role] = user.roles
-        roles_they_have_currently = [i for i in user_roles for i in picked_roles]
+        roles_they_have_currently = [i for i in user_roles if i in picked_roles]
 
         # See if they have ALL of the roles they picked
         if len(roles_they_have_currently) == len(picked_roles):
