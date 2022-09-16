@@ -654,16 +654,35 @@ class LibraryDocs(vbu.Cog):
                 await ctx.send("Something went wrong, try again later...")
                 return
             data = await e.json()
-
+        buttontuples = []
         # make a lil embed
         with vbu.Embed(use_random_colour=True) as embed:
             if data['data']:
                 embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{data['data'][0]['id']}")
                 embed.description = data['data'][0]['description']
+                # cut here if removing image support
+                if data['data'][0]['iconUrl']:
+                     embed.set_thumbnail(data['data'][0]['iconUrl'])
+                # cut here if removing image support
+                if data['data'][0]['projectUrl']:
+                    buttontuples.append(('Project URL', data['data'][0]['projectUrl']))
+                if data['data'][0]['licenseUrl']:
+                    buttontuples.append(('License URL', data['data'][0]['licenseUrl']))
+                buttontuples.append(('Download URL', f"https://www.nuget.org/api/v2/package/{data['data'][0]['id']}/{data['data'][0]['version']}"))
+                buttontuples.append(('Nuget package explorer', f"https://nuget.info/packages/{data['data'][0]['id']}/{data['data'][0]['version']}"))
+                buttontuples.append(('Fuget package explorer', f"https://www.fuget.org/packages/{data['data'][0]['id']}/{data['data'][0]['version']}"))
             else:
                 await ctx.send(f"I could not find anything for `{package_name}` :c")
                 return
-        await ctx.send(embed=embed)
+        buttons=[]
+        if (len(buttontuples)!=0):
+            for info in buttontuples:
+                buttons.append(discord.ui.Button(
+                    label=info[0],
+                    url=info[1],
+                    style=discord.ui.ButtonStyle.link))
+        components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
+        await ctx.send(embed=embed, components=components)
 
     @commands.command(
         application_command_meta=commands.ApplicationCommandMeta(
