@@ -547,8 +547,6 @@ class LibraryDocs(vbu.Cog):
         params = {
             'api-version': '0.2',
             'search': obj,
-            'locale': 'en-us',
-            '$filter': "monikers/any(t: t eq 'net-5.0')",
         }
         headers = {
             'User-Agent': self.bot.user_agent,
@@ -559,7 +557,7 @@ class LibraryDocs(vbu.Cog):
             return await ctx.send("I couldn't find anything. Sorry.")
         embed = vbu.Embed(use_random_colour=True, description="")
         for i in data['results']:
-            embed.description += f"[`{i['displayName']}`]({i['url']})\n"
+            embed.description += f"[`{i['displayName']}`](https://learn.microsoft.com{i['url']})\n"
             if embed.description.count("\n") >= 8:
                 break
         return await ctx.send(embed=embed)
