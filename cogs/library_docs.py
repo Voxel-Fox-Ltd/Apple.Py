@@ -659,12 +659,12 @@ class LibraryDocs(vbu.Cog):
                 embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{data['data'][0]['id']}")
                 embed.description = data['data'][0]['description']
                 # cut here if removing image support
-                if data['data'][0]['iconUrl']:
+                if 'iconUrl' in data['data'][0].keys() and data['data'][0]['iconUrl']:
                      embed.set_thumbnail(data['data'][0]['iconUrl'])
                 # cut here if removing image support
-                if data['data'][0]['projectUrl']:
+                if 'projectUrl' in data['data'][0].keys() and data['data'][0]['projectUrl']:
                     buttontuples.append(('Project URL', data['data'][0]['projectUrl']))
-                if data['data'][0]['licenseUrl']:
+                if 'licenseUrl' in data['data'][0].keys() and data['data'][0]['licenseUrl']:
                     buttontuples.append(('License URL', data['data'][0]['licenseUrl']))
                 buttontuples.append(('Download URL', f"https://www.nuget.org/api/v2/package/{data['data'][0]['id']}/{data['data'][0]['version']}"))
                 buttontuples.append(('Nuget package explorer', f"https://nuget.info/packages/{data['data'][0]['id']}/{data['data'][0]['version']}"))
