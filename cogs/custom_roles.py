@@ -107,7 +107,19 @@ class CustomRolesCog(vbu.Cog[Bot]):
 
         # defer cuz this part can take anywhere from 1 to 10 seconds
         await ctx.defer()
-        await custom_role.edit(**properties)
+        try:
+            await custom_role.edit(**properties)
+
+        # no perms / bot role too low? 
+        except discord.Forbidden:
+            await ctx.interaction.followup.send(
+                "I don't have permission to edit custom role. "
+                "Please ask an administrator to put my role higher than the custom roles, "
+                "or to update my permissions.",
+                ephemeral=True,
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
+            return
 
         # fancy string interpolation :>
         if len(properties) <= 2:
@@ -145,9 +157,12 @@ class CustomRolesCog(vbu.Cog[Bot]):
             if custom_role is None:
                 return
 
-            await custom_role.delete(
-                reason=f"Custom role owner {str(member)!r} left the server."
-            )
+            try:
+                await custom_role.delete(
+                    reason=f"Custom role owner {str(member)!r} left the server."
+                )
+            except discord.Forbidden:
+                pass
             await db(
                 "DELETE FROM custom_roles where guild_id = $1 and user_id = $2",
                 member.guild.id,
@@ -239,10 +254,16 @@ class CustomRolesCog(vbu.Cog[Bot]):
                 updated_properties["position"] = max(1, parent_role.position - 1)
 
         if updated_properties:
-            await after.edit(
-                **updated_properties,
-                reason="Applied prefix to custom role name and/or repositioned custom role.",
-            )
+            try:
+                await after.edit(
+                    **updated_properties,
+                    reason="Applied prefix to custom role name and/or repositioned custom role.",
+                )
+            
+            # cant really do anything about a perm error here
+            except discord.Forbidden:
+                pass
+
 
     @vbu.Cog.listener()
     async def on_custom_role_requirement_update(self, required_role: discord.Role):
@@ -276,9 +297,12 @@ class CustomRolesCog(vbu.Cog[Bot]):
                     continue
 
                 # remove role cuz member doesnt meet requirements
-                await custom_role.delete(
-                    reason=f"C{str(member)!r} no longer meets the requirements for owning a custom role."
-                )
+                try:
+                    await custom_role.delete(
+                        reason=f"C{str(member)!r} no longer meets the requirements for owning a custom role."
+                    )
+                except discord.Forbidden:
+                    pass
                 await db(
                     "DELETE FROM custom_roles where guild_id = $1 and user_id = $2",
                     guild.id,
@@ -304,10 +328,15 @@ class CustomRolesCog(vbu.Cog[Bot]):
                     continue
 
                 # switchin positions 😩
-                await custom_role.edit(
-                    position=max(1, parent_role.position - 1),  # pos 0 = illegal
-                    reason="Custom role's parent position was updated.",
-                )
+                try:
+                    await custom_role.edit(
+                        position=max(1, parent_role.position - 1),  # pos 0 = illegal
+                        reason="Custom role's parent position was updated.",
+                    )
+
+                # cant really do anything about a perm error during a listener
+                except discord.Forbidden:
+                    pass
 
     @commands.group(
         "customrole", application_command_meta=commands.ApplicationCommandMeta()
@@ -374,14 +403,17 @@ class CustomRolesCog(vbu.Cog[Bot]):
                     name=f"{self.ROLE_NAME_PREFIX}{ctx.author.name}'s role",
                     position=position,
                 )
-            except discord.HTTPException:
-                await custom_role.delete()
+            except discord.Forbidden:
+                try:
+                    await custom_role.delete()
+                except discord.Forbidden:
+                    pass
                 await db(
                     "DELETE FROM custom_roles WHERE guild_id=$1 AND user_id=$2",
                     ctx.guild.id,
                     ctx.author.id,
                 )
-                raise
+                await ctx.interaction.followup.send("I couldn't set your custom role's name and/or position.")
             await ctx.author.add_roles(custom_role)
 
         await ctx.interaction.followup.send(
@@ -470,6 +502,6 @@ class CustomRolesCog(vbu.Cog[Bot]):
         await self._update_custom_role_property(ctx, icon=emoji)
 
 
-def setup(bot: vbu.Bot):
+def setup(bot: Bot):
     x = CustomRolesCog(bot)
     bot.add_cog(x)
