@@ -239,7 +239,7 @@ class NicknameHandler(vbu.Cog):
         await user.edit(nick=new_name, reason="Changed by Apple.Py automagically")
         return new_name
 
-    @vbu.group(aliases=['fun'], invoke_without_command=True)
+    @commands.group(aliases=['fun'], invoke_without_command=True)
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     @commands.guild_only()
