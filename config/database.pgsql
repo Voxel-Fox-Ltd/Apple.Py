@@ -7,7 +7,9 @@ CREATE TABLE IF NOT EXISTS guild_settings(
     leaderboard_message_url VARCHAR(150),
     dump_stackoverflow_answers BOOLEAN DEFAULT FALSE,
     nickname_banned_role_id BIGINT,
-    quote_reactions_needed SMALLINT DEFAULT 3
+    quote_reactions_needed SMALLINT DEFAULT 3,
+    custom_role_requirement_role_id BIGINT,
+    custom_role_parent_role_id BIGINT
 );
 
 
@@ -179,4 +181,12 @@ CREATE TABLE IF NOT EXISTS role_picker_role(
         REFERENCES role_pickers(guild_id, name)
         ON DELETE
             CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS custom_roles(
+    guild_id BIGINT,
+    user_id BIGINT,
+    role_id BIGINT,
+    PRIMARY KEY (guild_id, user_id)
 );

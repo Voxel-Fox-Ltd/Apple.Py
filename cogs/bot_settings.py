@@ -1,7 +1,23 @@
+from collections.abc import Callable, Awaitable
+
 import discord
 from discord.ext import vbu
 
 from .types.bot import Bot
+
+
+def _option_callback_with_dispatch(
+    event: str, callback: Awaitable
+) -> Callable[[vbu.SlashContext, list], Awaitable]:
+    """An option callback that also dispatches an event when called."""
+
+    async def wrapper(ctx: vbu.SlashContext, data: list):
+        print(data)
+        if data[0] is not None:
+            ctx.bot.dispatch(event, data[0])
+        return await callback(ctx, data)
+
+    return wrapper
 
 
 settings_menu = vbu.menus.Menu(
@@ -83,6 +99,50 @@ settings_menu = vbu.menus.Menu(
     #         cache_delete_args=lambda row: (row['channel_id'],)
     #     ),
     # ),
+    vbu.menus.Option(
+        display=lambda ctx: f"Set custom role requirement (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['custom_role_requirement_role_id']).mention})",
+        component_display="Custom role requirement",
+        converters=[
+            vbu.menus.Converter(
+                prompt="What role do you want to set as requirement for creating a custom role?",
+                converter=discord.Role,
+            )
+        ],
+        allow_none=True,
+        callback=_option_callback_with_dispatch(
+            "custom_role_requirement_update",
+            vbu.menus.Menu.callbacks.set_table_column(
+                vbu.menus.DataLocation.GUILD,
+                "guild_settings",
+                "custom_role_requirement_role_id",
+            ),
+        ),
+        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(
+            vbu.menus.DataLocation.GUILD, "custom_role_requirement_role_id"
+        ),
+    ),
+    vbu.menus.Option(
+        display=lambda ctx: f"Set custom role parent (all custom roles will be right beneath this one. Currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['custom_role_parent_role_id']).mention})",
+        component_display="Custom role parent",
+        converters=[
+            vbu.menus.Converter(
+                prompt="Under what role should the custom roles be positioned?\n> **WARNING:** This will lag out the server for a bit.",
+                converter=discord.Role,
+            )
+        ],
+        allow_none=True,
+        callback=_option_callback_with_dispatch(
+            "custom_role_parent_update",
+            vbu.menus.Menu.callbacks.set_table_column(
+                vbu.menus.DataLocation.GUILD,
+                "guild_settings",
+                "custom_role_parent_role_id",
+            ),
+        ),
+        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(
+            vbu.menus.DataLocation.GUILD, "custom_role_parent_role_id"
+        ),
+    ),
 )
 
 
