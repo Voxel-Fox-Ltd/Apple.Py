@@ -305,7 +305,10 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         """
 
         # Get the role ID
-        role_id = int(interaction.data["values"][0].split(" ")[-1])
+        try:
+            role_id = int(interaction.data["values"][0].split(" ")[-1])
+        except Exception:
+            role_id = int(interaction.custom_id.split(" ")[-1])
 
         # Get the role
         if interaction.guild is None:
@@ -353,12 +356,24 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
             await user.remove_roles(role, reason="Role picker")
             await interaction.response.send_message(
                 f"Removed the {role.mention} role.",
+                components=discord.ui.MessageComponents.add_buttons_with_rows(
+                    discord.ui.Button(
+                        label="Re-add",
+                        custom_id=f"NEWROLEPICKER ROLE {role.id}",
+                    ),
+                ),
                 ephemeral=True,
             )
         else:
             await user.add_roles(role, reason="Role picker")
             await interaction.response.send_message(
                 f"Gave you the {role.mention} role.",
+                components=discord.ui.MessageComponents.add_buttons_with_rows(
+                    discord.ui.Button(
+                        label="Re-remove",
+                        custom_id=f"NEWROLEPICKER ROLE {role.id}",
+                    ),
+                ),
                 ephemeral=True,
             )
 
