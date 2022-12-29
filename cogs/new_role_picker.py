@@ -1,0 +1,311 @@
+from typing import cast
+import re
+
+import discord
+from discord.ext import commands, vbu
+
+
+class NewRolePicker(vbu.Cog[vbu.Bot]):
+
+    @commands.command(
+        application_command_meta=commands.ApplicationCommandMeta(
+            guild_only=True,
+            permissions=discord.Permissions(administrator=True),
+        ),
+    )
+    async def newrolepicker(
+            self,
+            ctx: vbu.SlashContext):
+        """
+        Create a new role picker.
+        """
+
+        embed = vbu.Embed(use_random_colour=True)
+        embed.description = "None :/"
+        await ctx.interaction.response.send_message(
+            embeds=[embed],
+            components=discord.ui.MessageComponents(
+                discord.ui.ActionRow(
+                    discord.ui.Button(
+                        label="Add role",
+                        style=discord.ButtonStyle.green,
+                        custom_id="NEWROLEPICKER ADD",
+                    ),
+                    discord.ui.Button(
+                        label="Remove role",
+                        style=discord.ButtonStyle.red,
+                        custom_id="NEWROLEPICKER REMOVE",
+                    ),
+                    discord.ui.Button(
+                        label="Set content",
+                        style=discord.ButtonStyle.secondary,
+                        custom_id="NEWROLEPICKER CONTENT",
+                    ),
+                    discord.ui.Button(
+                        label="Done",
+                        style=discord.ButtonStyle.primary,
+                        custom_id="NEWROLEPICKER DONE",
+                    ),
+                ),
+            ),
+            ephemeral=True,
+        )
+
+    @vbu.Cog.listener("on_component_interaction")
+    @vbu.checks.interaction_filter(start="NEWROLEPICKER")
+    async def rolepicker_edit(
+            self,
+            interaction: discord.ComponentInteraction | discord.ModalInteraction,
+            action: str,
+            *args: str):
+        """
+        Manage the rolepicker edit buttons.
+        """
+
+        if action == "ADD":
+            await self.change_roles(interaction, add=True)  # pyright: reportGeneralTypeIssues=false
+        elif action == "REMOVE":
+            await self.change_roles(interaction, add=False)  # pyright: reportGeneralTypeIssues=false
+        elif action == "DONE":
+            await self.rolemenu_done(interaction)  # pyright: reportGeneralTypeIssues=false
+        elif action == "CONTENT":
+            await self.rolemenu_content_spawnmodal(interaction)  # pyright: reportGeneralTypeIssues=false
+        elif action == "SETCONTENT":
+            await self.rolemenu_content(interaction)  # pyright: reportGeneralTypeIssues=false
+        elif action == "ROLE":
+            await self.rolepicker_role(interaction, int(args[0]))  # pyright: reportGeneralTypeIssues=false
+
+    async def change_roles(
+            self,
+            interaction: discord.ComponentInteraction,
+            add: bool):
+        """
+        Update roles available in the embed.
+        """
+
+        # Get current embed
+        embed = interaction.message.embeds[0]
+        try:
+            embed_value: str = embed.fields[0].value  # pyright: ignore
+        except IndexError:
+            embed_value = ""
+
+        # See what the user picked from the dropdown
+        role = list(interaction.resolved.roles.values())[0]
+
+        # See if the role is in the current embed values
+        if role.mention in embed_value:
+            if add:
+                return await interaction.response.send_message(
+                    "That role is already in the list!",
+                    ephemeral=True,
+                )
+            else:
+                embed_value = embed_value.replace(role.mention, "")
+                embed_value = embed_value.replace("\n\n", "\n")
+        else:
+            if not add:
+                return await interaction.response.send_message(
+                    "That role isn't in the list!",
+                    ephemeral=True,
+                )
+            else:
+                embed_value += f"\n{role.mention}"
+
+        # Edit the embed
+        embed.set_field_at(0, name="Roles", value=embed_value.strip())
+        await interaction.response.edit_message(
+            embeds=[embed],
+        )
+
+    async def rolemenu_content_spawnmodal(self, interaction: discord.ComponentInteraction):
+        """
+        Send the user a modal so as to set the content for a rolepicker.
+        """
+
+        try:
+            current_value = interaction.message.embeds[0].description
+            current_value = cast(str | None, current_value)
+        except Exception:
+            return
+        await interaction.response.send_modal(
+            discord.ui.Modal(
+                title="Set content",
+                custom_id="NEWROLEPICKER SETCONTENT",
+                components=[
+                    discord.ui.ActionRow(
+                        discord.ui.InputText(
+                            label="Message content",
+                            style=discord.TextStyle.long,
+                            value=current_value or "",
+                        ),
+                    ),
+                ],
+            ),
+        )
+
+    async def rolemenu_content(self, interaction: discord.ModalInteraction):
+        """
+        Set the content of an embed when a modal is submitted.
+        """
+
+        # Get current embed
+        await interaction.response.defer_update()
+        original_message = await interaction.original_message()
+        embed = original_message.embeds[0]
+
+        # Change description
+        embed.description = (
+            interaction
+            .components[0]
+            .components[0]
+            .value
+            .strip()
+        )
+        await interaction.response.edit_message(
+            embeds=[embed],
+        )
+
+    async def rolemenu_done(
+            self,
+            interaction: discord.ComponentInteraction):
+        """
+        Pinged when the user is done setting up a role menu.
+        """
+
+        # Remove the buttons so they stop clicking stuff
+        await interaction.response.edit_message(components=None)
+
+        # Get and validate the embed
+        message_embed = interaction.message.embeds[0]
+        if not message_embed.fields:
+            return await interaction.response.send_message(
+                "You need to add some roles first!",
+                ephemeral=True,
+            )
+        else:
+            embed_roles: str = message_embed.fields[0].value  # pyright: ignore
+        if not message_embed.description:
+            return
+        else:
+            embed_content: str | None = message_embed.description  # pyright: ignore
+
+        # Get the role IDs
+        role_ids = [
+            int(match.group(1))
+            for match in re.finditer(
+                r"<@&(\d+)>",
+                embed_roles,
+                re.MULTILINE,
+            )
+        ]
+
+        # Make sure they gave some
+        if not role_ids:
+            return await interaction.edit_original_message(
+                content="You need to add at least one role to the menu.",
+                embeds=[],
+            )
+
+        # Get the actual roles
+        if interaction.guild is None:
+            return
+        elif isinstance(interaction.guild, discord.Guild):
+            guild = interaction.guild
+        else:
+            guild = await self.bot.fetch_guild(interaction.guild.id)
+        # roles do not need to be fetched individually since they're returned
+        # in the guild payload
+        roles = [
+            role
+            for role in guild.roles
+            if role.id in role_ids
+        ]
+
+        # Make the dropdown
+        dropdown = discord.ui.SelectMenu(
+            custom_id="NEWROLEPICKER ROLE",
+            options=[
+                discord.ui.SelectOption(
+                    label=role.name,
+                    value=str(role.id),
+                )
+                for role in roles
+            ]
+        )
+
+        # And send
+        await interaction.followup.send(
+            content=embed_content or "Pick a role!",
+            components=discord.ui.MessageComponents(
+                discord.ui.ActionRow(dropdown),
+            ),
+        )
+
+    async def rolepicker_role(self, interaction: discord.ComponentInteraction):
+        """
+        A user has pressed a button on an actual rolepicker.
+        """
+
+        # Get the role ID
+        role_id = int(interaction.data["values"][0].split(" ")[-1])
+
+        # Get the role
+        if interaction.guild is None:
+            return
+        elif isinstance(interaction.guild, discord.Guild):
+            guild = interaction.guild
+        else:
+            guild = await self.bot.fetch_guild(interaction.guild.id)
+        role = guild.get_role(role_id)
+        if role is None:
+            await interaction.response.send_message(
+                "That role doesn't exist anymore :/",
+                ephemeral=True,
+            )
+
+            # Remove the role from the dropdown
+            try:
+                await interaction.edit_original_message(
+                    components=discord.ui.MessageComponents(
+                        discord.ui.ActionRow(
+                            discord.ui.SelectMenu(
+                                custom_id="NEWROLEPICKER ROLE",
+                                options=[
+                                    option
+                                    for option in (
+                                        interaction
+                                        .message
+                                        .components[0]
+                                        .components[0]
+                                        .options
+                                    )
+                                    if int(option.value) != role_id
+                                ],
+                            ),
+                        ),
+                    ),
+                )
+            except discord.HTTPException:
+                await interaction.edit_original_message(components=None)
+            return
+
+        # Add or remove the role
+        user = cast(discord.Member, interaction.user)
+        if role in user.roles:
+            await user.remove_roles(role, reason="Role picker")
+            await interaction.response.send_message(
+                f"Removed the {role.name} role.",
+                ephemeral=True,
+            )
+        else:
+            await user.add_roles(role, reason="Role picker")
+            await interaction.response.send_message(
+                f"Gave you the {role.name} role.",
+                ephemeral=True,
+            )
+
+
+def setup(bot: vbu.Bot):
+    x = NewRolePicker(bot)
+    bot.add_cog(x)
