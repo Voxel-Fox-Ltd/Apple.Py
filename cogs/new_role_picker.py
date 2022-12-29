@@ -200,7 +200,7 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         """
 
         # Get current embed
-        # await interaction.response.defer_update()
+        await interaction.response.defer_update()
         original_message = await interaction.original_message()
         embed = original_message.embeds[0]
 
@@ -212,10 +212,7 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
             .value
             .strip()
         )
-        # await original_message.edit(
-        #     embeds=[embed],
-        # )
-        await interaction.response.edit_message(
+        await original_message.edit(
             embeds=[embed],
         )
 
