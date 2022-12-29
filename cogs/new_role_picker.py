@@ -107,7 +107,7 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
             ),
         )
 
-    @vbu.Cog.listener("on_modal_interaction")
+    @vbu.Cog.listener("on_modal_submit")
     @vbu.checks.interaction_filter(start="NEWROLEPICKER")
     async def rolemenu_content_modal(
             self,
@@ -200,7 +200,7 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         """
 
         # Get current embed
-        await interaction.response.defer()
+        await interaction.response.defer_update()
         original_message = await interaction.original_message()
         embed = original_message.embeds[0]
 
