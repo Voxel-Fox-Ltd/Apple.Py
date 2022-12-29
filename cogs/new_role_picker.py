@@ -352,13 +352,13 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         if role in user.roles:
             await user.remove_roles(role, reason="Role picker")
             await interaction.response.send_message(
-                f"Removed the {role.name} role.",
+                f"Removed the {role.mention} role.",
                 ephemeral=True,
             )
         else:
             await user.add_roles(role, reason="Role picker")
             await interaction.response.send_message(
-                f"Gave you the {role.name} role.",
+                f"Gave you the {role.mention} role.",
                 ephemeral=True,
             )
 
