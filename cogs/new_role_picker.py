@@ -61,7 +61,8 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
     async def rolepicker_edit(
             self,
             interaction: discord.ComponentInteraction,
-            action: str):
+            action: str,
+            *args):
         """
         Manage the rolepicker edit buttons.
         """
@@ -79,7 +80,7 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         elif action == "CONTENT":
             await self.rolemenu_content_spawnmodal(interaction)
         elif action == "ROLE":
-            await self.rolepicker_role(interaction)
+            await self.rolepicker_role(interaction, *args)
 
     async def rolemenu_picker(
             self,
@@ -299,16 +300,19 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
                 ),
             )
 
-    async def rolepicker_role(self, interaction: discord.ComponentInteraction):
+    async def rolepicker_role(
+            self,
+            interaction: discord.ComponentInteraction,
+            possible_role_id: str | None = None):
         """
         A user has pressed a button on an actual rolepicker.
         """
 
         # Get the role ID
-        try:
+        if possible_role_id:
+            role_id = int(possible_role_id)
+        else:
             role_id = int(interaction.data["values"][0].split(" ")[-1])
-        except Exception:
-            role_id = int(interaction.custom_id.split(" ")[-1])
 
         # Get the role
         if interaction.guild is None:
