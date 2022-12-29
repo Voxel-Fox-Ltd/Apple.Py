@@ -13,12 +13,12 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
                 discord.ui.Button(
                     label="Add role",
                     style=discord.ButtonStyle.green,
-                    custom_id="NEWROLEPICKER ADD",
+                    custom_id="NEWROLEPICKER ADDPICKER",
                 ),
                 discord.ui.Button(
                     label="Remove role",
                     style=discord.ButtonStyle.red,
-                    custom_id="NEWROLEPICKER REMOVE",
+                    custom_id="NEWROLEPICKER REMOVEPICKER",
                 ),
                 discord.ui.Button(
                     label="Set content",
