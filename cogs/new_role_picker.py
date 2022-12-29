@@ -47,7 +47,6 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         """
 
         embed = vbu.Embed(use_random_colour=True)
-        embed.description = "None :/"
         await ctx.interaction.response.send_message(
             embeds=[embed],
             components=self.get_role_picker_components(),
@@ -156,7 +155,10 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
                 embed_value += f"\n{role.mention}"
 
         # Edit the embed
-        embed.set_field_at(0, name="Roles", value=embed_value.strip())
+        try:
+            embed.set_field_at(0, name="Roles", value=embed_value.strip())
+        except IndexError:
+            embed.add_field(name="Roles", value=embed_value.strip())
         await interaction.response.edit_message(
             content=None,
             embeds=[embed],
