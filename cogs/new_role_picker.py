@@ -61,8 +61,7 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
     async def rolepicker_edit(
             self,
             interaction: discord.ComponentInteraction,
-            action: str,
-            *args: str):
+            action: str):
         """
         Manage the rolepicker edit buttons.
         """
@@ -80,7 +79,7 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         elif action == "CONTENT":
             await self.rolemenu_content_spawnmodal(interaction)
         elif action == "ROLE":
-            await self.rolepicker_role(interaction, int(args[0]))
+            await self.rolepicker_role(interaction)
 
     async def rolemenu_picker(
             self,
