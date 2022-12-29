@@ -46,7 +46,10 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         Create a new role picker.
         """
 
-        embed = vbu.Embed(use_random_colour=True)
+        embed = vbu.Embed(
+            title="Role Picker Setup",
+            use_random_colour=True,
+        )
         await ctx.interaction.response.send_message(
             embeds=[embed],
             components=self.get_role_picker_components(),
