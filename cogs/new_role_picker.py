@@ -285,12 +285,20 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         )
 
         # And send
-        await interaction.followup.send(
-            content=embed_content or "Pick a role!",
-            components=discord.ui.MessageComponents(
-                discord.ui.ActionRow(dropdown),
-            ),
-        )
+        try:
+            await interaction.channel.send(
+                content=embed_content or "Pick a role!",
+                components=discord.ui.MessageComponents(
+                    discord.ui.ActionRow(dropdown),
+                ),
+            )
+        except discord.HTTPException:
+            await interaction.followup.send(
+                content=embed_content or "Pick a role!",
+                components=discord.ui.MessageComponents(
+                    discord.ui.ActionRow(dropdown),
+                ),
+            )
 
     async def rolepicker_role(self, interaction: discord.ComponentInteraction):
         """
