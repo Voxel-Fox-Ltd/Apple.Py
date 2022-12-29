@@ -139,29 +139,20 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         role = list(interaction.resolved.roles.values())[0]
 
         # See if the role is in the current embed values
-        if role.mention in embed_value:
-            if add:
-                return await interaction.response.send_message(
-                    "That role is already in the list!",
-                    ephemeral=True,
-                )
-            else:
-                embed_value = embed_value.replace(role.mention, "")
-                embed_value = embed_value.replace("\n\n", "\n")
-        else:
-            if not add:
-                return await interaction.response.send_message(
-                    "That role isn't in the list!",
-                    ephemeral=True,
-                )
-            else:
-                embed_value += f"\n{role.mention}"
+        if role.mention in embed_value and add is False:
+            embed_value = embed_value.replace(role.mention, "")
+            embed_value = embed_value.replace("\n\n", "\n")
+        elif role.mention not in embed_value and add is True:
+            embed_value += f"\n{role.mention}"
 
         # Edit the embed
-        try:
-            embed.set_field_at(0, name="Roles", value=embed_value.strip())
-        except IndexError:
-            embed.add_field(name="Roles", value=embed_value.strip())
+        if embed_value.strip():
+            try:
+                embed.set_field_at(0, name="Roles", value=embed_value.strip())
+            except IndexError:
+                embed.add_field(name="Roles", value=embed_value.strip())
+        else:
+            embed.remove_field(0)
         await interaction.response.edit_message(
             content=None,
             embeds=[embed],
