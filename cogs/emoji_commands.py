@@ -85,7 +85,7 @@ class EmojiCommands(vbu.Cog[Bot]):
 
         # So now wait for em to respond
         try:
-            select_interaction: discord.Interaction[str]
+            select_interaction: discord.Interaction
             select_interaction = await self.bot.wait_for(
                 "component_interaction",
                 check=lambda i: i.user.id == ctx.author.id and i.custom_id.endswith(sm.custom_id),

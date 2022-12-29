@@ -219,7 +219,7 @@ class DNDCommands(vbu.Cog[Bot]):
             return a.read().strip().split("\n")
 
     @dnd_spell.autocomplete
-    async def dnd_spell_autocomplete(self, ctx: commands.SlashContext, interaction: discord.Interaction[None]):
+    async def dnd_spell_autocomplete(self, ctx: commands.SlashContext, interaction: discord.AutocompleteInteraction):
         """
         Fuzzy match what the user input and the list of all spells.
         """

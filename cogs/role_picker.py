@@ -459,7 +459,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
     @vbu.Cog.listener()
     async def on_component_interaction(
             self,
-            interaction: discord.Interaction[str]):
+            interaction: discord.Interaction):
         """
         Listen for a rolepicker component being clicked and manage
         that for the user.
