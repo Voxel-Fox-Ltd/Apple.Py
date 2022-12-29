@@ -55,7 +55,7 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
     @vbu.checks.interaction_filter(start="NEWROLEPICKER")
     async def rolepicker_edit(
             self,
-            interaction: discord.ComponentInteraction | discord.ModalInteraction,
+            interaction: discord.ComponentInteraction,
             action: str,
             *args: str):
         """
@@ -63,17 +63,28 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         """
 
         if action == "ADD":
-            await self.change_roles(interaction, add=True)  # pyright: reportGeneralTypeIssues=false
+            await self.change_roles(interaction, add=True)
         elif action == "REMOVE":
-            await self.change_roles(interaction, add=False)  # pyright: reportGeneralTypeIssues=false
+            await self.change_roles(interaction, add=False)
         elif action == "DONE":
-            await self.rolemenu_done(interaction)  # pyright: reportGeneralTypeIssues=false
+            await self.rolemenu_done(interaction)
         elif action == "CONTENT":
-            await self.rolemenu_content_spawnmodal(interaction)  # pyright: reportGeneralTypeIssues=false
-        elif action == "SETCONTENT":
-            await self.rolemenu_content(interaction)  # pyright: reportGeneralTypeIssues=false
+            await self.rolemenu_content_spawnmodal(interaction)
         elif action == "ROLE":
-            await self.rolepicker_role(interaction, int(args[0]))  # pyright: reportGeneralTypeIssues=false
+            await self.rolepicker_role(interaction, int(args[0]))
+
+    @vbu.Cog.listener("on_modal_interaction")
+    @vbu.checks.interaction_filter(start="NEWROLEPICKER")
+    async def rolemenu_content_modal(
+            self,
+            interaction: discord.ModalInteraction,
+            action: str):
+        """
+        Manage the rolepicker content modal.
+        """
+
+        if action == "SETCONTENT":
+            await self.rolemenu_content(interaction)
 
     async def change_roles(
             self,
