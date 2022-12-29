@@ -61,13 +61,18 @@ class UserInfo(vbu.Cog):
             ],
         ),
     )
-    async def whois(self, ctx: vbu.Context, user: discord.Member = None):
+    async def whois(
+            self,
+            ctx: vbu.Context,
+            user: typing.Optional[discord.Member] = None):
         """
         Give you some information about a user.
         """
 
         # Set up our intial vars
+        typing.cast(discord.Member, ctx.author)
         user = user or ctx.author
+        assert user is not None
         embed = vbu.Embed(use_random_colour=True)
         embed.set_author_to_user(user)
 

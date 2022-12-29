@@ -14,19 +14,16 @@ class CustomRolesCog(vbu.Cog[Bot]):
     # role is set to a deleted role.
     INVALIDATE_DELETED_REQUIRED_ROLE = False
 
-    def __init__(self, bot: vbu.Bot, logger_name: str | None = None):
-        super().__init__(bot, logger_name)
-
-    async def _check_custom_role_requirements(self, ctx: vbu.SlashContext) -> bool:
-        """A method that checks if a user is allowed to use custom roles.
+    async def _check_custom_role_requirements(
+            self,
+            ctx: vbu.SlashContext[discord.Guild]) -> bool:
+        """
+        A method that checks if a user is allowed to use custom roles.
         This method responds to the interaction, and thus should only be
         used on a :class:`SlashContext` that hasn't been responded to yet.
         Returns True when successful and when the interaction hasn't been
         responded to yet.
         """
-
-        if TYPE_CHECKING:
-            ctx.guild: discord.Guild = cast(discord.Guild, ctx.guild)
 
         required_role_id = self.bot.guild_settings[ctx.guild.id][
             "custom_role_requirement_role_id"
@@ -58,16 +55,14 @@ class CustomRolesCog(vbu.Cog[Bot]):
 
         return True
 
-    async def _update_custom_role_property(self, ctx: vbu.SlashContext, **properties):
-        """A method that updates the properties of the custom role of the
+    async def _update_custom_role_property(self, ctx: vbu.SlashContext[discord.Guild], **properties):
+        """
+        A method that updates the properties of the custom role of the
         `ctx.author`. This method responds to the interaction, and thus
         should only be used on a :class:`SlashContext` that hasn't been
         responded to yet. Returns True when successful and when the
         interaction hasn't been responded to yet.
         """
-
-        if TYPE_CHECKING:
-            ctx.guild: discord.Guild = cast(discord.Guild, ctx.guild)
 
         # nothing to change ¯\_(ツ)_/¯
         if not properties:
@@ -75,7 +70,7 @@ class CustomRolesCog(vbu.Cog[Bot]):
 
         async with self.bot.database() as db:
             rows = await db(
-                "SELECT role_id from custom_roles where guild_id = $1 and user_id = $2",
+                "SELECT role_id FROM custom_roles WHERE guild_id = $1 AND user_id = $2",
                 ctx.guild.id,
                 ctx.author.id,
             )
@@ -99,7 +94,7 @@ class CustomRolesCog(vbu.Cog[Bot]):
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
                 await db(
-                    "delete from custom_roles where guild_id = $1 and user_id = $2",
+                    "DELETE FROM custom_roles WHERE guild_id = $1 AND user_id = $2",
                     ctx.guild.id,
                     ctx.author.id,
                 )
@@ -126,7 +121,7 @@ class CustomRolesCog(vbu.Cog[Bot]):
         """Handles the deletion of custom roles when members leave servers."""
 
         if TYPE_CHECKING:
-            member.guild: discord.Guild = cast(discord.Guild, member.guild)
+            member.guild = cast(discord.Guild, member.guild)
 
         async with self.bot.database() as db:
             rows = await db(
@@ -159,8 +154,8 @@ class CustomRolesCog(vbu.Cog[Bot]):
         """Handles custom role-related processes when a member gets updated."""
 
         if TYPE_CHECKING:
-            before.guild: discord.Guild = cast(discord.Guild, before.guild)
-            after.guild: discord.Guild = cast(discord.Guild, after.guild)
+            before.guild = cast(discord.Guild, before.guild)
+            after.guild = cast(discord.Guild, after.guild)
 
         async with self.bot.database() as db:
             rows = await db(
