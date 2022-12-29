@@ -7,6 +7,32 @@ from discord.ext import commands, vbu
 
 class NewRolePicker(vbu.Cog[vbu.Bot]):
 
+    def get_role_picker_components(self):
+        return discord.ui.MessageComponents(
+            discord.ui.ActionRow(
+                discord.ui.Button(
+                    label="Add role",
+                    style=discord.ButtonStyle.green,
+                    custom_id="NEWROLEPICKER ADD",
+                ),
+                discord.ui.Button(
+                    label="Remove role",
+                    style=discord.ButtonStyle.red,
+                    custom_id="NEWROLEPICKER REMOVE",
+                ),
+                discord.ui.Button(
+                    label="Set content",
+                    style=discord.ButtonStyle.secondary,
+                    custom_id="NEWROLEPICKER CONTENT",
+                ),
+                discord.ui.Button(
+                    label="Done",
+                    style=discord.ButtonStyle.primary,
+                    custom_id="NEWROLEPICKER DONE",
+                ),
+            ),
+        )
+
     @commands.command(
         application_command_meta=commands.ApplicationCommandMeta(
             guild_only=True,
@@ -24,30 +50,7 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         embed.description = "None :/"
         await ctx.interaction.response.send_message(
             embeds=[embed],
-            components=discord.ui.MessageComponents(
-                discord.ui.ActionRow(
-                    discord.ui.Button(
-                        label="Add role",
-                        style=discord.ButtonStyle.green,
-                        custom_id="NEWROLEPICKER ADD",
-                    ),
-                    discord.ui.Button(
-                        label="Remove role",
-                        style=discord.ButtonStyle.red,
-                        custom_id="NEWROLEPICKER REMOVE",
-                    ),
-                    discord.ui.Button(
-                        label="Set content",
-                        style=discord.ButtonStyle.secondary,
-                        custom_id="NEWROLEPICKER CONTENT",
-                    ),
-                    discord.ui.Button(
-                        label="Done",
-                        style=discord.ButtonStyle.primary,
-                        custom_id="NEWROLEPICKER DONE",
-                    ),
-                ),
-            ),
+            components=self.get_role_picker_components(),
             ephemeral=True,
         )
 
@@ -62,7 +65,11 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         Manage the rolepicker edit buttons.
         """
 
-        if action == "ADD":
+        if action == "ADDPICKER":
+            await self.rolemenu_picker(interaction, add=True)
+        elif action == "REMOVEPICKER":
+            await self.rolemenu_picker(interaction, add=False)
+        elif action == "ADD":
             await self.change_roles(interaction, add=True)
         elif action == "REMOVE":
             await self.change_roles(interaction, add=False)
@@ -72,6 +79,31 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
             await self.rolemenu_content_spawnmodal(interaction)
         elif action == "ROLE":
             await self.rolepicker_role(interaction, int(args[0]))
+
+    async def rolemenu_picker(
+            self,
+            interaction: discord.ComponentInteraction,
+            add: bool):
+        """
+        Spawns a dropdown for the user to add new roles.
+        """
+
+        content = (
+            "What role do you want to add?"
+            if add
+            else "What role do you want to remove?"
+        )
+        custom_id = "NEWROLEPICKER ADD" if add else "NEWROLEPICKER REMOVE"
+        await interaction.response.edit_message(
+            content=content,
+            components=discord.ui.MessageComponents(
+                discord.ui.ActionRow(
+                    discord.ui.RoleSelectMenu(
+                        custom_id=custom_id,
+                    ),
+                ),
+            ),
+        )
 
     @vbu.Cog.listener("on_modal_interaction")
     @vbu.checks.interaction_filter(start="NEWROLEPICKER")
@@ -126,7 +158,9 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
         # Edit the embed
         embed.set_field_at(0, name="Roles", value=embed_value.strip())
         await interaction.response.edit_message(
+            content=None,
             embeds=[embed],
+            components=self.get_role_picker_components(),
         )
 
     async def rolemenu_content_spawnmodal(self, interaction: discord.ComponentInteraction):
