@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS guild_settings(
     prefix VARCHAR(30),
     quote_channel_id BIGINT,
     report_channel_id BIGINT,
+    staff_role_id BIGINT,
     automatic_nickname_update BOOLEAN DEFAULT FALSE,
     rainbow_line_autodelete BOOLEAN DEFAULT FALSE,
     leaderboard_message_url VARCHAR(150),
