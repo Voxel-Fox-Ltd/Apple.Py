@@ -14,6 +14,7 @@ class ReportCommand(vbu.Cog):
         pressed_button.disable()
         await interaction.response.defer_update()
 
+        # Create our components list with the button we had before and an additional button to show the user's name
         components = discord.ui.MessageComponents(
                         discord.ui.ActionRow(
                             pressed_button,
@@ -35,14 +36,12 @@ class ReportCommand(vbu.Cog):
             embed = original_message.embeds[0]
             embed.colour = 0x00ff00
         
-        # Edit the original message to have our changes
+        # Edit the original message to have our changes - change embed color to green, disable compete button, and add a name button
         await original_message.edit(
             content = original_message.content,
             embed = embed,
             components = components
         )
-        
-
 
     @commands.command(
         application_command_meta=commands.ApplicationCommandMeta()
