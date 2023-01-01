@@ -3,6 +3,47 @@ import discord
 
 class ReportCommand(vbu.Cog):
 
+    @vbu.Cog.listener()
+    async def on_interaction(self, interaction: discord.Interaction):
+        # If the button pressed isn't a report completion button
+        if interaction.custom_id != "report_complete_button":
+            return
+        
+        # Disable the button since it's been completed
+        pressed_button = interaction.component
+        pressed_button.disable()
+        await interaction.response.defer_update()
+
+        components = discord.ui.MessageComponents(
+                        discord.ui.ActionRow(
+                            pressed_button,
+                            discord.ui.Button(
+                                label = f"{interaction.user.name}#{interaction.user.discriminator}",
+                                custom_id = "report_name_button",
+                                style = discord.ButtonStyle.gray,
+                                disabled=True
+                                ),
+                            ),
+                        )
+
+        # Get the original report message so we can update it
+        original_message = interaction.message
+        
+        # If we have an embed, update its color to green
+        embed = None
+        if original_message.embeds:
+            embed = original_message.embeds[0]
+            embed.colour = 0x00ff00
+        
+        # Edit the original message to have our changes
+        await original_message.edit(
+            content = original_message.content,
+            embed = embed,
+            components = components
+        )
+        
+
+
     @commands.command(
         application_command_meta=commands.ApplicationCommandMeta()
     )
@@ -68,13 +109,25 @@ class ReportCommand(vbu.Cog):
         except:
             # Probably a problem with the image
             pass
-        
+
+        # Create a button to add to the report message to keep track of if a staff member completes the report
+        components = discord.ui.MessageComponents(
+                        discord.ui.ActionRow(
+                            discord.ui.Button(
+                                label = "Complete",
+                                custom_id = "report_complete_button",
+                                style = discord.ButtonStyle.success
+                                ),
+                            ),
+                        )
+
         # Send the message to the reports channel
         await report_channel.send(
             content =
                 f"__{staff_role.mention if staff_role else ''} New report from {ctx.author.mention} against {reported.mention}__",
                 embed=embed,
-            allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=True)
+            allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=True),
+            components = components
             )
 
         # If you want it to just be a message (no embed)
@@ -83,7 +136,8 @@ class ReportCommand(vbu.Cog):
         #               f"**Reported:** {reported.mention} (ID: {reported.id})\n" + 
         #               f"**Reason:** {reason[:500]}\n" + 
         #               f"**Channel:** {ctx.message.channel.mention} (<{ctx.message.jump_url}>)",
-        #     allowed_mentions = discord.AllowedMentions(everyone=False, users=False, roles=True)
+        #     allowed_mentions = discord.AllowedMentions(everyone=False, users=False, roles=True),
+        #     components = components
         # )
 
         # Acknowledge the original command message
