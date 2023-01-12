@@ -27,9 +27,13 @@ class GoogleCommands(vbu.Cog):
             else:
                 formatter = lambda d: (
                     d['title'][:256],
-                    f"[{d['displayLink']}]({d['link']}) - {d['snippet'].replace(ENDL, ' ')}"
+                    (
+                        f"[{d['displayLink']}]({d['link']}) - "
+                        f"{d['snippet'].replace(ENDL, ' ')}"
+                    )
                 )
-            async with self.bot.session.get("https://customsearch.googleapis.com/customsearch/v1", params=params) as r:
+            url = "https://customsearch.googleapis.com/customsearch/v1"
+            async with self.bot.session.get(url, params=params) as r:
                 data = await r.json()
             ENDL = '\n'
             output_data = []
@@ -86,7 +90,10 @@ class GoogleCommands(vbu.Cog):
                 embed.add_field(*d, inline=False)
             embed.set_footer(f"Page {menu.current_page + 1}/{menu.max_pages}")
             return embed
-        await vbu.Paginator(self.get_search_page(query, 3), formatter=formatter).start(ctx)
+        await vbu.Paginator(
+            self.get_search_page(query, 3),
+            formatter=formatter
+        ).start(ctx)
 
     @google.command(
         name='images',
@@ -122,7 +129,10 @@ class GoogleCommands(vbu.Cog):
             ).set_footer(
                 f"Page {menu.current_page + 1}/{menu.max_pages}"
             )
-        await vbu.Paginator(self.get_search_page(query, 1, True), formatter=formatter).start(ctx)
+        await vbu.Paginator(
+            self.get_search_page(query, 1, True),
+            formatter=formatter,
+        ).start(ctx)
 
 
 def setup(bot: vbu.Bot):
