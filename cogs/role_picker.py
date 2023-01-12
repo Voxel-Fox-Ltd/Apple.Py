@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands, vbu
 
 
-class NewRolePicker(vbu.Cog[vbu.Bot]):
+class RolePicker(vbu.Cog[vbu.Bot]):
 
     def get_role_picker_components(self):
         return discord.ui.MessageComponents(
@@ -374,5 +374,5 @@ class NewRolePicker(vbu.Cog[vbu.Bot]):
 
 
 def setup(bot: vbu.Bot):
-    x = NewRolePicker(bot)
+    x = RolePicker(bot)
     bot.add_cog(x)
