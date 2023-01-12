@@ -36,7 +36,11 @@ class DiscordDatamining(vbu.Cog[Bot]):
         self.docs_commit_poster_loop.stop()
 
     @tasks.loop(minutes=15)
-    async def datamining_commit_poster_loop(self, embed_title: str, api_url: str, repo_url: str):
+    async def datamining_commit_poster_loop(
+            self,
+            embed_title: str,
+            api_url: str,
+            repo_url: str):
         await self.commit_poster_loop(embed_title, api_url, repo_url)
 
     @datamining_commit_poster_loop.before_loop
@@ -44,16 +48,25 @@ class DiscordDatamining(vbu.Cog[Bot]):
         await self.bot.wait_until_ready()
 
     @tasks.loop(minutes=15)
-    async def docs_commit_poster_loop(self, embed_title: str, api_url: str, repo_url: str):
+    async def docs_commit_poster_loop(
+            self,
+            embed_title: str,
+            api_url: str,
+            repo_url: str):
         await self.commit_poster_loop(embed_title, api_url, repo_url)
 
     @docs_commit_poster_loop.before_loop
     async def before_docs_commit_poster_loop(self):
         await self.bot.wait_until_ready()
 
-    async def commit_poster_loop(self, embed_title: str, api_url: str, repo_url: str):
+    async def commit_poster_loop(
+            self,
+            embed_title: str,
+            api_url: str,
+            repo_url: str):
         """
-        Grab the data from the Discord datamining repo and post it to the coding channel of VFL.
+        Grab the data from the Discord datamining repo and post it to the
+        coding channel of VFL.
         """
 
         # Grab the data
@@ -79,26 +92,35 @@ class DiscordDatamining(vbu.Cog[Bot]):
         self.logger.info(f"Logging info of {len(new_commits)} commits")
 
         # Work out which of our new commits have comments
-        comment_urls = [i['comments_url'] for i in new_commits if i['commit']['comment_count'] > 0]
+        comment_urls = [
+            i['comments_url']
+            for i in new_commits
+            if i['commit']['comment_count'] > 0
+        ]
         comment_text = []
         for url in comment_urls:
             async with self.bot.session.get(url) as r:
                 data = await r.json()
-            comment_text.extend([(i['commit_id'], re.sub(r"^## (.+)", r"**\1**", i['body'])) for i in data])
+            comment_text.extend([
+                (
+                    i['commit_id'],
+                    re.sub(r"^## (.+)", r"**\1**", i['body'])
+                )
+                for i in data
+            ])
         self.logger.info(f"Logging info of {len(comment_text)} comments")
 
         # Get the full description
-        description_unsplit = '\n'.join([f"{i['commit']['message']} - [Link]({repo_url}commit/{i['sha']})" for i in new_commits])
-
-        # Inform the bot owner that the description is larger than allowed by discord
-        if len(description_unsplit) > 2048:
-            self.logger.info(
-                f"Our description is longer than 2048 characters and this isnt really poggers, "
-                f"we need to make it in multiple embeds. It was {len(description_unsplit)} characters."
-            )
+        description_unsplit = '\n'.join([
+            f"{i['commit']['message']} - [Link]({repo_url}commit/{i['sha']})"
+            for i in new_commits
+        ])
 
         # Split the description into a list of descriptions each 2048 or less
-        description_array = [description_unsplit[i:i + 2048] for i in range(0, len(description_unsplit), 2048)]
+        description_array = [
+            description_unsplit[i:i + 2048]
+            for i in range(0, len(description_unsplit), 2048)
+        ]
 
         # Format one into an embed
         with vbu.Embed(use_random_colour=True) as embed:
@@ -108,8 +130,10 @@ class DiscordDatamining(vbu.Cog[Bot]):
                 embed.add_field(sha, body, inline=False)
 
         # And send the first one
-        channel = self.bot.get_channel(self.VFL_CODING_CHANNEL_ID)
-        assert isinstance(channel, discord.TextChannel)
+        channel = self.bot.get_partial_messageable(
+            self.VFL_CODING_CHANNEL_ID,
+            type=discord.ChannelType.text,
+        )
         m = await channel.send(embed=embed)
         await m.publish()
 
