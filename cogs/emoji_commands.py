@@ -1,4 +1,4 @@
-import typing
+from typing import Optional, Union
 import re
 import io
 import asyncio
@@ -31,7 +31,10 @@ class EmojiCommands(vbu.Cog[Bot]):
     EMOJI_REGEX = re.compile(r'<(a?):([a-zA-Z0-9\_]{1,32}):([0-9]{15,20})>')
 
     @commands.context_command(name="Add emoji from message")
-    async def add_emojis_from_message(self, ctx: commands.SlashContext, message: discord.Message):
+    async def add_emojis_from_message(
+            self,
+            ctx: commands.SlashContext,
+            message: discord.Message):
         """
         Search the emojis in a message and ask the user which they want to add.
         """
@@ -44,7 +47,11 @@ class EmojiCommands(vbu.Cog[Bot]):
         # Check the message for emojis - stolen from partialemojiconverter
         matches = self.EMOJI_REGEX.finditer(message.content)
         emojis = [
-            discord.PartialEmoji(name=i.group(2), animated=i.group(1) == "a", id=int(i.group(3)))
+            discord.PartialEmoji(
+                name=i.group(2),
+                animated=i.group(1) == "a",
+                id=int(i.group(3)),
+            )
             for i in matches
         ]
 
@@ -72,7 +79,11 @@ class EmojiCommands(vbu.Cog[Bot]):
             discord.ui.ActionRow(
                 (sm := discord.ui.SelectMenu(
                     options=[
-                        discord.ui.SelectOption(label=i.name, emoji=i, value=str(i))
+                        discord.ui.SelectOption(
+                            label=i.name,
+                            emoji=i,
+                            value=str(i),
+                        )
                         for i in emojis
                     ]
                 ))
@@ -88,7 +99,10 @@ class EmojiCommands(vbu.Cog[Bot]):
             select_interaction: discord.Interaction
             select_interaction = await self.bot.wait_for(
                 "component_interaction",
-                check=lambda i: i.user.id == ctx.author.id and i.custom_id.endswith(sm.custom_id),
+                check=lambda i: (
+                    i.user.id == ctx.author.id
+                    and i.custom_id.endswith(sm.custom_id)
+                ),
                 timeout=60 * 2,
             )
         except asyncio.TimeoutError:
@@ -97,7 +111,7 @@ class EmojiCommands(vbu.Cog[Bot]):
                     content="Didn't get a response in time.",
                     components=None,
                 )
-            except:
+            except discord.HTTPException:
                 pass
             return
 
@@ -107,27 +121,33 @@ class EmojiCommands(vbu.Cog[Bot]):
         assert select_interaction.values
         match = self.EMOJI_REGEX.search(select_interaction.values[0])
         assert match
-        emoji = discord.PartialEmoji(name=match.group(2), animated=match.group(1) == "a", id=int(match.group(3)))
+        emoji = discord.PartialEmoji(
+            name=match.group(2),
+            animated=match.group(1) == "a",
+            id=int(match.group(3)),
+        )
         await self.addemoji(ctx, emoji)
 
     @staticmethod
-    def calculate_new_size(image: Image.Image, intended_size: int = 256_000) -> tuple:
+    def calculate_new_size(
+            image: Image.Image,
+            intended_size: int = 256_000) -> tuple:
         """
-        Use the equation f(n) = n * h * w * c to calculate an image's size given a size modifier, the width, the height,
-        and a calculated constant. This method is inaccurate because image compression isn't constant, but it's as close
-        as we care to get.
+        Use the equation f(n) = n * h * w * c to calculate an image's size
+        given a size modifier, the width, the height, and a calculated
+        constant. This method is inaccurate because image compression isn't
+        constant, but it's as close as we care to get.
         """
 
         width = image.width
         height = image.height
         initial_size = len(image.tobytes())
-        magic_constant = (initial_size) / (width * height)  # The constant (c)
-        size_mod = intended_size / (magic_constant * width * height)  # The size modifier to reach the intended size
+        magic_constant = (initial_size) / (width * height)
+        size_mod = intended_size / (magic_constant * width * height)
 
         return (int(width * size_mod), int(height * size_mod))
 
     @commands.command(
-        aliases=['stealemoji'],
         application_command_meta=commands.ApplicationCommandMeta(
             options=[
                 discord.ApplicationCommandOption(
@@ -157,15 +177,16 @@ class EmojiCommands(vbu.Cog[Bot]):
     async def addemoji(
             self,
             ctx: vbu.Context,
-            emoji: typing.Optional[typing.Union[discord.PartialEmoji, int, ImageUrl]] = None,
-            name: str = None,
+            emoji: Optional[Union[discord.PartialEmoji, int, ImageUrl]] = None,
+            name: Optional[str] = None,
             animated: bool = False,
             ):
         """
         Copies an emoji and uploads it to your server.
         """
 
-        # Default to the first attachment in the message's URL if `emoji` (the image url) is None
+        # Default to the first attachment in the message's URL if `emoji`
+        # (the image url) is None
         if emoji is None:
             if ctx.message.attachments:
                 emoji = ctx.message.attachments[0].url
