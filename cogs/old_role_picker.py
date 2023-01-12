@@ -5,61 +5,63 @@ import discord
 from discord.ext import commands, vbu
 
 
-class RolePicker(vbu.Cog[vbu.Bot]):
+class OldRolePicker(vbu.Cog[vbu.Bot]):
 
     @commands.group(
-        application_command_meta=commands.ApplicationCommandMeta(
-            guild_only=True,
-            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
-        ),
+        enabled=False,
+        # application_command_meta=commands.ApplicationCommandMeta(
+        #     guild_only=True,
+        #     permissions=discord.Permissions(manage_roles=True, manage_guild=True),
+        # ),
     )
     @commands.is_slash_command()
     async def rolepicker(self, _: vbu.SlashContext):
         pass
 
     @rolepicker.command(
+        enabled=False,
         name="create",
-        application_command_meta=commands.ApplicationCommandMeta(
-            options=[
-                discord.ApplicationCommandOption(
-                    name="name",
-                    type=discord.ApplicationCommandOptionType.string,
-                    description="The name of your role picker. Only you can see this.",
-                ),
-                discord.ApplicationCommandOption(
-                    name="text",
-                    type=discord.ApplicationCommandOptionType.string,
-                    description="The text you want to be displayed above the dropdown.",
-                ),
-                discord.ApplicationCommandOption(
-                    name="channel",
-                    type=discord.ApplicationCommandOptionType.channel,
-                    description="The place you want to create the role picker.",
-                    channel_types=[discord.ChannelType.text],
-                    required=False,
-                ),
-                discord.ApplicationCommandOption(
-                    name="min_roles",
-                    type=discord.ApplicationCommandOptionType.integer,
-                    description="The minimum number of roles that the user can have.",
-                    min_value=0,
-                    required=False,
-                ),
-                discord.ApplicationCommandOption(
-                    name="max_roles",
-                    type=discord.ApplicationCommandOptionType.integer,
-                    description="The maximum number of roles that the user can have.",
-                    max_value=25,
-                    required=False,
-                ),
-            ],
-            guild_only=True,
-            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
-        ),
+        # application_command_meta=commands.ApplicationCommandMeta(
+        #     options=[
+        #         discord.ApplicationCommandOption(
+        #             name="name",
+        #             type=discord.ApplicationCommandOptionType.string,
+        #             description="The name of your role picker. Only you can see this.",
+        #         ),
+        #         discord.ApplicationCommandOption(
+        #             name="text",
+        #             type=discord.ApplicationCommandOptionType.string,
+        #             description="The text you want to be displayed above the dropdown.",
+        #         ),
+        #         discord.ApplicationCommandOption(
+        #             name="channel",
+        #             type=discord.ApplicationCommandOptionType.channel,
+        #             description="The place you want to create the role picker.",
+        #             channel_types=[discord.ChannelType.text],
+        #             required=False,
+        #         ),
+        #         discord.ApplicationCommandOption(
+        #             name="min_roles",
+        #             type=discord.ApplicationCommandOptionType.integer,
+        #             description="The minimum number of roles that the user can have.",
+        #             min_value=0,
+        #             required=False,
+        #         ),
+        #         discord.ApplicationCommandOption(
+        #             name="max_roles",
+        #             type=discord.ApplicationCommandOptionType.integer,
+        #             description="The maximum number of roles that the user can have.",
+        #             max_value=25,
+        #             required=False,
+        #         ),
+        #     ],
+        #     guild_only=True,
+        #     permissions=discord.Permissions(manage_roles=True, manage_guild=True),
+        # ),
     )
     @commands.is_slash_command()
     async def rolepicker_create(
-            self, 
+            self,
             ctx: vbu.SlashContext,
             name: str,
             text: str,
@@ -146,19 +148,20 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         )
 
     @rolepicker.command(
+        enabled=False,
         name="delete",
-        application_command_meta=commands.ApplicationCommandMeta(
-            options=[
-                discord.ApplicationCommandOption(
-                    name="name",
-                    type=discord.ApplicationCommandOptionType.string,
-                    description="The name of your role picker.",
-                    autocomplete=True,
-                ),
-            ],
-            guild_only=True,
-            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
-        ),
+        # application_command_meta=commands.ApplicationCommandMeta(
+        #     options=[
+        #         discord.ApplicationCommandOption(
+        #             name="name",
+        #             type=discord.ApplicationCommandOptionType.string,
+        #             description="The name of your role picker.",
+        #             autocomplete=True,
+        #         ),
+        #     ],
+        #     guild_only=True,
+        #     permissions=discord.Permissions(manage_roles=True, manage_guild=True),
+        # ),
     )
     @commands.is_slash_command()
     async def rolepicker_delete(
@@ -206,24 +209,25 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         )
 
     @rolepicker.command(
+        enabled=False,
         name="add",
-        application_command_meta=commands.ApplicationCommandMeta(
-            options=[
-                discord.ApplicationCommandOption(
-                    name="name",
-                    type=discord.ApplicationCommandOptionType.string,
-                    description="The name of the role picker that you want to modify.",
-                    autocomplete=True,
-                ),
-                discord.ApplicationCommandOption(
-                    name="role",
-                    type=discord.ApplicationCommandOptionType.role,
-                    description="The role you want to add to the role picker.",
-                ),
-            ],
-            guild_only=True,
-            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
-        ),
+        # application_command_meta=commands.ApplicationCommandMeta(
+        #     options=[
+        #         discord.ApplicationCommandOption(
+        #             name="name",
+        #             type=discord.ApplicationCommandOptionType.string,
+        #             description="The name of the role picker that you want to modify.",
+        #             autocomplete=True,
+        #         ),
+        #         discord.ApplicationCommandOption(
+        #             name="role",
+        #             type=discord.ApplicationCommandOptionType.role,
+        #             description="The role you want to add to the role picker.",
+        #         ),
+        #     ],
+        #     guild_only=True,
+        #     permissions=discord.Permissions(manage_roles=True, manage_guild=True),
+        # ),
     )
     @commands.is_slash_command()
     async def rolepicker_add(
@@ -284,24 +288,25 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         self.bot.dispatch("role_picker_update", guild, name)
 
     @rolepicker.command(
+        enabled=False,
         name="remove",
-        application_command_meta=commands.ApplicationCommandMeta(
-            options=[
-                discord.ApplicationCommandOption(
-                    name="name",
-                    type=discord.ApplicationCommandOptionType.string,
-                    description="The name of the role picker that you want to modify.",
-                    autocomplete=True,
-                ),
-                discord.ApplicationCommandOption(
-                    name="role",
-                    type=discord.ApplicationCommandOptionType.string,
-                    description="The role you want to remove from the role picker.",
-                ),
-            ],
-            guild_only=True,
-            permissions=discord.Permissions(manage_roles=True, manage_guild=True),
-        ),
+        # application_command_meta=commands.ApplicationCommandMeta(
+        #     options=[
+        #         discord.ApplicationCommandOption(
+        #             name="name",
+        #             type=discord.ApplicationCommandOptionType.string,
+        #             description="The name of the role picker that you want to modify.",
+        #             autocomplete=True,
+        #         ),
+        #         discord.ApplicationCommandOption(
+        #             name="role",
+        #             type=discord.ApplicationCommandOptionType.string,
+        #             description="The role you want to remove from the role picker.",
+        #         ),
+        #     ],
+        #     guild_only=True,
+        #     permissions=discord.Permissions(manage_roles=True, manage_guild=True),
+        # ),
     )
     @commands.is_slash_command()
     async def rolepicker_remove(
@@ -459,7 +464,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
     @vbu.Cog.listener()
     async def on_component_interaction(
             self,
-            interaction: discord.Interaction):
+            interaction: discord.ComponentInteraction):
         """
         Listen for a rolepicker component being clicked and manage
         that for the user.
@@ -488,13 +493,6 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         if len(roles_they_have_currently) == len(picked_roles):
             try:
                 await user.remove_roles(*picked_roles, reason="Role picker")
-            # except discord.NotFound:
-            #     await interaction.followup.send(
-            #         "I can't find one of the roles you picked in the server any more.",
-            #         ephemeral=True,
-            #     )
-            #     self.bot.dispatch("role_picker_update", guild, component_id)
-            #     return
             except discord.Forbidden:
                 await interaction.followup.send(
                     "I'm unable to remove that role from you.",
@@ -562,5 +560,5 @@ class RolePicker(vbu.Cog[vbu.Bot]):
 
 
 def setup(bot: vbu.Bot):
-    x = RolePicker(bot)
+    x = OldRolePicker(bot)
     bot.add_cog(x)
