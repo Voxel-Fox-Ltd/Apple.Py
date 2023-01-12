@@ -55,6 +55,7 @@ class NicknameHandler(vbu.Cog):
 
     LETTER_REPLACEMENT_FILE_PATH = "config/letter_replacements.json"
     ASCII_CHARACTERS = string.ascii_letters + string.digits + string.punctuation
+    AUDIT_REASON = "Changed by Apple.Py automagically"
 
     def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
@@ -84,7 +85,7 @@ class NicknameHandler(vbu.Cog):
             return self.letter_replacements
         with open(self.LETTER_REPLACEMENT_FILE_PATH) as a:
             self.letter_replacements = json.load(a)
-        for i in string.ascii_letters + string.punctuation + string.digits + string.whitespace:
+        for i in self.ASCII_CHARACTERS + string.whitespace:
             self.letter_replacements[i] = i
         return self.get_letter_replacements()
 
@@ -100,25 +101,48 @@ class NicknameHandler(vbu.Cog):
 
         # See if they have a permanent nickname set
         async with vbu.Database() as db:
-            data = await db(
-                """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2""",
+            data = await db.call(
+                """
+                SELECT
+                    nickname
+                FROM
+                    permanent_nicknames
+                WHERE
+                    guild_id = $1
+                    AND user_id = $2
+                """,
                 member.guild.id, member.id
             )
         if data:
             try:
-                await member.edit(nick=data[0]["nickname"], reason="Changed by Apple.Py automagically")
-                self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} from member join")
+                await member.edit(
+                    nick=data[0]["nickname"],
+                    reason=self.AUDIT_REASON,
+                )
+                self.logger.info(
+                    f"Set permanent nickname of {member.id} in "
+                    f"{member.guild.id} from member join"
+                )
             except discord.Forbidden as e:
-                self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
+                self.logger.error(
+                    f"Couldn't set permanent nickname of {member.id} in "
+                    f"{member.guild.id} - {e}"
+                )
             return
 
         # See if we want to fun their name
         if self.bot.guild_settings[member.guild.id]['automatic_nickname_update']:
-            self.logger.info(f"Pinging nickname update for member join (G{member.guild.id}/U{member.id})")
+            self.logger.info(
+                f"Pinging nickname update for member join "
+                f"(G{member.guild.id}/U{member.id})"
+            )
             await self.fix_user_nickname(member)
 
     @vbu.Cog.listener()
-    async def on_member_update(self, before: discord.Member, member: discord.Member):
+    async def on_member_update(
+            self,
+            before: discord.Member,
+            member: discord.Member):
         """
         Pings a member nickname update on nickname update.
         """
@@ -137,8 +161,16 @@ class NicknameHandler(vbu.Cog):
 
         # See if they have a permanent nickname
         async with vbu.Database() as db:
-            data = await db(
-                """SELECT nickname FROM permanent_nicknames WHERE guild_id=$1 AND user_id=$2""",
+            data = await db.call(
+                """
+                SELECT
+                    nickname
+                FROM
+                    permanent_nicknames
+                WHERE
+                    guild_id = $1
+                    AND user_id = $2
+                """,
                 member.guild.id, member.id
             )
         if data:
@@ -146,14 +178,28 @@ class NicknameHandler(vbu.Cog):
             if member.nick == new_nickname:
                 return
             try:
-                await member.edit(nick=new_nickname, reason="Changed by Apple.Py automagically")
-                self.logger.info(f"Set permanent nickname of {member.id} in {member.guild.id} to '{new_nickname}' from member update")
+                await member.edit(
+                    nick=new_nickname,
+                    reason=self.AUDIT_REASON,
+                )
+                self.logger.info(
+                    f"Set permanent nickname of {member.id} in "
+                    f"{member.guild.id} to '{new_nickname}' from member update"
+                )
             except discord.Forbidden as e:
-                self.logger.error(f"Couldn't set permanent nickname of {member.id} in {member.guild.id} - {e}")
+                self.logger.error(
+                    f"Couldn't set permanent nickname of {member.id} in "
+                    f"{member.guild.id} - {e}"
+                )
             return
 
         # See if they're nickname banned
-        if self.bot.guild_settings[member.guild.id]['nickname_banned_role_id'] in member._roles:
+        nickname_banned_role_id = (
+            self.bot.guild_settings
+            [member.guild.id]
+            ['nickname_banned_role_id']
+        )
+        if nickname_banned_role_id in member._roles:
 
             # See if their name was changed by an admin
             try:
@@ -168,10 +214,19 @@ class NicknameHandler(vbu.Cog):
 
             # Change nickname back
             try:
-                await member.edit(nick=before.nick or before.name, reason="Changed by Apple.Py due to nickname ban role")
-                self.logger.info(f"User {member.id} on guild {member.guild.id} changed nickname - changing back due to nickname ban role")
+                await member.edit(
+                    nick=before.nick or before.name,
+                    reason="Changed by Apple.Py due to nickname ban role",
+                )
+                self.logger.info(
+                    f"User {member.id} on guild {member.guild.id} "
+                    f"changed nickname - changing back due to nickname ban role"
+                )
             except discord.Forbidden as e:
-                self.logger.error(f"Can't change user {member.id}'s nickname on guild {member.guild.id} - {e}")
+                self.logger.error(
+                    f"Can't change user {member.id}'s nickname "
+                    f"on guild {member.guild.id} - {e}"
+                )
             return
 
         # See if we want to update their nickname
@@ -189,10 +244,17 @@ class NicknameHandler(vbu.Cog):
                 pass
 
             # Fix their name
-            self.logger.info(f"Pinging nickname update for member update (G{member.guild.id}/U{member.id})")
+            self.logger.info(
+                f"Pinging nickname update for member update "
+                f"(G{member.guild.id}/U{member.id})"
+            )
             await self.fix_user_nickname(member)
 
-    async def fix_user_nickname(self, user: discord.Member, *, force_to_animal: bool = False) -> str:
+    async def fix_user_nickname(
+            self,
+            user: discord.Member,
+            *,
+            force_to_animal: bool = False) -> str:
         """
         Fix the nickname of a user.
         """
@@ -215,7 +277,11 @@ class NicknameHandler(vbu.Cog):
 
             # Try and fix their name
             new_name_with_zalgo = new_name.translate(translator)
-            new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
+            new_name = ''.join([
+                i
+                for i in new_name_with_zalgo
+                if i not in ZALGO_CHARACTERS
+            ])
 
             # Remove obnoxious exclamation marks to boost to top of member list
             if current_name.startswith("! "):
@@ -223,27 +289,47 @@ class NicknameHandler(vbu.Cog):
 
             # See if they have enough valid characters
             if not self.consecutive_character_regex:
-                chars = [i if i not in string.punctuation else f"\\{i}" for i in self.ASCII_CHARACTERS]
-                self.consecutive_character_regex = re.compile(f"[{''.join(chars)}]{{3,}}")
+                chars = [
+                    i
+                    if i not in string.punctuation
+                    else f"\\{i}"
+                    for i in self.ASCII_CHARACTERS
+                ]
+                self.consecutive_character_regex = re.compile(
+                    f"[{''.join(chars)}]{{3,}}"
+                )
 
         if force_to_animal or self.consecutive_character_regex.search(new_name) is None:
             new_name = random.choice(await self.get_animal_names())
 
         # See if it needs editing
         if current_name == new_name:
-            self.logger.info(f"Not updating the nickname '{new_name}' (G{user.guild.id}/U{user.id})")
             return new_name
 
         # Change their name
-        self.logger.info(f"Updating nickname '{current_name}' to '{new_name}' (G{user.guild.id}/U{user.id})")
-        await user.edit(nick=new_name, reason="Changed by Apple.Py automagically")
+        self.logger.info(
+            f"Updating nickname '{current_name}' to '{new_name}' "
+            "(G{user.guild.id}/U{user.id})"
+        )
+        await user.edit(
+            nick=new_name,
+            reason=self.AUDIT_REASON,
+        )
         return new_name
 
-    @commands.group(aliases=['fun'], invoke_without_command=True)
+    @commands.group(
+        aliases=['fun'],
+        invoke_without_command=True,
+        application_command_meta=commands.ApplicationCommandMeta(),
+    )
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     @commands.guild_only()
-    async def fixunzalgoname(self, ctx: vbu.Context, user: discord.Member, force_to_animal: bool = False):
+    async def fixunzalgoname(
+            self,
+            ctx: vbu.Context,
+            user: discord.Member,
+            force_to_animal: bool = False):
         """
         Fixes a user's nickname to remove dumbass characters.
         """
@@ -271,14 +357,29 @@ class NicknameHandler(vbu.Cog):
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     @commands.guild_only()
-    async def fixunzalgoname_user(self, ctx: vbu.Context, user: discord.Member, force_to_animal: bool = False):
+    async def fixunzalgoname_user(
+            self,
+            ctx: vbu.Context,
+            user: discord.Member,
+            force_to_animal: bool = False):
         """
         Fixes a user's nickname to remove dumbass characters.
         """
 
         await self.fixunzalgoname(ctx, user, force_to_animal)
 
-    @fixunzalgoname.command(name='text')
+    @fixunzalgoname.command(
+        name='text',
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="text",
+                    description="The text you want to check.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True)
     async def fixunzalgoname_text(self, ctx: vbu.Context, *, text: str):
         """
@@ -293,12 +394,23 @@ class NicknameHandler(vbu.Cog):
 
         # Try and fix their name
         new_name_with_zalgo = text.translate(translator)
-        new_name = ''.join([i for i in new_name_with_zalgo if i not in ZALGO_CHARACTERS])
+        new_name = ''.join([
+            i
+            for i in new_name_with_zalgo
+            if i not in ZALGO_CHARACTERS
+        ])
 
         # See if they have enough valid characters
         if not self.consecutive_character_regex:
-            chars = [i if i not in string.punctuation else f"\\{i}" for i in self.ASCII_CHARACTERS]
-            self.consecutive_character_regex = re.compile(f"[{''.join(chars)}]{{3,}}")
+            chars = [
+                i
+                if i not in string.punctuation
+                else f"\\{i}"
+                for i in self.ASCII_CHARACTERS
+            ]
+            self.consecutive_character_regex = re.compile(
+                f"[{''.join(chars)}]{{3,}}"
+            )
 
         if self.consecutive_character_regex.search(new_name) is None:
             new_name = random.choice(await self.get_animal_names())
@@ -308,13 +420,18 @@ class NicknameHandler(vbu.Cog):
     @commands.command()
     @vbu.checks.is_bot_support()
     @commands.bot_has_permissions(send_messages=True)
-    async def addfixablename(self, ctx: vbu.Context, user: discord.Member, *, fixed_name: str):
+    async def addfixablename(
+            self,
+            ctx: vbu.Context,
+            user: discord.Member,
+            *,
+            fixed_name: str):
         """
         Adds a given user's name to the fixable letters.
         """
 
-        await ctx.invoke(self.bot.get_command("addfixableletters"), user.display_name, fixed_name)
-        await ctx.invoke(self.bot.get_command("fixunzalgoname"), user)
+        await self.addfixableletters(ctx, user.display_name, fixed_name)
+        await self.fixunzalgoname(ctx, user)
 
     @commands.command(ignore_extra=False)
     @vbu.checks.is_bot_support()
