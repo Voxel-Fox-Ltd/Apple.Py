@@ -37,7 +37,10 @@ class CustomRolesCog(vbu.Cog[Bot]):
         if required_role_id not in ctx.guild._roles:
             if self.INVALIDATE_DELETED_REQUIRED_ROLE:
                 await ctx.interaction.response.send_message(
-                    "This server has it's required role for custom roles set to a deleted role.",
+                    (
+                        "This server has it's required role for custom roles "
+                        "set to a deleted role."
+                    ),
                     ephemeral=True,
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
@@ -46,8 +49,9 @@ class CustomRolesCog(vbu.Cog[Bot]):
 
         # dont have the required role?
         if required_role_id not in ctx.author.role_ids:
+            mention = ctx.get_mentionable_role(required_role_id).mention
             await ctx.interaction.response.send_message(
-                f"You need the {ctx.get_mentionable_role(required_role_id).mention} role to use this command.",
+                f"You need the {mention} role to use this command.",
                 ephemeral=True,
                 allowed_mentions=discord.AllowedMentions.none(),
             )
@@ -55,7 +59,10 @@ class CustomRolesCog(vbu.Cog[Bot]):
 
         return True
 
-    async def _update_custom_role_property(self, ctx: vbu.SlashContext[discord.Guild], **properties):
+    async def _update_custom_role_property(
+            self,
+            ctx: vbu.SlashContext[discord.Guild],
+            **properties):
         """
         A method that updates the properties of the custom role of the
         `ctx.author`. This method responds to the interaction, and thus
@@ -68,9 +75,17 @@ class CustomRolesCog(vbu.Cog[Bot]):
         if not properties:
             return
 
-        async with self.bot.database() as db:
-            rows = await db(
-                "SELECT role_id FROM custom_roles WHERE guild_id = $1 AND user_id = $2",
+        async with vbu.Database() as db:
+            rows = await db.call(
+                """
+                SELECT
+                    role_id
+                FROM
+                    custom_roles
+                WHERE
+                    guild_id = $1
+                    AND user_id = $2
+                """,
                 ctx.guild.id,
                 ctx.author.id,
             )
@@ -89,12 +104,21 @@ class CustomRolesCog(vbu.Cog[Bot]):
             # invalid custom role ID, or outdated role cache?
             if custom_role is None:
                 await ctx.interaction.followup.send(
-                    "I couldn't locate your saved custom role in this server. Please create a new role.",
+                    (
+                        "I couldn't locate your saved custom role in this "
+                        "server. Please create a new role."
+                    ),
                     ephemeral=True,
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
-                await db(
-                    "DELETE FROM custom_roles WHERE guild_id = $1 AND user_id = $2",
+                await db.call(
+                    """
+                    DELETE FROM
+                        custom_roles
+                    WHERE
+                        guild_id = $1
+                        AND user_id = $2
+                    """,
                     ctx.guild.id,
                     ctx.author.id,
                 )
@@ -118,14 +142,24 @@ class CustomRolesCog(vbu.Cog[Bot]):
 
     @vbu.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
-        """Handles the deletion of custom roles when members leave servers."""
+        """
+        Handles the deletion of custom roles when members leave servers.
+        """
 
         if TYPE_CHECKING:
             member.guild = cast(discord.Guild, member.guild)
 
-        async with self.bot.database() as db:
-            rows = await db(
-                "SELECT role_id from custom_roles where guild_id = $1 and user_id = $2",
+        async with vbu.Database() as db:
+            rows = await db.call(
+                """
+                SELECT
+                    role_id
+                FROM
+                    custom_roles
+                WHERE
+                    guild_id = $1
+                    AND user_id = $2
+                """,
                 member.guild.id,
                 member.id,
             )
@@ -134,7 +168,8 @@ class CustomRolesCog(vbu.Cog[Bot]):
             if not rows:
                 return
 
-            custom_role: discord.Role | None = member.guild.get_role(rows[0]["role_id"])
+            custom_role: discord.Role | None
+            custom_role = member.guild.get_role(rows[0]["role_id"])
 
             # no role to delete if we cant even find it
             if custom_role is None:
@@ -143,23 +178,39 @@ class CustomRolesCog(vbu.Cog[Bot]):
             await custom_role.delete(
                 reason=f"Custom role owner {str(member)!r} left the server."
             )
-            await db(
-                "DELETE FROM custom_roles where guild_id = $1 and user_id = $2",
+            await db.call(
+                """
+                DELETE FROM
+                    custom_roles
+                WHERE
+                    guild_id = $1
+                    AND user_id = $2
+                """,
                 member.guild.id,
                 member.id,
             )
 
     @vbu.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
-        """Handles custom role-related processes when a member gets updated."""
+        """
+        Handles custom role-related processes when a member gets updated.
+        """
 
         if TYPE_CHECKING:
             before.guild = cast(discord.Guild, before.guild)
             after.guild = cast(discord.Guild, after.guild)
 
-        async with self.bot.database() as db:
-            rows = await db(
-                "SELECT role_id from custom_roles where guild_id = $1 and user_id = $2",
+        async with vbu.Database() as db:
+            rows = await db.call(
+                """
+                SELECT
+                    role_id
+                FROM
+                    custom_roles
+                WHERE
+                    guild_id = $1
+                    AND user_id = $2
+                """,
                 after.guild.id,
                 after.id,
             )
@@ -177,7 +228,6 @@ class CustomRolesCog(vbu.Cog[Bot]):
             required_role_id = self.bot.guild_settings[after.guild.id][
                 "custom_role_requirement_role_id"
             ]
-            print(required_role_id)
             if custom_role in after.roles and (
                 required_role_id is None or required_role_id in after.role_ids
             ):
@@ -193,19 +243,36 @@ class CustomRolesCog(vbu.Cog[Bot]):
             except discord.HTTPException:
                 pass
 
-            await db(
-                "DELETE FROM custom_roles where guild_id = $1 and user_id = $2",
+            await db.call(
+                """
+                DELETE FROM
+                    custom_roles
+                WHERE
+                    guild_id = $1
+                    AND user_id = $2
+                """,
                 after.guild.id,
                 after.id,
             )
 
     @vbu.Cog.listener()
     async def on_guild_role_update(self, before: discord.Role, after: discord.Role):
-        """Alters changes that have been done manually to custom roles, like
-        manual repositioning or manual renaming."""
-        async with self.bot.database() as db:
-            rows = await db(
-                "SELECT * FROM custom_roles WHERE guild_id = $1 AND role_id = $2",
+        """
+        Alters changes that have been done manually to custom roles, like
+        manual repositioning or manual renaming.
+        """
+
+        async with vbu.Database() as db:
+            rows = await db.call(
+                """
+                SELECT
+                *
+                FROM
+                    custom_roles
+                WHERE
+                    guild_id = $1
+                    AND role_id = $2
+                """,
                 after.guild.id,
                 after.id,
             )
@@ -236,20 +303,32 @@ class CustomRolesCog(vbu.Cog[Bot]):
         if updated_properties:
             await after.edit(
                 **updated_properties,
-                reason="Applied prefix to custom role name and/or repositioned custom role.",
+                reason=(
+                    "Applied prefix to custom role name and/or repositioned "
+                    "custom role."
+                ),
             )
 
     @vbu.Cog.listener()
     async def on_custom_role_requirement_update(self, required_role: discord.Role):
-        """Handlers the removal of custom roles when the requirements get updated."""
+        """
+        Handlers the removal of custom roles when the requirements get updated.
+        """
 
         # for some reason ctx.guild.members is empty, but getting it
         # again via bot bot.get_guild fixes it? WeirdChamp
         guild: discord.Guild = self.bot.get_guild(required_role.guild.id)
 
-        async with self.bot.database() as db:
-            rows = await db(
-                "SELECT user_id, role_id from custom_roles where guild_id = $1",
+        async with vbu.Database() as db:
+            rows = await db.call(
+                """
+                SELECT
+                    user_id, role_id
+                FROM
+                    custom_roles
+                WHERE
+                    guild_id = $1
+                """,
                 guild.id,
             )
 
@@ -274,21 +353,35 @@ class CustomRolesCog(vbu.Cog[Bot]):
                 await custom_role.delete(
                     reason=f"C{str(member)!r} no longer meets the requirements for owning a custom role."
                 )
-                await db(
-                    "DELETE FROM custom_roles where guild_id = $1 and user_id = $2",
+                await db.call(
+                    """
+                    DELETE FROM
+                        custom_roles
+                    WHERE
+                        guild_id = $1
+                        AND user_id = $2
+                    """,
                     guild.id,
                     member.id,
                 )
 
     @vbu.Cog.listener()
     async def on_custom_role_parent_update(self, parent_role: discord.Role):
-        """Handles the repositioning of custom roles when their parent role
+        """
+        Handles the repositioning of custom roles when their parent role
         gets updated.
         """
 
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             rows = await db(
-                "SELECT role_id from custom_roles where guild_id = $1",
+                """
+                SELECT
+                    role_id
+                FROM
+                    custom_roles
+                WHERE
+                    guild_id = $1
+                """,
                 parent_role.guild.id,
             )
             for row in rows:
@@ -318,7 +411,9 @@ class CustomRolesCog(vbu.Cog[Bot]):
     @commands.guild_only()
     @commands.is_slash_command()
     async def custom_role_create(self, ctx: vbu.SlashContext):
-        """Creates a custom role."""
+        """
+        Creates a custom role.
+        """
 
         if TYPE_CHECKING:
             # we can safely assume theres a guild
@@ -327,9 +422,17 @@ class CustomRolesCog(vbu.Cog[Bot]):
         if not await self._check_custom_role_requirements(ctx):
             return
 
-        async with self.bot.database() as db:
-            rows = await db(
-                "SELECT * FROM custom_roles WHERE guild_id=$1 AND user_id=$2",
+        async with vbu.Database() as db:
+            rows = await db.call(
+                """
+                SELECT
+                    *
+                FROM
+                    custom_roles
+                WHERE
+                    guild_id = $1
+                    AND user_id = $2
+                """,
                 ctx.guild.id,
                 ctx.author.id,
             )
@@ -349,7 +452,7 @@ class CustomRolesCog(vbu.Cog[Bot]):
                 permissions=discord.Permissions.none(),
             )
             await db(
-                "INSERT INTO custom_roles VALUES ($1, $2, $3)",
+                """INSERT INTO custom_roles VALUES ($1, $2, $3)""",
                 ctx.guild.id,
                 ctx.author.id,
                 custom_role.id,
@@ -391,7 +494,7 @@ class CustomRolesCog(vbu.Cog[Bot]):
             options=[
                 discord.ApplicationCommandOption(
                     name="colour",
-                    description="Your new role colour, (i.e., Red, #49E78F, rgb(235, 78, 59)).",
+                    description="Your new role colour, (eg, red, #49E78F, rgb(235, 78, 59)).",
                     type=discord.ApplicationCommandOptionType.string,
                 )
             ]
@@ -403,7 +506,9 @@ class CustomRolesCog(vbu.Cog[Bot]):
     async def custom_role_colour(
         self, ctx: vbu.SlashContext, colour: vbu.converters.ColourConverter
     ):
-        """Changes the colour of your custom role."""
+        """
+        Changes the colour of your custom role.
+        """
 
         if not await self._check_custom_role_requirements(ctx):
             return
@@ -425,7 +530,9 @@ class CustomRolesCog(vbu.Cog[Bot]):
     @commands.guild_only()
     @commands.is_slash_command()
     async def custom_role_name(self, ctx: vbu.SlashContext, name: str):
-        """Changes the name of your custom role."""
+        """
+        Changes the name of your custom role.
+        """
 
         if not await self._check_custom_role_requirements(ctx):
             return
@@ -451,7 +558,10 @@ class CustomRolesCog(vbu.Cog[Bot]):
     async def custom_role_emoji(
         self, ctx: vbu.SlashContext, emoji: commands.EmojiConverter | str
     ):
-        """Changes the emoji of your custom role."""
+        """
+        Changes the emoji of your custom role.
+        """
+
         if not await self._check_custom_role_requirements(ctx):
             return
 
