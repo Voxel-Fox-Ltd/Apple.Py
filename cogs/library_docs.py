@@ -10,8 +10,8 @@ import discord
 from discord.ext import commands, vbu
 
 
-class SphinxObjectFileReader(object):
-    # Inspired by Sphinx's InventoryFileReader
+class SphinxObjectFileReader:
+
     BUFSIZE = 16 * 1024
 
     def __init__(self, buffer):
@@ -646,67 +646,59 @@ class LibraryDocs(vbu.Cog):
         Check nuget for a package.
         """
 
-        # Get our data
         async with self.bot.session.get(f"https://azuresearch-usnc.nuget.org/query?q={package_name}") as e:
             if e.status != 200:
                 await ctx.send("Something went wrong, try again later...")
                 return
             data = await e.json()
+
         buttontuples = []
-        # make a lil embed
+
+        if not data['data']:
+            await ctx.send(f"I could not find anything for `{package_name}` :c")
+            return
+
         with vbu.Embed(use_random_colour=True) as embed:
-            if data['data']:
-                embed.set_author(name=data['data'][0]['title'], url=f"https://www.nuget.org/packages/{data['data'][0]['id']}")
-                embed.description = data['data'][0]['description']
-                # cut here if removing image support
-                if 'iconUrl' in data['data'][0].keys() and data['data'][0]['iconUrl']:
-                     embed.set_thumbnail(data['data'][0]['iconUrl'])
-                # cut here if removing image support
-                if 'projectUrl' in data['data'][0].keys() and data['data'][0]['projectUrl']:
-                    buttontuples.append(('Project URL', data['data'][0]['projectUrl']))
-                if 'licenseUrl' in data['data'][0].keys() and data['data'][0]['licenseUrl']:
-                    buttontuples.append(('License URL', data['data'][0]['licenseUrl']))
-                buttontuples.append(('Download URL', f"https://www.nuget.org/api/v2/package/{data['data'][0]['id']}/{data['data'][0]['version']}"))
-                buttontuples.append(('Nuget package explorer', f"https://nuget.info/packages/{data['data'][0]['id']}/{data['data'][0]['version']}"))
-                buttontuples.append(('Fuget package explorer', f"https://www.fuget.org/packages/{data['data'][0]['id']}/{data['data'][0]['version']}"))
-            else:
-                await ctx.send(f"I could not find anything for `{package_name}` :c")
-                return
-        buttons=[]
-        if (len(buttontuples)!=0):
+            this = data['data'][0]
+            thisid = this['id']
+            thisver = this['version']
+            embed.set_author(
+                name=this['title'],
+                url=f"https://www.nuget.org/packages/{this['id']}"
+            )
+            embed.description = this['description']
+            if (temp := this.get('iconUrl')):
+                embed.set_thumbnail(temp)
+            if (temp := this.get('projectUrl')):
+                buttontuples.append(('Project URL', temp))
+            if (temp := this.get('licenseUrl')):
+                buttontuples.append(('License URL', temp))
+            buttontuples.append((
+                'Download URL',
+                f"https://www.nuget.org/api/v2/package/{thisid}/{thisver}",
+            ))
+            buttontuples.append((
+                'Nuget package explorer',
+                f"https://nuget.info/packages/{thisid}/{thisver}",
+            ))
+            buttontuples.append((
+                'Fuget package explorer',
+                f"https://www.fuget.org/packages/{thisid}/{thisver}",
+            ))
+
+        buttons = []
+        if buttontuples:
             for info in buttontuples:
-                buttons.append(discord.ui.Button(
-                    label=info[0],
-                    url=info[1],
-                    style=discord.ui.ButtonStyle.link))
+                buttons.append(
+                    discord.ui.Button(
+                        label=info[0],
+                        url=info[1],
+                        style=discord.ui.ButtonStyle.link
+                    )
+                )
+
         components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
         await ctx.send(embed=embed, components=components)
-
-    @commands.command(
-        application_command_meta=commands.ApplicationCommandMeta(
-            options=[
-                discord.ApplicationCommandOption(
-                    name="characters",
-                    description="The characters that you want to get the information of.",
-                    type=discord.ApplicationCommandOptionType.string,
-                ),
-            ],
-        ),
-    )
-    @commands.bot_has_permissions(send_messages=True)
-    async def charinfo(self, ctx, *, characters: str):
-        """
-        Shows you information about a number of characters.
-        """
-
-        def to_string(c):
-            digit = f'{ord(c):x}'
-            name = unicodedata.name(c, 'Name not found.')
-            return f'`\\U{digit:>08}`: {name} - {c} \N{EM DASH} <http://www.fileformat.info/info/unicode/char/{digit}>'
-        msg = '\n'.join(map(to_string, characters))
-        if len(msg) > 2000:
-            return await ctx.send('Output too long to display.')
-        await ctx.send(msg)
 
 
 def setup(bot: vbu.Bot):
