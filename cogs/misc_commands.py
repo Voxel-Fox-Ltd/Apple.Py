@@ -49,7 +49,6 @@ class MiscCommands(vbu.Cog):
             hex_colour = colour
         elif isinstance(colour, str):
             hex_colour = int(colour, 16)
-        hex_colour = colour.value
         with vbu.Embed(colour=hex_colour, title=f"#{hex_colour:0>6X}") as embed:
             embed.set_image(url=f"https://voxelfox.co.uk/colour?hex={hex_colour:0>6X}")
         await ctx.send(embed=embed)
