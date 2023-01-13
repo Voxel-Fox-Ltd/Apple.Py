@@ -7,9 +7,9 @@ from discord.ext import tasks, vbu
 
 class TwitchFollowerUpdater(vbu.Cog):
 
-    TWITCH_OAUTH_URL = "https://id.twitch.tv/oauth2/authorize"  # Used to make the login url
-    TWITCH_VALIDATE_URL = "https://id.twitch.tv/oauth2/validate"  # Used to check their auth token
-    TWITCH_USER_FOLLOWS_URL = "https://api.twitch.tv/helix/users/follows"  # Used to get their followers
+    TWITCH_OAUTH_URL = "https://id.twitch.tv/oauth2/authorize"
+    TWITCH_VALIDATE_URL = "https://id.twitch.tv/oauth2/validate"
+    TWITCH_USER_FOLLOWS_URL = "https://api.twitch.tv/helix/users/follows"
     TWITCH_PARAMS = {
         "client_id": "4el1x73cztf2iglqfq58lt5a6ivpgdc",
         "redirect_uri": "http://localhost:3000",
@@ -33,9 +33,16 @@ class TwitchFollowerUpdater(vbu.Cog):
         """
 
         new_last_timestamp = discord.utils.utcnow()
-        new_followers = collections.defaultdict(list)  # channel user id: list of new follower usernames
+        new_followers = collections.defaultdict(list)
         db = await vbu.Database.get_connection()
-        data = await db("SELECT * FROM user_settings WHERE twitch_bearer_token IS NOT NULL")
+        data = await db.call(
+            """SELECT
+                *
+            FROM
+                user_settings
+            WHERE
+                twitch_bearer_token IS NOT NULL
+            """)
 
         # Wew let's do it
         for row in data:
@@ -43,21 +50,49 @@ class TwitchFollowerUpdater(vbu.Cog):
             # See if we got their data already
             new_follower_list = new_followers.get(row['twitch_user_id'])
             if new_follower_list is None:
-                new_follower_list, new_cursor_value = await self.get_new_followers(row['twitch_bearer_token'], row['twitch_user_id'], row['twitch_cursor'])
+                new_follower_list, new_cursor_value = (
+                    await self.get_new_followers(
+                        row['twitch_bearer_token'],
+                        row['twitch_user_id'],
+                        row['twitch_cursor'],
+                    )
+                )
                 if new_cursor_value:
-                    await db("UPDATE user_settings SET twitch_cursor=$1 WHERE twitch_user_id=$2", new_cursor_value, row['twitch_user_id'])
+                    await db.call(
+                        """
+                        UPDATE
+                            user_settings
+                        SET
+                            twitch_cursor = $1
+                        WHERE
+                            twitch_user_id = $2
+                        """,
+                        new_cursor_value,
+                        row['twitch_user_id'],
+                    )
             new_followers[row['twitch_user_id']] = new_follower_list
 
             # Update the follower timestamps into real timestamps
             filtered_new_follower_list = [
                 i for i in new_follower_list
-                if dt.strptime(i['followed_at'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=new_last_timestamp.tzinfo) > self.last_twitch_checked
+                if (
+                    (
+                        dt.strptime(i['followed_at'], "%Y-%m-%dT%H:%M:%SZ")
+                        .replace(tzinfo=new_last_timestamp.tzinfo)
+                    ) > self.last_twitch_checked
+                )
             ]
 
             # Send DM to the user
             if filtered_new_follower_list:
-                discord_user = self.bot.get_user(row['user_id']) or await self.bot.fetch_user(row['user_id'])
-                new_follower_string = ', '.join([f"**{i['from_name']}**" for i in filtered_new_follower_list])
+                discord_user = (
+                    self.bot.get_user(row['user_id'])
+                    or await self.bot.fetch_user(row['user_id'])
+                )
+                new_follower_string = ', '.join([
+                    f"**{i['from_name']}**"
+                    for i in filtered_new_follower_list
+                ])
                 if len(new_follower_string) >= 1800:
                     new_follower_string = ""
                 try:
@@ -73,7 +108,11 @@ class TwitchFollowerUpdater(vbu.Cog):
         self.last_twitch_checked = new_last_timestamp
         await db.disconnect()
 
-    async def get_new_followers(self, bearer_token: str, user_id: str, after: str) -> tuple:
+    async def get_new_followers(
+            self,
+            bearer_token: str,
+            user_id: str,
+            after: str) -> tuple:
         """
         Gives you a list of new followers from after a given datetime.
         """
@@ -88,8 +127,12 @@ class TwitchFollowerUpdater(vbu.Cog):
             params["after"] = after
         output = []
         while True:
-            async with self.bot.session.get(self.TWITCH_USER_FOLLOWS_URL, params=params, headers=headers) as r:
-                data = await r.json()
+            resp = await self.bot.session.get(
+                self.TWITCH_USER_FOLLOWS_URL,
+                params=params,
+                headers=headers,
+            )
+            data = await resp.json()
             output.extend(data.get('data', list()))
             if len(data.get('data', list())) < 100:
                 break
