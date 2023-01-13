@@ -1,10 +1,17 @@
 from datetime import datetime as dt
 
 import discord
-from discord.ext import vbu, commands
+from discord.ext import vbu, commands, tasks
 
 
 class ThreadTools(vbu.Cog[vbu.Bot]):
+
+    def __init__(self, bot):
+        super().__init__(bot)
+        self.thread_archive_loop.start()
+
+    def cog_unload(self):
+        self.thread_archive_loop.cancel()
 
     @commands.command(
         application_command_meta=commands.ApplicationCommandMeta(
@@ -82,27 +89,49 @@ class ThreadTools(vbu.Cog[vbu.Bot]):
         if not isinstance(message.channel, discord.Thread):
             return
         async with vbu.Database() as db:
-            rows = await db.call(
+            await db.call(
                 """
                 DELETE FROM
                     thread_archive
                 WHERE
                     thread_id = $1
-                    AND timestamp < TIMEZONE('UTC', NOW())
-                RETURNING
-                    *
                 """,
                 message.channel.id,
             )
-        if not rows:
-            return
-        try:
-            await message.channel.send(
-                "Automatically archiving thread due to inactivity.",
+
+    @tasks.loop(seconds=30)
+    async def thread_archive_loop(self):
+        """
+        Archive threads that have expired.
+        """
+
+        async with vbu.Database() as db:
+            rows = await db.call(
+                """
+                DELETE FROM
+                    thread_archive
+                WHERE
+                    timestamp < TIMEZONE('UTC', NOW())
+                RETURNING
+                    thread_id
+                """,
             )
-            await message.channel.edit(archived=True)
-        except discord.HTTPException:
-            pass  # Oh well
+        for r in rows:
+            thread_id: int = r['thread_id']
+            messageable = self.bot.get_partial_messageable(
+                thread_id,
+                type=discord.ChannelType.public_thread,
+            )
+            try:
+                await messageable.send(
+                    "Automatically archiving thread due to inactivity.",
+                )
+                await self.bot._connection.http.edit_channel(
+                    thread_id,
+                    archived=True,
+                )
+            except discord.HTTPException:
+                pass
 
 
 def setup(bot: vbu.Bot):
