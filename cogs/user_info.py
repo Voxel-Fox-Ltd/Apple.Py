@@ -1,11 +1,10 @@
 import typing
 import asyncio
-import functools
 
 import discord
 from discord.ext import commands, vbu
 from bs4 import BeautifulSoup
-import imgkit
+from playwright.async_api import async_playwright
 
 
 class UserInfo(vbu.Cog):
@@ -213,30 +212,20 @@ class UserInfo(vbu.Cog):
         # Remove the preamble
         soup = BeautifulSoup(string, "html.parser")
         pre = soup.find(class_="preamble")
-        pre.decompose()
+        try:
+            pre.decompose()  # Remove from the containing page
+        except Exception:
+            pass
         subset = str(soup)
 
-        # Screenshot it
-        options = {
-            "quiet": "",
-            "enable-local-file-access": "",
-            "width": "600",
-            "enable-javascript": "",
-            "javascript-delay": "1000",
-        }
-        filename = f"FakedMessage-{ctx.author.id}.png"
-        from_string = functools.partial(
-            imgkit.from_string,
-            subset,
-            filename,
-            options=options,
-        )
-        await self.bot.loop.run_in_executor(None, from_string)
-
-        # Output and delete temp
-        await ctx.send(file=discord.File(filename))
-        await asyncio.sleep(1)
-        await asyncio.create_subprocess_exec("rm", filename)
+        # Screenshot and output
+        playwright = await async_playwright().start()
+        browser = await playwright.chromium.launch(headless=True)
+        page = await browser.new_page()
+        await page.set_content(subset)
+        screenshot_buffer = await page.screenshot()
+        file = discord.File(screenshot_buffer, filename='message.png')
+        await ctx.send(file=file)
 
 
 def setup(bot: vbu.Bot):

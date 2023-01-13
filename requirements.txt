@@ -2,6 +2,6 @@ novus[vbu,speed]
 beautifulsoup4
 pytz
 pillow
-imgkit
+playwright
 thefuzz[speedup]
 asyncpg
