@@ -13,7 +13,6 @@ class SteamCommand(vbu.Cog):
     def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self.game_cache: dict = {}
-        self.sent_message_cache = {}  # MessageID: {embed: Embed, index: ScreenshotIndex, screenshots: List[str]}
 
     async def load_game_cache(self):
         """
@@ -71,21 +70,36 @@ class SteamCommand(vbu.Cog):
         if app_name.isdigit():
             appid = int(app_name)
             try:
-                app_object = [i for i in self.game_cache if i['appid'] == int(app_name)][0]
+                app_object = [
+                    i
+                    for i in self.game_cache
+                    if i['appid'] == int(app_name)
+                ][0]
             except IndexError:
                 pass
 
         # By app name
         if app_object is None and appid is None:
             app_name = self.get_valid_name(app_name)
-            valid_items = [i for i in self.game_cache if app_name.lower() in self.get_valid_name(i['name']).lower()]
-            full_title_match = [i for i in valid_items if app_name.lower() == self.get_valid_name(i['name']).lower()]
+            valid_items = [
+                i
+                for i in self.game_cache
+                if app_name.lower() in self.get_valid_name(i['name']).lower()
+            ]
+            full_title_match = [
+                i
+                for i in valid_items
+                if app_name.lower() == self.get_valid_name(i['name']).lower()
+            ]
             if full_title_match:
                 valid_items = [full_title_match[0]]
             if len(valid_items) > 1:
                 output_items = valid_items[:10]
                 output_ids = [f"`{i['appid']}` - {i['name']}" for i in output_items]
-                return await ctx.send("There are multiple results with that name:\n" + "\n".join(output_ids))  # TODO
+                return await ctx.send(
+                    "There are multiple results with that name:\n"
+                    + "\n".join(output_ids)
+                )
             elif len(valid_items) == 0:
                 return await ctx.send("There are no results with that name.")
             app_object = valid_items[0]
@@ -98,85 +112,66 @@ class SteamCommand(vbu.Cog):
         headers = {
             "User-Agent": self.bot.user_agent
         }
-        async with self.bot.session.get(self.GAME_DATA_URL, params=params, headers=headers) as r:
-            game_data = await r.json()
+        resp = await self.bot.session.get(self.GAME_DATA_URL, params=params, headers=headers)
+        game_data = await resp.json()
         if game_data[str(appid)]['success'] is False:
             return await ctx.send(f"I couldn't find an application with ID `{appid}`.")
         game_object = game_data[str(appid)]['data']
 
         # See if it's NSFW
-        if int(game_object.get('required_age', '0')) >= 18 and ctx.channel.nsfw is False:
-            return await ctx.send("That game is marked as an 18+, so can't be sent in a non-NSFW channel.")
+        required_age = int(game_object.get('required_age', '0')) >= 18
+        if required_age and ctx.channel.nsfw is False:
+            return await ctx.send(
+                "That game is marked as an 18+, so can't "
+                "be sent in a non-NSFW channel."
+            )
 
         # Embed it babey
-        with vbu.Embed(use_random_colour=True) as embed:
-            embed.title = game_object['name']
-            embed.set_footer(text=f"AppID: {appid}")
-            embed.description = game_object['short_description']
-            embed.add_field("Developer", ', '.join(game_object.get('developers', list())) or 'None', inline=True)
-            embed.add_field("Publisher", ', '.join(game_object.get('publishers', list())) or 'None', inline=True)
-            embed.add_field("Genre", ', '.join(i['description'] for i in game_object['genres']) or 'None', inline=True)
-            if game_object.get('price_overview') is not None:
-                initial_price = game_object['price_overview']['initial_formatted']
-                final_price = game_object['price_overview']['final_formatted']
-                embed.add_field("Price", f"~~{initial_price}~~ {final_price}" if initial_price else final_price, inline=True)
-            embed.add_field("Link", f"Open with Steam - steam://store/{appid}\nOpen in browser - [Link](https://store.steampowered.com/app/{appid}/)", inline=False)
-            screenshots = [i['path_full'] for i in game_object['screenshots']]
-            embed.set_image(url=screenshots[0])
+        e = vbu.Embed(use_random_colour=True)
+        e.title = game_object['name']
+        e.set_footer(text=f"AppID: {appid}")
+        e.description = game_object['short_description']
+        e.add_field(
+            "Developer",
+            ', '.join(game_object.get('developers', list())) or 'None',
+            inline=True
+        )
+        e.add_field(
+            "Publisher",
+            ', '.join(game_object.get('publishers', list())) or 'None',
+            inline=True
+        )
+        e.add_field(
+            "Genre",
+            ', '.join(i['description'] for i in game_object['genres']) or 'None',
+            inline=True
+        )
+        if game_object.get('price_overview') is not None:
+            initial_price = game_object['price_overview']['initial_formatted']
+            final_price = game_object['price_overview']['final_formatted']
+            e.add_field(
+                "Price",
+                (
+                    f"~~{initial_price}~~ {final_price}"
+                    if initial_price
+                    else final_price
+                ),
+                inline=True,
+            )
+        url = f"https://store.steampowered.com/app/{appid}/"
+        e.add_field(
+            "Link",
+            (
+                f"Open with Steam - steam://store/{appid}\n"
+                f"Open in browser - [Link]({url})"
+            ),
+            inline=False,
+        )
+        screenshots = [i['path_full'] for i in game_object['screenshots']]
+        e.set_image(url=screenshots[0])
 
         # Send
-        m = await ctx.send(embed=embed)
-        # self.sent_message_cache[m.id] = {
-        #     "embed": embed,
-        #     "screenshots": screenshots,
-        #     "index": 0,
-        #     "allowed_members": [ctx.author.id],
-        # }
-        # await m.add_reaction("⬅️")
-        # await m.add_reaction("➡️")
-
-    # @vbu.Cog.listener()
-    # async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-    #     """
-    #     Changes the screenshot on an embed.
-    #     """
-
-    #     # Filter babey
-    #     message = reaction.message
-    #     if message.id not in self.sent_message_cache:
-    #         return
-    #     if user.bot:
-    #         return
-
-    #     # Get changed data
-    #     data = self.sent_message_cache[message.id]
-    #     if user.id not in data['allowed_members']:
-    #         return
-
-    #     # Get valid reaction
-    #     if str(reaction.emoji) == "➡️":
-    #         index = data['index'] + 1
-    #         if index >= len(data['screenshots']):
-    #             index = 0
-    #     elif str(reaction.emoji) == "⬅️":
-    #         index = data['index'] - 1
-    #         if index < 0:
-    #             index = len(data['screenshots']) - 1
-    #     else:
-    #         return
-
-    #     # Change embed
-    #     embed = data['embed']
-    #     embed.set_image(url=data['screenshots'][index])
-    #     embed.use_random_colour()
-    #     data['embed'] = embed
-    #     data['index'] = index
-    #     self.sent_message_cache[message.id] = data
-    #     await reaction.message.edit(embed=embed)
-    #     try:
-    #         await reaction.message.remove_reaction(str(reaction.emoji), user)
-    #     except discord.Forbidden:
-    #         pass
+        await ctx.send(embeds=[e])
 
 
 def setup(bot: vbu.Bot):
