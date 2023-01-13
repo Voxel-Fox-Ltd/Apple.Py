@@ -190,3 +190,9 @@ CREATE TABLE IF NOT EXISTS custom_roles(
     role_id BIGINT,
     PRIMARY KEY (guild_id, user_id)
 );
+
+
+CREATE TABLE IF NOT EXISTS thread_archive(
+    thread_id BIGINT PRIMARY KEY,
+    timestamp TIMESTAMP
+);
