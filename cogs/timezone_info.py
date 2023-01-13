@@ -1,6 +1,4 @@
-import asyncio
-import typing
-from datetime import datetime as dt, timedelta
+from datetime import timedelta
 
 import discord
 from discord.ext import commands, vbu
@@ -18,8 +16,7 @@ class TimezoneInfo(vbu.Cog):
         The parent group for timezone commands.
         """
 
-        if ctx.invoked_subcommand is None:
-            return await ctx.send_help(ctx.command)
+        ...
 
     @staticmethod
     def get_common_timezone(name) -> str:
@@ -50,24 +47,10 @@ class TimezoneInfo(vbu.Cog):
             ],
         ),
     )
-    async def timezone_set(self, ctx: vbu.Context, *, offset: str = None):
+    async def timezone_set(self, ctx: vbu.Context, *, offset: str):
         """
         Sets and stores your UTC offset into the bot.
         """
-
-        # Ask them the question
-        if offset is None:
-            ask_message = await ctx.send((
-                f"Hey, {ctx.author.mention}, what timezone are you currently in? You can give its name (`EST`, `GMT`, etc) "
-                "or you can give your continent and nearest large city (`Europe/Amsterdam`, `Australia/Sydney`, etc) - this is "
-                "case sensitive."
-            ))
-            try:
-                check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
-                response_message = await self.bot.wait_for("message", check=check, timeout=30)
-                offset = response_message.content
-            except asyncio.TimeoutError:
-                return await ask_message.delete()
 
         # See if it's one of the more common ones that I know don't actually exist
         offset = self.get_common_timezone(offset)
@@ -76,19 +59,47 @@ class TimezoneInfo(vbu.Cog):
         try:
             zone = pytz.timezone(offset)
         except pytz.UnknownTimeZoneError:
-            return await ctx.send(f"I can't work out what timezone you're referring to - please run this command again to try later, or go to the website (`{ctx.clean_prefix}info`) and I can work it out automatically.")
+            return await ctx.send(
+                f"I can't work out what timezone you're referring to - "
+                f"please run this command again to try later, or go to the "
+                f"website (`/info`) and I can work it out automatically."
+            )
 
         # Store it in the database
         async with vbu.Database() as db:
-            await db(
-                """INSERT INTO user_settings (user_id, timezone_name) VALUES ($1, $2) ON CONFLICT (user_id)
-                DO UPDATE SET timezone_name=excluded.timezone_name""",
+            await db.call(
+                """
+                INSERT INTO
+                user_settings
+                    (
+                        user_id,
+                        timezone_name
+                    )
+                VALUES
+                    ($1, $2)
+                ON CONFLICT
+                    (user_id)
+                DO UPDATE
+                SET
+                    timezone_name = excluded.timezone_name
+                """,
                 ctx.author.id, zone.zone,
             )
-        await ctx.send(f"I think your current time is **{discord.utils.utcnow().astimezone(zone).strftime('%-I:%M %p')}** - I've stored this in the database.")
+        formatted = (
+            discord.utils.utcnow()
+            .astimezone(zone)
+            .strftime('%-I:%M %p')
+        )
+        await ctx.send(
+            f"I think your current time is **{formatted}** - "
+            "I've stored this in the database."
+        )
 
     @commands.context_command(name="Get user's timezone")
-    async def _context_command_timezone_get(self, ctx: vbu.SlashContext, user: discord.Member):
+    async def _context_command_timezone_get(
+            self,
+            ctx: vbu.SlashContext,
+            user: discord.Member):
         command = self.timezone_get
         await command.can_run(ctx)
         await ctx.invoke(command, user)
@@ -107,7 +118,10 @@ class TimezoneInfo(vbu.Cog):
         ),
     )
     @commands.defer()
-    async def timezone_get(self, ctx: vbu.Context, target: typing.Union[discord.Member, str] = None):
+    async def timezone_get(
+            self,
+            ctx: vbu.Context,
+            target: discord.Member | str = None):
         """
         Get the current time for a given user.
         """
@@ -122,25 +136,59 @@ class TimezoneInfo(vbu.Cog):
             return await ctx.send("I don't think bots have timezones...")
 
         # See if they've set a timezone
+        rows = None
         if not target_is_timezone:
             async with vbu.Database() as db:
-                rows = await db("SELECT timezone_name, timezone_offset FROM user_settings WHERE user_id=$1", target.id)
-            if not rows or (rows[0]['timezone_name'] is None and rows[0]['timezone_offset'] is None):
-                return await ctx.send(f"{target.mention} hasn't set up their timezone information! They can set it by running `{ctx.clean_prefix}timezone set`.")
+                rows = await db.call(
+                    """
+                    SELECT
+                        timezone_name
+                    FROM
+                        user_settings
+                    WHERE
+                        user_id = $1
+                    """,
+                    target.id,
+                )
+            if not rows:
+                return await ctx.send(
+                    f"{target.mention} hasn't set up their timezone "
+                    "information! They can set it by running `/timezone set`."
+                )
 
         # Grab their current time and output
         if target_is_timezone:
             try:
-                formatted_time = (discord.utils.utcnow().astimezone(pytz.timezone(target))).strftime('%-I:%M %p')
+                formatted_time = (
+                    discord.utils.utcnow()
+                    .astimezone(pytz.timezone(target))
+                    .strftime('%-I:%M %p')
+                )
             except pytz.UnknownTimeZoneError:
                 return await ctx.send("That isn't a valid timezone.")
-            return await ctx.send(f"The current time in **{target}** is estimated to be **{formatted_time}**.")
+            return await ctx.send(
+                f"The current time in **{target}** is estimated to "
+                f"be **{formatted_time}**."
+            )
         elif rows:
             if rows[0]['timezone_name']:
-                formatted_time = (discord.utils.utcnow().astimezone(pytz.timezone(rows[0]['timezone_name']))).strftime('%-I:%M %p')
+                formatted_time = (
+                    discord.utils.utcnow()
+                    .astimezone(pytz.timezone(rows[0]['timezone_name']))
+                    .strftime('%-I:%M %p')
+                )
             else:
-                formatted_time = (discord.utils.utcnow() + timedelta(minutes=rows[0]['timezone_offset'])).strftime('%-I:%M %p')
-            await ctx.send(f"The current time for {target.mention} is estimated to be **{formatted_time}**.", allowed_mentions=discord.AllowedMentions.none())
+                formatted_time = (
+                    discord.utils.utcnow()
+                    + timedelta(minutes=rows[0]['timezone_offset'])
+                ).strftime('%-I:%M %p')
+            await ctx.send(
+                (
+                    f"The current time for {target.mention} is estimated to "
+                    f"be **{formatted_time}**."
+                ),
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
 
 
 def setup(bot: vbu.Bot):
