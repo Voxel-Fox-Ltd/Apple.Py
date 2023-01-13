@@ -57,17 +57,35 @@ class ReminderCommands(vbu.Cog):
 
         # Grab their remidners
         async with vbu.Database() as db:
-            rows = await db("SELECT * FROM reminders WHERE user_id=$1 and guild_id=$2", ctx.author.id, guild_id)
+            rows = await db.call(
+                """
+                SELECT
+                    timestamp, reminder_id, message
+                FROM
+                    reminders
+                WHERE
+                    user_id=$1
+                    AND guild_id=$2
+                """,
+                ctx.author.id,
+                guild_id,
+            )
 
         # Format an output string
         reminders = ""
         for reminder in rows:
             expiry = discord.utils.format_dt(reminder['timestamp'])
-            reminders += f"\n`{reminder['reminder_id']}` - {reminder['message'][:70]} ({expiry})"
+            reminders += (
+                f"\n`{reminder['reminder_id']}` - "
+                f"{reminder['message'][:70]} ({expiry})"
+            )
         message = f"Your reminders: {reminders}"
 
         # Send to the user
-        await ctx.send(message or "You have no reminders.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(
+            message or "You have no reminders.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @reminder.command(
         name="set",
@@ -88,7 +106,12 @@ class ReminderCommands(vbu.Cog):
         ),
     )
     @commands.bot_has_permissions(send_messages=True)
-    async def reminder_set(self, ctx: vbu.Context, time: vbu.TimeValue, *, message: str):
+    async def reminder_set(
+            self,
+            ctx: vbu.Context,
+            time: vbu.TimeValue,
+            *,
+            message: str):
         """
         Adds a reminder to your account.
         """
@@ -103,20 +126,49 @@ class ReminderCommands(vbu.Cog):
         db = await vbu.Database.get_connection()
         while True:
             reminder_id = create_id()
-            data = await db("SELECT * FROM reminders WHERE reminder_id=$1", reminder_id)
+            data = await db.call(
+                """
+                SELECT
+                    *
+                FROM
+                    reminders
+                WHERE
+                    reminder_id = $1
+                """,
+                reminder_id,
+            )
             if not data:
                 break
 
         # Let them know its been set
-        m = await ctx.send(f"Reminder set for {discord.utils.format_dt(discord.utils.utcnow() + time.delta)}.")
+        future = discord.utils.utcnow() + time.delta
+        time_string = discord.utils.format_dt(future)
+        m = await ctx.send(f"Reminder set for {time_string}.")
 
         # Chuck the info in the database
-        await db(
-            """INSERT INTO reminders (reminder_id, guild_id, channel_id, message_id,
-            timestamp, user_id, message)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)""",
-            reminder_id, guild_id, ctx.channel.id, m.id,
-            (discord.utils.utcnow() + time.delta).replace(tzinfo=None), ctx.author.id, message,
+        await db.call(
+            """
+            INSERT INTO
+            reminders
+            (
+                reminder_id,
+                guild_id,
+                channel_id,
+                message_id,
+                timestamp,
+                user_id,
+                message
+            )
+            VALUES
+                ($1, $2, $3, $4, $5, $6, $7)
+            """,
+            reminder_id,
+            guild_id,
+            ctx.channel.id,
+            m.id,
+            (future).replace(tzinfo=None),
+            ctx.author.id,
+            message,
         )
         await db.disconnect()
 
@@ -147,14 +199,14 @@ class ReminderCommands(vbu.Cog):
 
         # Grab the reminder
         async with self.bot.database() as db:
-            data = await db("SELECT * FROM reminders WHERE reminder_id=$1 and guild_id=$2", reminder_id, guild_id)
+            data = await db.call("SELECT * FROM reminders WHERE reminder_id=$1 and guild_id=$2", reminder_id, guild_id)
 
             # Check if it exists
             if not data:
                 return await ctx.send("That reminder doesn't exist.")
 
             # Delete it
-            await db("DELETE FROM reminders WHERE reminder_id=$1 and user_id=$2", reminder_id, ctx.author.id)
+            await db.call("DELETE FROM reminders WHERE reminder_id=$1 and user_id=$2", reminder_id, ctx.author.id)
 
         # Send feedback saying it was deleted
         await ctx.send("Reminder deleted.")
@@ -167,7 +219,16 @@ class ReminderCommands(vbu.Cog):
 
         # Grab finished stuff from the database
         db = await vbu.Database.get_connection()
-        rows = await db("SELECT * FROM reminders WHERE timestamp < TIMEZONE('UTC', NOW())")
+        rows = await db.call(
+            """
+            SELECT
+                *
+            FROM
+                reminders
+            WHERE
+                timestamp < TIMEZONE('UTC', NOW())
+            """
+        )
         if not rows:
             await db.disconnect()
             return
@@ -182,7 +243,10 @@ class ReminderCommands(vbu.Cog):
             reminder_id = reminder["reminder_id"]
 
             try:
-                channel = self.bot.get_channel(channel_id) or await self.bot.fetch_channel(channel_id)
+                channel = (
+                    self.bot.get_channel(channel_id)
+                    or await self.bot.fetch_channel(channel_id)
+                )
             except discord.HTTPException:
                 channel = None
             sendable = {
@@ -203,7 +267,10 @@ class ReminderCommands(vbu.Cog):
                     await channel.send(**sendable)
             except (AssertionError, discord.Forbidden):
                 try:
-                    user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+                    user = (
+                        self.bot.get_user(user_id)
+                        or await self.bot.fetch_user(user_id)
+                    )
                     await user.send(**sendable)
                 except discord.HTTPException:
                     pass
@@ -212,7 +279,15 @@ class ReminderCommands(vbu.Cog):
             expired_reminders.append(reminder_id)
 
         # Delete expired reminders
-        await db("DELETE FROM reminders WHERE reminder_id=ANY($1::TEXT[])", expired_reminders)
+        await db.call(
+            """
+            DELETE FROM
+                reminders
+            WHERE
+                reminder_id = ANY($1::TEXT[])
+            """,
+            expired_reminders,
+        )
         await db.disconnect()
 
 
