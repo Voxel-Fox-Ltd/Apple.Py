@@ -50,6 +50,7 @@ class ThreadTools(vbu.Cog[vbu.Bot]):
         if time is None:
             await ctx.interaction.response.send_message("Bye :)")
             await ctx.channel.edit(archived=True)
+            return
 
         # Save to the database
         rows: list[dict] = []
