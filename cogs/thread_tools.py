@@ -1,4 +1,5 @@
 from datetime import datetime as dt
+from typing import Optional
 
 import discord
 from discord.ext import vbu, commands, tasks
@@ -23,6 +24,7 @@ class ThreadTools(vbu.Cog[vbu.Bot]):
                         "How long without a message should be waited before "
                         "archive."
                     ),
+                    required=False,
                 )
             ],
         ),
@@ -32,7 +34,7 @@ class ThreadTools(vbu.Cog[vbu.Bot]):
     async def archivethread(
             self,
             ctx: commands.SlashContext,
-            time: vbu.TimeValue):
+            time: Optional[vbu.TimeValue] = None):
         """
         Archive the current thread in a given amount of time without a response.
         """
@@ -43,6 +45,11 @@ class ThreadTools(vbu.Cog[vbu.Bot]):
                 "This isn't a thread.",
                 ephemeral=True,
             )
+
+        # See if we want to do it later
+        if time is None:
+            await ctx.interaction.response.send_message("Bye :)")
+            await ctx.channel.edit(archived=True)
 
         # Save to the database
         rows: list[dict] = []
