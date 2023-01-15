@@ -49,7 +49,7 @@ class ThreadTools(vbu.Cog[vbu.Bot]):
         # See if we want to do it later
         if time is None:
             await ctx.interaction.response.send_message("Bye :)")
-            await ctx.channel.edit(archived=True)
+            await ctx.channel.edit(archived=True, locked=True)
             return
 
         # Save to the database
@@ -137,6 +137,7 @@ class ThreadTools(vbu.Cog[vbu.Bot]):
                 await self.bot._connection.http.edit_channel(
                     thread_id,
                     archived=True,
+                    locked=False,
                 )
             except discord.HTTPException:
                 pass
