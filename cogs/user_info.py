@@ -1,6 +1,7 @@
 import typing
 import asyncio
 
+import aiohttp
 import discord
 from discord.ext import commands, vbu
 from bs4 import BeautifulSoup
@@ -203,28 +204,12 @@ class UserInfo(vbu.Cog):
 
         # Send data to the API
         data.update({"users": data_authors, "messages": [message_data]})
-        resp = await self.bot.session.post(
+        resp: aiohttp.ClientResponse = await self.bot.session.post(
             "https://voxelfox.co.uk/discord/chatlog",
             json=data,
         )
-        string = await resp.text()
-
-        # Remove the preamble
-        soup = BeautifulSoup(string, "html.parser")
-        pre = soup.find(class_="preamble")
-        try:
-            pre.decompose()  # Remove from the containing page
-        except Exception:
-            pass
-        subset = str(soup)
-
-        # Screenshot and output
-        playwright = await async_playwright().start()
-        browser = await playwright.chromium.launch(headless=True)
-        page = await browser.new_page()
-        await page.set_content(subset)
-        screenshot_buffer = await page.screenshot()
-        file = discord.File(screenshot_buffer, filename='message.png')
+        screenshot = await resp.read()
+        file = discord.File(screenshot, filename='message.png')
         await ctx.send(file=file)
 
 
