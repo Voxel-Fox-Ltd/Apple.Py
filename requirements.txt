@@ -2,6 +2,5 @@ novus[vbu,speed]
 beautifulsoup4
 pytz
 pillow
-playwright
 thefuzz[speedup]
 asyncpg

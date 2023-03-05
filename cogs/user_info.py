@@ -1,11 +1,9 @@
 import typing
-import asyncio
+import io
 
 import aiohttp
 import discord
 from discord.ext import commands, vbu
-from bs4 import BeautifulSoup
-from playwright.async_api import async_playwright
 
 
 class UserInfo(vbu.Cog):
@@ -205,11 +203,12 @@ class UserInfo(vbu.Cog):
         # Send data to the API
         data.update({"users": data_authors, "messages": [message_data]})
         resp: aiohttp.ClientResponse = await self.bot.session.post(
-            "https://voxelfox.co.uk/discord/chatlog",
+            "https://voxelfox.co.uk/discord/chatlog?image",
             json=data,
         )
         screenshot = await resp.read()
-        file = discord.File(screenshot, filename='message.png')
+        fake_file = io.BytesIO(screenshot)
+        file = discord.File(fake_file, filename='message.png')
         await ctx.send(file=file)
 
 
