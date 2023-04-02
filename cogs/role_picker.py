@@ -223,7 +223,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         # Get and validate the embed
         message_embed = interaction.message.embeds[0]
         if not message_embed.fields:
-            return await interaction.response.send_message(
+            return await interaction.edit_original_message(
                 "You need to add some roles first!",
                 ephemeral=True,
             )
@@ -274,20 +274,12 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         )
 
         # And send
-        try:
-            await interaction.channel.send(
-                content=embed_content or "Pick a role!",
-                components=discord.ui.MessageComponents(
-                    discord.ui.ActionRow(dropdown),
-                ),
-            )
-        except discord.HTTPException:
-            await interaction.followup.send(
-                content=embed_content or "Pick a role!",
-                components=discord.ui.MessageComponents(
-                    discord.ui.ActionRow(dropdown),
-                ),
-            )
+        await interaction.channel.send(
+            content=embed_content or "Pick a role!",
+            components=discord.ui.MessageComponents(
+                discord.ui.ActionRow(dropdown),
+            ),
+        )
 
     async def rolepicker_role(
             self,
