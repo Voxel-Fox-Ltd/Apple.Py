@@ -249,12 +249,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
             )
 
         # Get the actual roles
-        if interaction.guild is None:
-            return
-        elif isinstance(interaction.guild, discord.Guild):
-            guild = interaction.guild
-        else:
-            guild = await self.bot.fetch_guild(interaction.guild.id)
+        guild = await self.bot.fetch_guild(interaction.guild_id)
         # roles do not need to be fetched individually since they're returned
         # in the guild payload
         roles = [
