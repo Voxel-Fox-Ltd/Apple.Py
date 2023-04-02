@@ -229,10 +229,11 @@ class RolePicker(vbu.Cog[vbu.Bot]):
             )
         else:
             embed_roles: str = message_embed.fields[0].value  # pyright: ignore
+        embed_content: str | None
         if not message_embed.description:
-            return
+            embed_content = None
         else:
-            embed_content: str | None = message_embed.description  # pyright: ignore
+            embed_content = message_embed.description  # pyright: ignore
 
         # Get the role IDs
         role_ids = [
@@ -252,9 +253,9 @@ class RolePicker(vbu.Cog[vbu.Bot]):
             )
 
         # Get the actual roles
-        guild = await self.bot.fetch_guild(interaction.guild_id)
-        # roles do not need to be fetched individually since they're returned
+        # Roles do not need to be fetched individually since they're returned
         # in the guild payload
+        guild = await self.bot.fetch_guild(interaction.guild_id)
         roles = [
             role
             for role in guild.roles
