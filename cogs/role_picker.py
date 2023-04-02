@@ -76,7 +76,10 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         elif action == "REMOVE":
             await self.change_roles(interaction, add=False)
         elif action == "DONE":
-            await self.rolemenu_done(interaction)
+            try:
+                await self.rolemenu_done(interaction)
+            except Exception as e:
+                self.logger.error("failed done button", exc_info=e)
         elif action == "CONTENT":
             await self.rolemenu_content_spawnmodal(interaction)
         elif action == "ROLE":
