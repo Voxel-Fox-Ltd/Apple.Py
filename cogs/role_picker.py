@@ -1,5 +1,6 @@
 from typing import cast
 import re
+import uuid
 
 import discord
 from discord.ext import commands, vbu
@@ -264,7 +265,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
 
         # Make the dropdown
         dropdown = discord.ui.SelectMenu(
-            custom_id="NEWROLEPICKER ROLE",
+            custom_id=f"NEWROLEPICKER ROLE {uuid.uuid4()}",
             options=[
                 discord.ui.SelectOption(
                     label=role.name,
@@ -291,7 +292,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
         """
 
         # Get the role ID
-        if possible_role_id:
+        if possible_role_id and possible_role_id.isdigit():
             role_id = int(possible_role_id)
         else:
             role_id = int(interaction.data["values"][0].split(" ")[-1])
@@ -316,7 +317,7 @@ class RolePicker(vbu.Cog[vbu.Bot]):
                     components=discord.ui.MessageComponents(
                         discord.ui.ActionRow(
                             discord.ui.SelectMenu(
-                                custom_id="NEWROLEPICKER ROLE",
+                                custom_id=f"NEWROLEPICKER ROLE {uuid.uuid4()}",
                                 options=[
                                     option
                                     for option in (
