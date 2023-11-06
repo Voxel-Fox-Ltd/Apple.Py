@@ -106,7 +106,16 @@ class TimezoneInfo(vbu.Cog):
             ctx: commands.SlashContext,
             interaction: discord.Interaction):
         given: str = interaction.options[0].options[0].value
-        ret = sorted(pytz.all_timezones, key=lambda a: get_similarity(given, a), reverse=True)
+        ret = sorted(
+            pytz.all_timezones + [
+                "PST",
+                "MST",
+                "CST",
+                "EST",
+            ],
+            key=lambda a: get_similarity(given.casefold(), a.split("/")[-1].casefold()),
+            reverse=True,
+        )
         responses = [
             discord.ApplicationCommandOptionChoice(name=r, value=r)
             for r in ret
