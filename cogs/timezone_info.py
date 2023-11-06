@@ -1,8 +1,13 @@
 from datetime import timedelta
+from difflib import SequenceMatcher
 
 import discord
 from discord.ext import commands, vbu
 import pytz
+
+
+def get_similarity(a: str, b: str) -> float:
+    return SequenceMatcher(None, a, b).ratio()
 
 
 class TimezoneInfo(vbu.Cog):
@@ -94,6 +99,19 @@ class TimezoneInfo(vbu.Cog):
             f"I think your current time is **{formatted}** - "
             "I've stored this in the database."
         )
+
+    @timezone_set.autocomplete
+    async def timezone_set_autocomplete(
+            self,
+            ctx: commands.SlashContext,
+            interaction: discord.Interaction):
+        given: str = interaction.options[0].options[0].value
+        ret = sorted(pytz.all_timezones, key=lambda a: get_similarity(given, a), reverse=True)
+        responses = [
+            discord.ApplicationCommandOptionChoice(name=r, value=r)
+            for r in ret
+        ][:25]
+        return await interaction.response.send_autocomplete(responses)
 
     @commands.context_command(name="Get user's timezone")
     async def _context_command_timezone_get(
