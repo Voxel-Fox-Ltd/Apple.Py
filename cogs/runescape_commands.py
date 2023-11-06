@@ -35,9 +35,9 @@ class RunescapeCommands(vbu.Cog):
         """
 
         multipliers = {
-            'k': 10 ** 3,
-            'm': 10 ** 6,
-            'b': 10 ** 9,
+            'k': 10e3,
+            'm': 10e6,
+            'b': 10e9,
         }
         value_str = value_str.replace(',', '').strip()
 
@@ -103,7 +103,7 @@ class RunescapeCommands(vbu.Cog):
         Get the value of an item on the grand exchange (OSRS).
         """
 
-        if item.lower() in ['random']:
+        if item.casefold() == 'random':
             item_id = random.choice(list(self.item_ids.values()))
         else:
             item = item.capitalize()
@@ -127,7 +127,6 @@ class RunescapeCommands(vbu.Cog):
             embed.add_field('Members', MEMBERS_MAPPING[item_dict['members']], inline=False)
 
         await typing.__aexit__(None, None, None)
-
         return await ctx.send(embed=embed)
 
 
