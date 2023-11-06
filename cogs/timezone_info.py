@@ -1,13 +1,16 @@
 from datetime import timedelta
-from difflib import SequenceMatcher
+# from difflib import SequenceMatcher
 
 import discord
 from discord.ext import commands, vbu
 import pytz
 
+from thefuzz import fuzz
+
 
 def get_similarity(a: str, b: str) -> float:
-    return SequenceMatcher(None, a, b).ratio()
+    # return SequenceMatcher(None, a, b).ratio()
+    return fuzz.partial_ratio(a, b)
 
 
 class TimezoneInfo(vbu.Cog):
