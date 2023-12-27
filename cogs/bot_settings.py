@@ -35,6 +35,32 @@ settings_menu = vbu.menus.Menu(
         cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "quote_channel_id"),
     ),
     vbu.menus.Option(
+        display=lambda ctx: f"Set report channel (currently {ctx.get_mentionable_channel(ctx.bot.guild_settings[ctx.guild.id]['report_channel_id']).mention})",
+        component_display="Report channel",
+        converters=[
+            vbu.menus.Converter(
+                prompt="What channel do you want to send reports to?",
+                converter=discord.TextChannel,
+            )
+        ],
+        allow_none=True,
+        callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "report_channel_id"),
+        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "report_channel_id"),
+    ),
+    vbu.menus.Option(
+        display=lambda ctx: f"Set staff role (currently {ctx.get_mentionable_role(ctx.bot.guild_settings[ctx.guild.id]['staff_role_id']).mention})",
+        component_display="Staff role",
+        converters=[
+            vbu.menus.Converter(
+                prompt="What role should be alerted for reports?",
+                converter=discord.Role,
+            )
+        ],
+        allow_none=True,
+        callback=vbu.menus.Menu.callbacks.set_table_column(vbu.menus.DataLocation.GUILD, "guild_settings", "staff_role_id"),
+        cache_callback=vbu.menus.Menu.callbacks.set_cache_from_key(vbu.menus.DataLocation.GUILD, "staff_role_id"),
+    ),
+    vbu.menus.Option(
         display=lambda ctx: f"Set reactions needed for quote (currently {ctx.bot.guild_settings[ctx.guild.id]['quote_reactions_needed']})",
         component_display="Reactions needed",
         converters=[
